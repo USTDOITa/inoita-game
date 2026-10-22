@@ -85,6 +85,23 @@ test('simultaneous requests on one scene share a loader batch and retain indepen
   assert.deepEqual(run.removed, [asset.key]);
 });
 
+test('scenes sharing one texture manager register a key only once', async () => {
+  const run = setup();
+  let otherStarts = 0;
+  const otherLoad = Object.assign(new EventEmitter(), {
+    image() {}, spritesheet() {}, start() { otherStarts++; }
+  });
+  const otherScene = { ...run.scene, events: new EventEmitter(), load: otherLoad } as unknown as Phaser.Scene;
+  const [first, second] = await Promise.all([
+    loadSceneAssets(run.scene, [asset], () => {}),
+    loadSceneAssets(otherScene, [asset], () => {})
+  ]);
+  assert.equal(run.starts(), 1);
+  assert.equal(otherStarts, 0, '同一纹理库已有加载在排队，另一个场景不应再启动 loader');
+  first.release(); second.release();
+  assert.deepEqual(run.removed, [asset.key]);
+});
+
 test('network failure and shutdown clean up loading listeners and ownership', async () => {
   const network = setup(); network.outcome('network-error');
   await assert.rejects(loadSceneAssets(network.scene, [asset], () => {}), diagnostic(/skill-effect/));

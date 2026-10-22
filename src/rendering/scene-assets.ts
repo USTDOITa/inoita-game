@@ -7,18 +7,20 @@ export type PendingAsset =
   | { kind: 'image'; key: string; file: string }
   | { kind: 'spritesheet'; key: string; file: string; config: Phaser.Types.Loader.FileTypes.ImageFrameConfig };
 const pools = new WeakMap<Phaser.Textures.TextureManager, AssetPool>();
-const sceneQueues = new WeakMap<Phaser.Scene, Promise<void>>();
+/** 队列按纹理管理器排队：同一份纹理库只有一个 loader 能写，跨场景并发会重复注册同一纹理键。 */
+const textureQueues = new WeakMap<Phaser.Textures.TextureManager, Promise<void>>();
 
 /** 已生成的效果继续使用已加载资源，直至自身动画结束。 */
 export function retainLoadedSceneAssets(scene:Phaser.Scene,keys:Iterable<string>):AssetLease {
   return pools.get(scene.textures)?.acquire(keys)??{release:()=>{}};
 }
 
-async function inSceneQueue<T>(scene: Phaser.Scene, work: () => Promise<T>): Promise<T> {
-  const previous = sceneQueues.get(scene) ?? Promise.resolve();
+async function inTextureQueue<T>(scene: Phaser.Scene, work: () => Promise<T>): Promise<T> {
+  const textures = scene.textures;
+  const previous = textureQueues.get(textures) ?? Promise.resolve();
   let release!: () => void;
   const turn = new Promise<void>(resolve => { release = resolve; });
-  sceneQueues.set(scene, previous.then(() => turn));
+  textureQueues.set(textures, previous.then(() => turn));
   await previous;
   try { return await work(); }
   finally { release(); }
@@ -75,7 +77,7 @@ export async function loadSceneAssets(scene: Phaser.Scene, assets: PendingAsset[
   const shutdown = () => controller.abort(new DOMException('场景已关闭','AbortError'));
   scene.events.once('shutdown',shutdown);
   try {
-    await inSceneQueue(scene, async () => {
+    await inTextureQueue(scene, async () => {
       controller.signal.throwIfAborted();
       const needed = unique.filter(asset => !scene.textures.exists(asset.key));
       if (!needed.length) { progress(1); return; }
