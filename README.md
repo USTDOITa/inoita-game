@@ -107,6 +107,18 @@ GM 面板包含状态、人物、道具和剧情四个子页；浏览器里也�
 
 `npm run apk` 会把 `dist/` 打进 `android/` 提供的 WebView 壳。首次运行会自动下载 Android SDK 与 Gradle，并生成签名密钥到用户目录；`android/keystore.properties`、构建缓存和产物都不会进入仓库。
 
+## 特别感谢
+
+<p align="center">测试人员：kj</p>
+
+<p align="center">感谢 kj 的反馈与验证。</p>
+
+## 许可证
+
+本仓库的源代码（`src/`、`tests/`、`tools/` 等）采用 [MIT License](LICENSE)。
+
+`public/assets/` 中的图片、音频等素材，以及 `public/content/` 中派生自原版游戏的剧情、任务和文本，版权归原权利方所有，不包含在 MIT 许可范围内，仅用于学习与研究。
+
 ## 版权
 
-游戏素材版权归原权利方所有，本项目用于学习与研究。
+游戏素材与派生内容的版权归原权利方所有，本项目用于学习与研究。

@@ -2,6 +2,7 @@
   "name": "inotia-story",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "phaser": "4.2.1"
