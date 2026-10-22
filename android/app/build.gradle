@@ -19,6 +19,8 @@ android {
         targetSdk 34
         versionCode 1
         versionName '1.0.0'
+        // 诊断与 GM 状态上报地址；改服务器地址时同步 res/xml/network_security_config.xml。
+        buildConfigField 'String', 'DIAGNOSTICS_URL', '"http://64.83.41.39:4002/__diagnostics/report"'
     }
 
     sourceSets {

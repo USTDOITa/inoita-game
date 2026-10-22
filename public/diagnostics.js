@@ -2,7 +2,10 @@
 (() => {
   if (window.storyDiagnostics) return;
   const storageKey = 'inotia4.diagnostics.pending.v1';
-  const endpoint = new URL('./__diagnostics/report', document.currentScript.src).href;
+  // 离线 APK 在 document-start 注入绝对地址；网页版没有这个变量，继续用同源端点。
+  const endpoint = typeof globalThis.__inoitaDiagnosticsEndpoint === 'string' && globalThis.__inoitaDiagnosticsEndpoint
+    ? globalThis.__inoitaDiagnosticsEndpoint
+    : new URL('./__diagnostics/report', document.currentScript.src).href;
   const session = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
   let sequence = 0, sending = false, snapshot = () => null;
   let pending = [], recent = [], capturing = false;

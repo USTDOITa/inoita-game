@@ -416,13 +416,22 @@ function returnToMenu(): void {
  * `world.combat` 说明技能/暂停/状态是否还挂着。
  */
 function runtimeDiagnostics(): Record<string, unknown> {
+  const session = app.session, party = session?.party;
   return {
     mode: app.mode, ready: ui.ready, locked: ui.locked, lockOwners: ui.lockOwners,
     suspended: ui.suspended, defeatOpen: ui.defeatOpen, menuOpen: app.storyUI?.menuOpen ?? false,
     dialogue: !!ui.dialogueState, choice: !!ui.choices, questPopup: !!ui.quest,
     editingControls: ui.controlLayoutEditing, loading: ui.loadingState?.label,
-    location: app.session?.storyWorld.currentLocation,
-    player: app.session?.player, combatTick: app.session?.combatTick,
+    location: session?.storyWorld.currentLocation,
+    player: session?.player, combatTick: session?.combatTick,
+    session: session ? {
+      nowMs: session.nowMs, combatTick: session.combatTick, money: session.money,
+      partyItemChance: session.partyItemChance, currentQuest: session.currentQuest()?.id ?? null,
+      debugFocusQuest: session.debugFocusQuest ?? null, bagEntries: session.bag.entries.length,
+      party: party ? { controlled: party.controlledId, active: party.activeIds,
+        reserves: party.snapshot().reserves, rosterSlots: party.snapshot().rosterSlots } : null,
+    } : null,
+    audio: app.audio ? { ...app.audio.captureStoryAudio(), settings: app.audio.settings } : null,
     world: worldScene()?.diagnosticSnapshot(),
     story: app.director ? { busy: app.director.busy,
       runs: app.director.runtime.snapshot().runs.filter(run => run.status !== 'completed')

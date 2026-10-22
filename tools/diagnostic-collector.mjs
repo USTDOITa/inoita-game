@@ -20,6 +20,21 @@ export function createDiagnosticMiddleware(root) {
   return function diagnostics(req, res, next) {
     if (req.url?.split('?')[0] !== '/__diagnostics/report') { next(); return; }
     res.setHeader('Cache-Control', 'no-store');
+    // 离线 APK 的页面源是 WebView 的本地 HTTPS 域，上报跨到本服务，需要放行这一来源。
+    const origin = req.headers.origin;
+    const allowedOrigin = origin === 'https://appassets.androidplatform.net'
+      || origin === 'http://appassets.androidplatform.net';
+    if (allowedOrigin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Vary', 'Origin');
+    }
+    if (req.method === 'OPTIONS') {
+      if (!allowedOrigin) { res.writeHead(403); res.end(); return; }
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Access-Control-Max-Age', '86400');
+      res.writeHead(204); res.end(); return;
+    }
     if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); res.writeHead(405); res.end(); return; }
     let bytes = 0, oversized = false;
     const chunks = [];

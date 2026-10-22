@@ -84,13 +84,14 @@ try {
   check('启动 Activity', /launchable-activity: name='io\.github\.sunflower9264\.inoita\.MainActivity'/.test(badging));
 
   const permissions = run(path.join(buildTools, 'aapt2'), ['dump', 'permissions', apk]).stdout;
-  check('未申请 INTERNET 权限', !/android\.permission\.INTERNET/.test(permissions));
+  check('申请 INTERNET 权限（诊断上报）', /android\.permission\.INTERNET/.test(permissions));
 
   const xmltree = run(path.join(buildTools, 'aapt2'), ['dump', 'xmltree', '--file', 'AndroidManifest.xml', apk]).stdout;
   check('锁定横屏 sensorLandscape', /screenOrientation[^=]*=6\b/.test(xmltree));
   check('软键盘 adjustResize', /windowSoftInputMode[^=]*=0x0*10\b/.test(xmltree));
   check('关闭 predictive back', /enableOnBackInvokedCallback[^=]*=false/.test(xmltree));
   check('禁止明文网络', /usesCleartextTraffic[^=]*=false/.test(xmltree));
+  check('配置了诊断服务器的网络安全策略', /networkSecurityConfig/.test(xmltree));
 
   const entries = run('unzip', ['-Z1', apk]).stdout.split('\n').map(line => line.trim())
     .filter(name => name && !name.endsWith('/'));

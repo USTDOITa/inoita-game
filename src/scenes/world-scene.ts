@@ -1052,8 +1052,11 @@ export class WorldScene extends Phaser.Scene {
       };
     }
     return { map: this.map?.id, loading: this.loadingWorld, performing: this.performing,
-      active: this.sys.isActive(), canControl: this.canControl, canCombatControl: this.canCombatControl,
-      target: this.combat?.targetId,
+      scene: { time: this.time.now, active: this.sys.isActive(), paused: this.sys.isPaused() },
+      suspended: this.app.suspended, locked: this.app.locked, directorBusy: !!this.app.director?.busy,
+      canControl: this.canControl, canCombatControl: this.canCombatControl,
+      mapBounds: movement?.navigation.bounds ?? null,
+      target: this.combat?.targetId, near: this.near?.entity.id ?? null,
       player: player ? { x: player.container.x, y: player.container.y, clip: player.clipName, facing: this.facing, ...placement } : null,
       corrections: movement?.terrainCorrections ?? [],
       combat: this.combat?.diagnostics() ?? null };

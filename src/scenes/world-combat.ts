@@ -284,15 +284,43 @@ export class WorldCombat {
    * 卡住排查的最小快照：谁被冻住、在放什么动作、身上挂着哪些状态、移动体是否还在推进。
    * 「不能移动」可能来自任何一层（流程锁、战斗暂停、buff、移动体固定），这里一次给全。
    */
+  /**
+   * 全量现场快照：每个出战队员的控制器、AI 寻路、移动体和状态，以及敌人和交战判定。
+   * 「佣兵不动」「卡墙」「技能收不了尾」可能落在不同层，这里一次给全。
+   */
   diagnostics() {
-    const id = this.controlledId, conditions = this.conditions.captureState();
-    const own = <T>(pairs: [string, T[]][]): T[] => pairs.find(([actor]) => actor === id)?.[1] ?? [];
-    const visual = this.visualOf(id);
+    const now = (this.app.session.combatTick ?? 0) * LOGIC_FRAME_MS;
+    const conditions = this.conditions.captureState();
+    const own = <T>(pairs: [string, T[]][], id: string): T[] => pairs.find(([actor]) => actor === id)?.[1] ?? [];
+    const summarizePath = (path: readonly { x: number; y: number }[]) => path.length
+      ? { length: path.length, first: path[0], last: path.at(-1) } : { length: 0 };
+    const aiOf = (id: string) => id === 'player' ? this.heroAi : combatActor(this.allies, id, actor => actor.id)?.ai;
+    const member = (id: string) => {
+      const visual = this.visualOf(id), data = this.memberOf(id), aiState = aiOf(id)?.captureState();
+      return {
+        id, alive: (data?.player.health ?? 0) > 0,
+        health: data?.player.health ?? null, mana: data?.player.mana ?? null,
+        position: visual ? this.movement.position(visual) : null,
+        facing: id === 'player' ? this.scene.facing : combatActor(this.allies, id, actor => actor.id)?.facing ?? null,
+        visible: visual?.container.visible ?? false,
+        controller: this.partyControllers.get(id)?.snapshot() ?? null,
+        ai: aiState ? { ...aiState, path: summarizePath(aiState.path) } : null,
+        move: visual ? this.movement.state(visual) ?? null : null,
+        conditions: {
+          buffs: own(conditions.buffs, id).map(buff => ({ id: buff.id, remainingMs: buff.remainingMs })),
+          states: own(conditions.states, id).map(state => ({ id: state.id, remainingMs: state.remainingMs })),
+          temporary: own(conditions.temporary, id).map(([key, value]) => ({ key, value })),
+        },
+        fallen: this.fallen.has(id), pendingLoad: this.pendingAllies.has(id),
+      };
+    };
     return {
-      controlled: id,
+      controlled: this.controlledId,
       attack: this.attackState,
       skill: this.combat?.activeAction()?.skill?.id ?? null,
       target: this.targetId ?? null,
+      focusTarget: this.focusTargetId ?? null,
+      inCombat: !!this.focusTargetId || this.awareness.inCombat(now),
       cannotMove: this.playerCannotMove(),
       cannotAct: this.playerCannotAct(),
       defeated: this.defeated,
@@ -300,12 +328,18 @@ export class WorldCombat {
       actionsSuspended: this.partyActionsSuspended,
       runtime: { paused: this.runtime.paused, pauseOwners: this.runtime.pauseOwners,
         idle: this.runtime.idle, pending: this.runtime.pendingCount },
-      conditions: {
-        buffs: own(conditions.buffs).map(buff => buff.id),
-        states: own(conditions.states).map(state => state.id),
-        temporary: own(conditions.temporary).map(([key]) => key),
-      },
-      move: visual ? (this.movement.state(visual) ?? null) : null,
+      awareness: { quietForMs: this.awareness.quietFor(now),
+        ...this.awareness.tactics(this.controlledId, this.activeParty, this.focusTargetId) },
+      party: this.activeParty.map(member),
+      enemies: this.arena.map(enemy => ({
+        id: enemy.key, enemy: enemy.definition.id,
+        state: enemy.controller?.snapshot().state ?? null,
+        position: this.movement.position(enemy.visual),
+        health: this.roster.enemySnapshot(enemy.key, enemy.definition, this.hero.level)?.health ?? null,
+        pendingDefeat: this.pendingDefeats.has(enemy.key),
+        summonedBy: enemy.summonedBy ?? null,
+        visible: enemy.visual.container.visible,
+      })),
       relocationFailures: [...(this.relocationFailures ?? [])],
     };
   }

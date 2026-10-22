@@ -26,6 +26,10 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
+import androidx.webkit.WebViewCompat;
+import androidx.webkit.WebViewFeature;
+
+import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.util.Collections;
@@ -67,7 +71,8 @@ public class MainActivity extends Activity {
         setContentView(root);
 
         assetLoader = new WebViewAssetLoader.Builder()
-                // 诊断上报在离线包里没有接收端，直接吞掉，避免请求落到网络。
+                // 离线包里没有接收端；相对路径的诊断请求直接吞掉。APK 的上报地址由
+                // document-start 脚本写入全局变量，指向项目服务器。
                 .addPathHandler("/__diagnostics/", path -> new WebResourceResponse(
                         "application/json", "utf-8", 204, "No Content",
                         Collections.emptyMap(), new ByteArrayInputStream(new byte[0])))
@@ -98,13 +103,21 @@ public class MainActivity extends Activity {
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setSupportMultipleWindows(false);
         settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        // 页面是 HTTPS 源，诊断服务器是项目内的 HTTP 地址；只允许这条上报通道使用明文。
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setTextZoom(100);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
         settings.setLoadWithOverviewMode(false);
         settings.setUseWideViewPort(true);
+
+        // 在 diagnostics.js 之前把上报地址交给页面；网页版没有这个全局变量，仍用相对路径。
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            WebViewCompat.addDocumentStartJavaScript(webView,
+                    "globalThis.__inoitaDiagnosticsEndpoint=" + JSONObject.quote(BuildConfig.DIAGNOSTICS_URL) + ";",
+                    Collections.singleton("*"));
+        }
 
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClientCompat() {

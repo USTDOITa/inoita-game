@@ -120,7 +120,12 @@ export interface GmPorts {
 }
 
 /** 既有报错收集端点（`public/diagnostics.js` 用的同一个）。只在开发服务挂载。 */
-const REPORT_ENDPOINT = '/__diagnostics/report';
+const DEFAULT_REPORT_ENDPOINT = '/__diagnostics/report';
+/** 离线 APK 由壳在 document-start 注入绝对地址；网页版仍走同源端点。 */
+const reportEndpoint = (): string => {
+  const injected = (globalThis as { __inoitaDiagnosticsEndpoint?: unknown }).__inoitaDiagnosticsEndpoint;
+  return typeof injected === 'string' && injected ? injected : DEFAULT_REPORT_ENDPOINT;
+};
 /** 端点单条上限 12 KB（`tools/diagnostic-collector.mjs`），留一点余量。 */
 const ENTRY_BUDGET = 11000;
 /** 操作日志环长度：够看清「刚才做了什么」，又不至于把上报撑爆。 */
@@ -291,6 +296,9 @@ export function createGmActions(ports: GmPorts): GmActions {
       candidates.push(structuredClone(clone));
       world.entities = (world.entities as unknown[]).length;
       candidates.push(structuredClone(clone));
+      world.flags = (world.flags as unknown[]).length;
+      world.choices = (world.choices as unknown[]).length;
+      candidates.push(structuredClone(clone));
       quests.active = (quests.active as unknown[]).length;
       quests.ready = (quests.ready as unknown[]).length;
       candidates.push(structuredClone(clone));
@@ -305,7 +313,7 @@ export function createGmActions(ports: GmPorts): GmActions {
   const defaultReport = async (payload: unknown): Promise<boolean> => {
     if (typeof fetch !== 'function') return false;
     try {
-      const response = await fetch(REPORT_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const response = await fetch(reportEndpoint(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       return response.ok;
     } catch { return false; }
   };
