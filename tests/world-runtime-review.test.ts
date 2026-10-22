@@ -200,7 +200,10 @@ test('a spring that has already been drunk is no longer an interaction target',(
   // 挑脚下的可交互对象前会先刷新任务投影（任务日志与头顶标记都读它），替身也要提供这一步。
   let refreshed=0;
   const state=(empty:boolean)=>({player:{container:{visible:true,x:0,y:0}},characters:[spring],combat:{controlledVisual:undefined},map:{id:'forest'},
-    app:{session:{refresh:()=>{refreshed++;},springs:{isEmpty:()=>empty},chests:{isOpened:()=>false}},campaign:{quests:[]}}});
+    app:{session:{refresh:()=>{refreshed++;},springs:{isEmpty:()=>empty},chests:{isOpened:()=>false},
+      // 交互判定会先看任务槽、任务目标标记和可交互声明；泉水用例只关心泉水本身。
+      npcQuestSlot:()=>undefined,canInteract:()=>false,status:()=>'locked',markerActor:()=>undefined},
+    campaign:{quests:[]}}});
   const scene=Object.setPrototypeOf(state(true),WorldScene.prototype) as unknown as {near:unknown;updateInteractionTarget():void};
   scene.updateInteractionTarget();
   assert.equal(scene.near,null,'喝空的泉水不再靠近可交互');
