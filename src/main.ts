@@ -1,3 +1,5 @@
+// 必须最先执行：补齐旧版 Android WebView 缺少的浏览器 API，后面的模块才能正常加载。
+import './application/browser-compat.ts';
 import {prepareSavedGame} from './application/saved-game.ts';
 import {SavedGameLoader} from './application/saved-game-loader.ts';
 import {AutoSaver} from './application/auto-save.ts';
