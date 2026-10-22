@@ -1,0 +1,58 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { StoryWorldState, storyExitId } from '../src/domain/story-world.ts';
+
+test('a permanent story actor moves between maps while other instances keep their own positions',()=>{
+  const world=new StoryWorldState(),base=[{id:'forest-darius',actor:'darius',x:216,y:136,hint:'mission',condition:{type:'flag' as const,flag:'visible'}},{id:'soldier',actor:'shadow-soldier',x:168,y:120}];
+  world.apply({kind:'place',entity:{id:'forest-darius',actor:'darius',map:'camp',x:264,y:344,facing:'west'}});
+  assert.deepEqual(world.projectEntities('forest',base).map(e=>e.id),['soldier']);
+  const camp=world.projectEntities('camp',[],base);
+  assert.equal(camp[0].id,'forest-darius');assert.equal(camp[0].x,264);
+  assert.equal(camp[0].hint,'mission');assert.deepEqual(camp[0].condition,base[0].condition);
+  world.apply({kind:'hide',id:'forest-darius'});
+  assert.equal(world.visible('forest-darius'),false);
+  assert.equal(world.visible('soldier'),true);
+  const restored=new StoryWorldState();restored.restoreState(world.captureState());
+  assert.deepEqual(restored.captureState(),world.captureState());
+});
+
+test('visit-scoped story actors expire with the map visit while registered locations persist',()=>{
+  const world=new StoryWorldState(),at=(map:string)=>({map,x:8,y:8,facing:'south' as const});
+  world.apply({kind:'travel',destination:at('cave')});
+  world.apply({kind:'place',scope:'visit',entity:{id:'temp',map:'cave',actor:'npc',characterId:'npc-1',x:24,y:8}});
+  world.apply({kind:'place',entity:{id:'quest-npc-located-npc-2',map:'cave',actor:'npc2',characterId:'npc-2',x:40,y:8}});
+  assert.deepEqual(world.projectEntities('cave',[]).map(entity=>entity.id).sort(),['quest-npc-located-npc-2','temp']);
+  world.apply({kind:'travel',destination:at('forest')});
+  world.apply({kind:'travel',destination:at('cave')});
+  assert.deepEqual(world.projectEntities('cave',[]).map(entity=>entity.id),['quest-npc-located-npc-2']);
+});
+
+test('a story-placed treasure chest persists across map visits',()=>{
+  const world=new StoryWorldState(),at=(map:string)=>({map,x:8,y:8,facing:'south' as const});
+  world.apply({kind:'travel',destination:at('boss-room')});
+  world.apply({kind:'place',entity:{id:'story-object-1-2',map:'boss-room',actor:'chest',characterId:'npc-212',x:24,y:8}});
+  assert.equal(world.isPlaced('story-object-1-2'),true);
+  world.apply({kind:'travel',destination:at('village')});
+  world.apply({kind:'travel',destination:at('boss-room')});
+  assert.deepEqual(world.projectEntities('boss-room',[]).map(entity=>entity.id),['story-object-1-2']);
+});
+
+test('story exit gates and encounter terminal results survive a stable snapshot',()=>{
+  const world=new StoryWorldState(),exit={x:64,y:0,width:16,height:48,destination:'hall',spawn:{x:8,y:8},facing:'south' as const,exitFacing:'any' as const};
+  world.apply({kind:'exit',id:storyExitId('camp',exit),enabled:false});
+  world.apply({kind:'encounter',encounter:{id:'earl-battle',map:'cave',status:'active',spawns:[{id:'earl',enemyId:'earl',x:100,y:100}]}});
+  world.apply({kind:'encounter-result',id:'earl-battle',result:'won'});
+  world.apply({kind:'encounter-result',id:'earl-battle',result:'won'});
+  assert.throws(()=>world.apply({kind:'encounter-result',id:'earl-battle',result:'lost'}),/结果冲突/);
+  const copy=new StoryWorldState();copy.restoreState(world.captureState());
+  assert.equal(copy.exitEnabled('camp',exit),false);assert.equal(copy.encounter('earl-battle')?.status,'won');
+  assert.equal(copy.activeEncounters.length,0);
+});
+
+test('failed world restore validates before replacing the live world',()=>{
+  const world=new StoryWorldState();world.apply({kind:'flag',id:'opened',value:true});
+  world.apply({kind:'choice',id:'lesson',value:'skills'});
+  const before=world.captureState(),bad=structuredClone(before);bad.entities=[{id:'duplicate'},{id:'duplicate'}];
+  assert.throws(()=>world.restoreState(bad),/重复/);assert.deepEqual(world.captureState(),before);
+  const external=world.captureState();external.flags.length=0;assert.equal(world.hasFlag('opened'),true);
+});

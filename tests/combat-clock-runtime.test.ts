@@ -1,0 +1,90 @@
+import {CombatRuntime} from '../src/domain/combat-runtime.ts';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {registerHooks} from 'node:module';
+import test from 'node:test';
+import {Session} from '../src/domain/session.ts';
+import {CombatConditions} from '../src/domain/combat-conditions.ts';
+import type { Campaign } from '../src/domain/campaign.ts';
+
+const phaser=registerHooks({resolve(specifier,context,next){
+  return specifier==='phaser'?{url:'data:text/javascript,export default {BlendModes:{},Scene:class{},Physics:{Arcade:{Body:class{}}}}',shortCircuit:true}:next(specifier,context);
+}});
+const {WorldCombat}=await import('../src/scenes/world-combat.ts');phaser.deregister();
+const campaign=JSON.parse(readFileSync(new URL('../public/content/campaign.json',import.meta.url),'utf8')) as Campaign;
+const invoke=(host:object,name:string,...args:unknown[])=>Reflect.get(WorldCombat.prototype,name).call(host,...args);
+function fixture(){
+  const session=new Session(campaign),conditions=new CombatConditions(),events:string[]=[],shown:unknown[]=[];
+  const record=(kind:string)=>events.push(`${session.combatTick}:${kind}`);
+  const visual=()=>({layers:[],container:{active:true,y:0,setDepth:()=>{}}});
+  const player=visual(),ally=visual();
+  const host={runtime:new CombatRuntime(()=>session.combatTick),setPaused:()=>{},closed:false,defeated:false,player,allies:[{id:'ally',visual:ally,ai:{step:()=>record('ally'),onContact:()=>{}}}],
+    arena:[{key:'enemy-a',visual:visual(),controller:{step:()=>record('enemy-a')}},
+      {key:'enemy-b',visual:visual(),controller:{step:()=>record('enemy-b')}}],
+    app:{session},conditions,deathTweens:new Map(),pendingDefeats:new Set(),fallen:new Set(),
+    outcomes:{setPaused:()=>{}},feedback:{setPaused:()=>{}},statusColors:{paint:()=>{}},
+    scene:{canCombatControl:true,time:{now:0},events:{emit:()=>{}},refreshShortcutPage:()=>{},refreshCombatTarget:()=>{},refreshSkillCooldowns:(value:unknown)=>shown.push(value)},
+    get cooldowns(){return session.cooldowns.forActor('player').snapshot();},
+    activeParty:['player','ally'],controlledId:'player',syncedControlledId:'player',nextPartySyncAt:Infinity,dealtDamage:new Set(),damageCount:0,
+    roster:{refresh:()=>({removed:[],added:[]})},
+    memberOf:(id:string)=>['player','ally'].includes(id)?{player:{health:1}}:undefined,
+    syncCombatResourceLimits:()=>{},syncAiSkills:()=>{},syncBuffLoops:()=>{},suspendPartyActions:()=>{},stopEnemies:()=>{},
+    combat:{update:()=>record('player')},
+    updateEnemies(enabled:boolean):void{invoke(host,'updateEnemies',enabled);},
+    observeSummonCombat:()=>record('summon-awareness'),
+    partyFullyEngaged():boolean{return invoke(host,'partyFullyEngaged') as boolean;},
+    recoverResources:()=>{record('recovery');session.recoverCombatResources([]);},
+  };
+  return {host,session,events,shown,update:(delta:number,enabled=true)=>invoke(host,'update',delta,enabled)};
+}
+
+test('the actual scene advances every actor once on the shared frame and recovers resources after them',()=>{
+  const long=fixture(),split=fixture();long.update(239);
+  for(const delta of [59,1,60,119])split.update(delta);
+  const expected=[1,2,3].flatMap(frame=>['player','ally','enemy-a','enemy-b','summon-awareness','recovery'].map(kind=>`${frame}:${kind}`));
+  assert.deepEqual(long.events,expected);assert.deepEqual(split.events,expected);
+  assert.deepEqual(long.session.captureState().combatClock,split.session.captureState().combatClock);
+  const before=long.session.captureState().combatClock;long.update(600,false);
+  assert.deepEqual(long.session.captureState().combatClock,before);assert.deepEqual(long.events,expected);
+});
+
+test('the scene refreshes the controlled cooldown display while an otherwise idle actor reaches its deadline',()=>{
+  const run=fixture();run.session.cooldowns.forActor('player').start('probe',2);
+  run.update(60);run.update(60);
+  assert.deepEqual(run.shown,[{probe:{remainingMs:60,durationMs:120}},{}]);
+});
+
+test('hostile contact advances the counterattack damage count and a fully engaged party clears it',()=>{
+  const run=fixture();
+  const contact=(event:object)=>invoke(run.host,'attackContact',event);
+  contact({casterId:'enemy-a',targetId:'ally',skillId:'dark-strike'});
+  contact({casterId:'enemy-a',targetId:'ally',skillId:'dark-strike'});
+  assert.equal(run.host.damageCount,2);
+  contact({casterId:'ally',targetId:'ally',skillId:'dark-strike'});
+  contact({casterId:'enemy-a',targetId:'enemy-a',skillId:'dark-strike'});
+  assert.equal(run.host.damageCount,2,'只有队伍成员被敌对单位接战才计数');
+  run.host.dealtDamage.add('player');run.host.dealtDamage.add('ally');
+  run.update(60);
+  assert.equal(run.host.damageCount,0,'在场成员全部进入战斗后清零');
+  run.host.dealtDamage.delete('ally');
+  contact({casterId:'enemy-a',targetId:'ally',skillId:'dark-strike'});
+  run.update(60);
+  assert.equal(run.host.damageCount,1);
+});
+test('scene removal clears enemy cooldowns while checkpoint visual replacement preserves restored records',()=>{
+  const session=new Session(campaign),port=session.cooldowns.forActor('enemy');
+  const enemy={key:'enemy',controller:{dispose:()=>{},targetRemoved:()=>{}},presenter:{clear:()=>{}},visual:{container:{destroy:()=>{}}}};
+  const host={app:{session},arena:[enemy],movement:{remove:()=>{}}};
+  port.start('probe',20);invoke(host,'destroyEnemy',enemy,true);
+  assert.equal(port.isReady('probe'),false);
+  invoke(host,'destroyEnemy',enemy);assert.equal(port.isReady('probe'),true);
+});
+
+test('reviving an undeployed member still clears its cooldown and resets the shared recovery deadline',()=>{
+  const session=new Session(campaign),port=session.cooldowns.forActor('ally');
+  port.start('probe',100);session.advanceCombatFrames(1200,()=>session.recoverCombatResources([]));
+  const host=Object.setPrototypeOf({app:{session},visualOf:()=>undefined,memberOf:()=>({player:{health:1}})},WorldCombat.prototype);
+  invoke(host,'reviveMember','ally',{x:0,y:0});
+  assert.equal(port.isReady('probe'),true);assert.equal(session.combatTick,20);
+  assert.equal(session.resourceRecoveryDelayMs,1860);
+});

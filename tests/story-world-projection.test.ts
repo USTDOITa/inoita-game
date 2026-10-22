@@ -1,0 +1,165 @@
+import assert from 'node:assert/strict';
+import {registerHooks} from 'node:module';
+import test from 'node:test';
+import type {StoryStage} from '../src/domain/story-performance.ts';
+import type {SceneOptions} from '../src/scenes/world-scene.ts';
+
+const hook=registerHooks({resolve(specifier,context,next){return specifier==='phaser'?{url:'data:text/javascript,export default {Scene:class{},Physics:{Arcade:{Body:class{}}},BlendModes:{NORMAL:0,ADD:1,MULTIPLY:2,SCREEN:3}}',shortCircuit:true}:next(specifier,context);}});
+const {WorldScene}=await import('../src/scenes/world-scene.ts');
+const {WorldCombat}=await import('../src/scenes/world-combat.ts');
+hook.deregister();
+
+function fixture(){
+  let location:undefined|{map:string;x:number;y:number;facing:'south'};
+  let stageActive=true;let projected:unknown[]=[];let lastRestart:SceneOptions|undefined;
+  const assetLoads:unknown[][]=[];
+  const player={container:{active:true,x:10,y:20},entity:{id:'player'}};
+  const positions:unknown[]=[];let restarts=0,stops=0,regroups=0;
+  const state={map:{id:'home',name:'Home'},player,baseEntities:[],characters:[] as unknown[],entities:[],storyEntityAssets:[],projectedActorIds:new Set(),destroyed:false,
+    app:{campaign:{placements:[]},session:{storyWorld:{get currentLocation(){return location;},projectEntities:()=>projected,actorAppearance:(actor:string)=>actor,entity:()=>undefined},visible:()=>true},world:{actors:{} as Record<string,unknown>}},
+    movement:{placeAll:(values:{position:{x:number;y:number}}[])=>{positions.push(values);for(const value of values){player.container.x=value.position.x;player.container.y=value.position.y;}}},
+    combat:{regroupPartyAroundHero(){regroups++;},async projectStoryEnemies(){},async restoreState(){}},
+    loadAssets:async(...args:unknown[])=>{assetLoads.push(args);return {release(){}};},refreshState(){},syncHud(){},setClip(){},syncControlledCharacter(){},
+    scene:{isActive(){return stageActive;},restart(options:SceneOptions){restarts++;lastRestart=options;options.onReady?.();},stop(){stops++;}}
+  };
+  const scene=Object.setPrototypeOf(state,WorldScene.prototype) as unknown as InstanceType<typeof WorldScene>;
+  return {scene,state,positions,location:(value:typeof location)=>{location=value;},stageActive:(value:boolean)=>{stageActive=value;},projected:(value:unknown[])=>{projected=value;},restarts:()=>restarts,stops:()=>stops,regroups:()=>regroups,lastRestart:()=>lastRestart,assetLoads};
+}
+
+test('a cinematic stage cannot travel the formal map or adopt uncommitted player positions',async()=>{
+  const f=fixture();
+  await f.scene.projectStoryWorld({map:'movie-map',x:200,y:300} as StoryStage,new AbortController().signal);
+  assert.equal(f.restarts(),0);assert.deepEqual([f.state.player.container.x,f.state.player.container.y],[10,20]);
+});
+
+test('a committed travel position projects once and subsequent nodes retain ordinary movement',async()=>{
+  const f=fixture();f.location({map:'home',x:80,y:90,facing:'south'});
+  await f.scene.projectStoryWorld(undefined,new AbortController().signal);
+  assert.deepEqual([f.state.player.container.x,f.state.player.container.y],[80,90]);
+  f.state.player.container.x=100;
+  await f.scene.projectStoryWorld(undefined,new AbortController().signal);
+  assert.equal(f.state.player.container.x,100);
+});
+
+test('a committed travel regroups the party once around the new hero position',async()=>{
+  const f=fixture();f.location({map:'home',x:80,y:90,facing:'south'});
+  await f.scene.projectStoryWorld(undefined,new AbortController().signal);
+  assert.equal(f.regroups(),1);
+  await f.scene.projectStoryWorld(undefined,new AbortController().signal);
+  assert.equal(f.regroups(),1,'同一落点不重复收拢');
+});
+
+test('rollback and cross-map projection leave regrouping to the authoritative restore or the new scene',async()=>{
+  const f=fixture();
+  await f.scene.projectStoryWorld(undefined,new AbortController().signal,{map:'home',x:80,y:90,facing:'south'});
+  assert.equal(f.regroups(),0,'回滚随后由 restoreState 逐名恢复位置');
+  f.location({map:'destination',x:80,y:90,facing:'south'});
+  await f.scene.projectStoryWorld(undefined,new AbortController().signal);
+  assert.equal(f.regroups(),0,'跨图由新场景的上阵生成按主角落点');
+});
+
+test('cancellation before a queued formal restart starts rejects loading and prevents opening the old request',async()=>{
+  const f=fixture();const controller=new AbortController();let queued:SceneOptions|undefined;
+  f.state.scene.restart=(options:SceneOptions)=>{queued=options;};f.location({map:'destination',x:80,y:90,facing:'south'});
+  const load=f.scene.projectStoryWorld(undefined,controller.signal);controller.abort(new DOMException('cancelled','AbortError'));
+  await assert.rejects(load,{name:'AbortError'});assert.ok(queued);
+  f.scene.options=queued;f.scene.create();assert.equal(f.stops(),1);
+});
+
+test('story takeover settles confirmed deaths after stopping actions and invalidates their later callbacks',async()=>{
+  const calls:string[]=[];
+  const combat=Object.setPrototypeOf({suspendPartyActions(){calls.push('party');},arena:[{visual:{},controller:{combatController:{cancel(){calls.push('enemy');}},targetRemoved(){}}}],
+    movement:{stop(){calls.push('movement');}},app:{session:{party:{controlledId:'player'}}},
+    pendingAllies:new Set(),pendingDefeats:{flush(){calls.push('settle');}}},WorldCombat.prototype) as unknown as InstanceType<typeof WorldCombat>;
+  await combat.normalizeForStory(new AbortController().signal);assert.deepEqual(calls,['party','enemy','movement','settle']);
+});
+
+test('story takeover waits for in-flight companion preparation and its signal can cancel the barrier',async()=>{
+  for(const abort of [false,true]){
+    const pending=new Set(['companion']),waiters=new Set<()=>void>();let suspends=0;
+    const combat=Object.setPrototypeOf({runtime:{reset:()=>{}},pendingAllies:pending,allyWaiters:waiters,closed:false,arena:[],
+      suspendPartyActions(){suspends++;},pendingDefeats:{flush(){}}},WorldCombat.prototype) as unknown as InstanceType<typeof WorldCombat>;
+    const controller=new AbortController();let finished=false;
+    const work=combat.normalizeForStory(controller.signal).then(()=>{finished=true;});
+    await Promise.resolve();assert.equal(finished,false);assert.equal(waiters.size,1);
+    if(abort){controller.abort(new DOMException('cancelled','AbortError'));await assert.rejects(work,{name:'AbortError'});assert.equal(suspends,1);}
+    else{pending.clear();for(const notify of [...waiters])notify();await work;assert.equal(suspends,2);}
+    assert.equal(waiters.size,0);
+  }
+});
+
+test('same-map rollback retains generated objects and restores recorded audio without a scene restart',async()=>{
+  const f=fixture();const calls:unknown[]=[];
+  const state=f.state as unknown as {app:{audio?:{restoreStoryAudio(value:unknown):void}}};
+  state.app.audio={restoreStoryAudio(value){calls.push(value);}};
+  const snapshot={location:{map:'home',x:10,y:20,facing:'south'},generatedEntities:[],audio:{music:'story-theme',ambience:null}};
+  await f.scene.restoreStoryWorld(snapshot,new AbortController().signal);
+  assert.equal(f.restarts(),0);assert.deepEqual(calls,[snapshot.audio]);
+});
+
+test('a same-map projection keeps a drunk spring as the waterless well',async()=>{
+  const f=fixture();
+  const springEntity={id:'well-1',actor:'clear-springs-f6f095b4',spring:true,x:8,y:40};
+  const springActor={id:'clear-springs-f6f095b4',clips:{}};
+  const wellActor={id:'well-7abb1f76',clips:{}};
+  const old={entity:{...springEntity},actor:wellActor,container:{destroy(){}},layers:[]};
+  const created={entity:{...springEntity},actor:springActor,container:{destroy(){}},layers:[]};
+  const state=f.state as typeof f.state & {
+    springCatalog?:{empty:string};
+    createActor?:(entity:unknown)=>typeof created;
+    drainSpring?:(character:{actor:{id:string}})=>void;
+  };
+  state.characters=[old];(state as {baseEntities:unknown[]}).baseEntities=[springEntity];state.springCatalog={empty:'well-7abb1f76'};
+  state.app.world.actors={'clear-springs-f6f095b4':springActor,'well-7abb1f76':wellActor};
+  (state.movement as {remove?:()=>void}).remove=()=>{};
+  (state.app.session as {springs?:{isEmpty:()=>boolean}}).springs={isEmpty:()=>true};
+  (state.app.session.storyWorld as {projectEntities?:()=>unknown[]}).projectEntities=()=>[springEntity];
+  state.createActor=()=>created;
+  let drains=0;state.drainSpring=character=>{drains++;character.actor=wellActor;};
+  await f.scene.projectStoryWorld(undefined,new AbortController().signal);
+  assert.equal(drains,1,'投影重建后重新套用喝空外观');
+  assert.equal(created.actor.id,'well-7abb1f76');
+});
+
+test('defeat checkpoint restores complete world state and closes its panel before resuming the stable story cursor',async()=>{
+  const calls:string[]=[];let restore:undefined|(()=>Promise<void>);
+  const world={location:{map:'home',x:10,y:20,facing:'south'},generatedEntities:[],audio:{music:'story-theme',ambience:null}};
+  const state={map:{id:'home'},destroyed:false,resetInput(){calls.push('input');},
+    async restoreStoryWorld(value:unknown){assert.equal(value,world);calls.push('world');},
+    app:{storySignal:new AbortController().signal,checkpoint:{peek:()=>({session:{},world})},
+      session:{bag:{entries:[]},restoreState(){calls.push('session');}},
+      director:{runtime:{snapshot:()=>({runs:[]})},cancel(){calls.push('cancel');},async retry(){calls.push('retry');return false;}},
+      ui:{showDefeat(actions:{restore():Promise<void>}){restore=actions.restore;},closeDefeat(){calls.push('close');}}}
+  };
+  const scene=Object.setPrototypeOf(state,WorldScene.prototype) as unknown as InstanceType<typeof WorldScene>;
+  scene.handleCombatDefeat();assert.ok(restore);await restore();
+  assert.deepEqual(calls,['input','cancel','session','world','close','retry']);
+});
+
+test('cross-map story projection rebuilds the world without covering the stage with loading',async()=>{
+  const f=fixture();f.location({map:'destination',x:80,y:90,facing:'south'});
+  await f.scene.projectStoryWorld(undefined,new AbortController().signal);
+  assert.equal(f.restarts(),1);assert.equal(f.lastRestart()?.silentEntry,true);
+});
+
+test('a map change without the cinematic stage still shows the loading screen',async()=>{
+  const f=fixture();f.stageActive(false);f.location({map:'destination',x:80,y:90,facing:'south'});
+  await f.scene.projectStoryWorld(undefined,new AbortController().signal);
+  assert.equal(f.restarts(),1);assert.notEqual(f.lastRestart()?.silentEntry,true);
+});
+
+test('same-map appearance loading stays silent during a performance',async()=>{
+  const f=fixture();f.location({map:'home',x:80,y:90,facing:'south'});
+  const extraActor={id:'extra-actor',clips:{'idle-south':{layers:[{key:'extra',file:'extra.png'}],frameWidth:8,frameHeight:8,frames:1}}};
+  f.state.app.world.actors['extra-actor']=extraActor;
+  f.state.characters=[{entity:{id:'extra',actor:'extra-actor',x:1,y:2},actor:extraActor,container:{active:true,x:1,y:2},clipName:'idle-south'}];
+  f.projected([{id:'extra',actor:'extra-actor',x:1,y:2}]);
+  await f.scene.projectStoryWorld(undefined,new AbortController().signal);
+  assert.equal(f.restarts(),0);assert.equal(f.assetLoads.length,1);assert.equal(f.assetLoads[0][3],true);
+});
+
+test('defeat checkpoint recovery keeps the ordinary loading screen',async()=>{
+  const f=fixture();f.location({map:'home',x:10,y:20,facing:'south'});
+  await f.scene.restoreStoryWorld({location:{map:'destination',x:1,y:2,facing:'south'},generatedEntities:[]},new AbortController().signal);
+  assert.equal(f.restarts(),1);assert.notEqual(f.lastRestart()?.silentEntry,true);
+});

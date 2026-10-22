@@ -1,0 +1,94 @@
+/**
+ * 恢复泉水。原版摆放记录里的"水井"在地图加载时会被换成泉水，玩家喝下后按一张
+ * 效果表随机给奖励。规则来自 `CHAR_MakeSpring`（0x18c648）与 `CHAR_DrinkSpring`（0x18c6b4），
+ * 内容由 `work/tools/game_content/springs.py` 从 `DROPEVTBASE`（game.dat 表 79）导出。
+ */
+import type { BattleBuffKey } from './battle-semantics.ts';
+
+type SpringKind = 'heal' | 'heal-mana' | 'buff' | 'spawn' | 'skill-point';
+
+/** 一档泉水。等级达到 `unlockLevel` 才有机会随机到它，所以等级越高水越杂。 */
+interface SpringDefinition { id: string; name: string; unlockLevel: number }
+
+/** 一条效果。同一档内按 `weight` 随机，`text` 是原版喝完那句提示。 */
+interface SpringEffect {
+  spring: string;
+  kind: SpringKind;
+  weight: number;
+  text: string;
+  /** `heal` 的回血百分比。 */
+  percent?: number;
+  /** `buff` 要施加的状态，取自 `BATTLE_BUFF_KEYS`。 */
+  buff?: BattleBuffKey;
+  /** `buff` 里那些原版机制未确证的状态（无法用药水一类）只留行号，不产生效果。 */
+  buffRow?: number;
+  /** `spawn` 要出现的敌人。 */
+  enemy?: string;
+  /** `skill-point` 加多少点。 */
+  points?: number;
+}
+
+export interface SpringCatalog {
+  version: number;
+  /** 喝过之后换成的外观（原版把泉水改写成没有液体的水井，且它没有 NPC 功能）。 */
+  empty: string;
+  springs: SpringDefinition[];
+  effects: SpringEffect[];
+}
+
+export function parseSprings(value: unknown): SpringCatalog {
+  const catalog = value as SpringCatalog;
+  if (catalog?.version !== 1 || !Array.isArray(catalog.springs) || !Array.isArray(catalog.effects))
+    throw new Error('泉水内容格式不正确');
+  if (!catalog.empty) throw new Error('泉水内容缺少喝空后的外观');
+  for (const spring of catalog.springs)
+    if (!spring.id || !spring.name || !(spring.unlockLevel > 0)) throw new Error(`泉水档位不正确：${spring.id}`);
+  for (const effect of catalog.effects) {
+    if (!catalog.springs.some(spring => spring.id === effect.spring)) throw new Error(`泉水效果挂到了不存在的档位：${effect.spring}`);
+    if (!(effect.weight > 0) || !effect.text) throw new Error(`泉水效果不完整：${effect.spring}`);
+  }
+  return catalog;
+}
+
+/** 原版 `CHAR_MakeSpring`：按角色等级决定这次最高能到哪一档，再在最低档到该档之间随机。 */
+export function rollSpring(catalog: SpringCatalog, level: number, random: () => number): SpringDefinition {
+  const unlocked = catalog.springs.filter(spring => level >= spring.unlockLevel);
+  if (!unlocked.length) throw new Error(`没有等级 ${level} 能喝到的泉水`);
+  return unlocked[Math.min(unlocked.length - 1, Math.floor(random() * unlocked.length))];
+}
+
+/**
+ * 原版 `CHAR_DrinkSpring`：在这一档的候选效果里按权重随机一条。
+ *
+ * 原版掷的是 0..9999 的定值骰，权重之和不足 10000 时会落空并走一条通用提示
+ * （清澈、凉爽两档权重正好 10000，越高的档位落空概率越大）。这里按权重归一化，
+ * 不做落空分支，差别记在 `work/findings/`。
+ */
+export function rollSpringEffect(catalog: SpringCatalog, spring: string, random: () => number): SpringEffect {
+  const candidates = catalog.effects.filter(effect => effect.spring === spring);
+  if (!candidates.length) throw new Error(`泉水 ${spring} 没有可用效果`);
+  const total = candidates.reduce((sum, effect) => sum + effect.weight, 0);
+  let roll = random() * total;
+  for (const effect of candidates) {
+    roll -= effect.weight;
+    if (roll < 0) return effect;
+  }
+  return candidates[candidates.length - 1];
+}
+
+export interface SpringVisitsState { map?: string; used: string[] }
+
+/**
+ * 一次地图访问里喝空过的泉水。原版喝过就把这口泉水改成水井外观，重新进图时地图对象
+ * 会重建，所以泉水和宝箱一样按"每次进图重置"记录（见 `work/findings/spring-empty-2026-10-13.md`）。
+ */
+export class SpringVisits {
+  private map?: string;
+  private readonly used = new Set<string>();
+  get mapId(): string | undefined { return this.map; }
+  captureState(): SpringVisitsState { return { map: this.map, used: [...this.used] }; }
+  restoreState(state: SpringVisitsState): void { this.map = state.map; this.used.clear(); for (const id of state.used) this.used.add(id); }
+  enterMap(map: string): void { if (map === this.map) return; this.map = map; this.used.clear(); }
+  isEmpty(map: string, entity: string): boolean { return this.map === map && this.used.has(entity); }
+  drain(map: string, entity: string): void { if (map !== this.map) return; this.used.add(entity); }
+}

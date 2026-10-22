@@ -1,0 +1,91 @@
+import { equipmentLevel } from '../domain/chaos-equipment.ts';
+import { equipmentPower, type CharacterStatsCatalog, type EquipmentNumbers, type Modifier } from '../domain/character-stats.ts';
+import type { ItemDefinition, ItemInstance } from '../domain/items.ts';
+import type { ShopCatalog } from '../domain/shop.ts';
+import type { DescriptionTextPart } from '../domain/description-text.ts';
+import { itemNameColor } from './item-name-color.ts';
+
+export type ItemDescriptionRow = string | { parts: DescriptionTextPart[] };
+interface ItemDescriptionBody {
+  title: string;
+  color?: string;
+  rows: ItemDescriptionRow[];
+  sockets: number;
+}
+
+/** 原版 UIDesc_AddOption 按词条来源选色，并使用原有的冒号及十分之一百分比。 */
+function equipmentAttributeLines(catalog: CharacterStatsCatalog, entry: ItemInstance,
+  standaloneGem = false): DescriptionTextPart[] {
+  const result: DescriptionTextPart[] = [];
+  const add = (modifiers: Modifier[], color: string) => {
+    for (const modifier of modifiers) {
+      const descriptor = catalog.modifiers[modifier.stat];
+      const value = descriptor.percent ? `${(modifier.value / 10).toFixed(1)}%` : String(modifier.value);
+      if (result.length) result.push({text:'\n'});
+      result.push({text:`${descriptor.label}: ${value}`, color});
+    }
+  };
+  add(entry.numbers?.modifiers ?? [], standaloneGem ? '#bf0000' : '#7878ff');
+  add(entry.numbers?.gemModifiers ?? [], '#bf0000');
+  return result;
+}
+
+/** 商品、背包物品和穿戴装备使用相同的实例、成员条件及原版说明顺序。 */
+export function itemDescriptionBody(options: {
+  item: ItemDefinition;
+  entry: ItemInstance;
+  numbers: EquipmentNumbers | undefined;
+  catalog: CharacterStatsCatalog;
+  grades: ShopCatalog['grades'];
+  member?: { classId: string; level: number };
+  /** 职业 id → 显示名；提供时在详情里列出适用职业。 */
+  classNames?: Record<string, string>;
+  skill?: { name: string; className: string };
+  concealed?: boolean;
+}): ItemDescriptionBody {
+  const {item, entry, numbers, catalog, grades, member, classNames, skill} = options;
+  if (options.concealed) return {title:`${item.typeName}（未鉴定）`, color:'#808080', rows:[], sockets:0};
+  const equipment = item.equipment, grade = entry.numbers?.grade ?? numbers?.defaultGrade ?? 2;
+  const prefix = equipment && grade !== 2 ? item.priceKind === 'weapon' ? grades[grade]?.name : grades[grade]?.armorName ?? grades[grade]?.name : '';
+  const title = `${prefix ? prefix + ' ' : ''}${item.name}${equipment && entry.enhancement ? '+' + entry.enhancement : ''}`;
+  const color = equipment ? itemNameColor(grades[grade]?.rarity, entry.numbers?.chaos?.tier) : undefined;
+  const parts: DescriptionTextPart[] = [];
+  let sockets = 0;
+  if (equipment) {
+    parts.push({text:item.typeName, color:member && !equipment.classes.includes(member.classId) ? '#ff0000' : '#ffffff'},
+      {text:'\n等级 '}, {text:String(equipmentLevel(item,entry)), color:member && member.level < equipmentLevel(item,entry) ? '#ff0000' : '#ffffff'});
+    if (classNames) {
+      const all = Object.keys(classNames);
+      const universal = all.length > 0 && equipment.classes.length === all.length
+        && all.every(id => equipment.classes.includes(id));
+      parts.push({text:`\n适合职业：${universal ? '全部职业' : equipment.classes.map(id => classNames[id] ?? id).join('、')}`});
+    }
+    if (equipment.description?.showEnhancementUses ?? (item.priceKind === 'weapon' || item.priceKind === 'armor'))
+      parts.push({text:`\n强化耐久度 ${entry.numbers?.enhancementUses ?? 0}`});
+    sockets = entry.numbers?.sockets ?? 0;
+    parts.push({text:`\n宝石孔数量 ${sockets}`});
+    if (equipment.description?.attackSpeed) parts.push({text:`\n${equipment.description.attackSpeed}`});
+    if (numbers) {
+      const power = equipmentPower(numbers, entry);
+      if (item.priceKind === 'weapon') parts.push({text:`\n\n物理攻击 ${power.attack}\n魔法攻击 ${power.magicAttack}`});
+      else if (item.priceKind === 'armor') parts.push({text:`\n\n防御力 ${power.defense}`});
+    }
+    if (equipment.description?.classAttributes.length)
+      parts.push({text:'\n'}, ...equipment.description.classAttributes);
+  }
+  const attributes = equipmentAttributeLines(catalog, entry, item.use?.kind === 'socket');
+  if (attributes.length) {
+    if (parts.length) parts.push({text:'\n\n'});
+    parts.push(...attributes);
+  }
+  if (skill) {
+    if (parts.length) parts.push({text:'\n'});
+    parts.push({text:`${skill.name}(${skill.className})`});
+  }
+  const description = item.descriptionParts ?? (item.description ? [{text:item.description, color:'#00b4ff'}] : []);
+  if (description.length) {
+    if (parts.length) parts.push({text:'\n\n'});
+    parts.push(...description);
+  }
+  return {title, color, rows:parts.length ? [{parts}] : [], sockets};
+}

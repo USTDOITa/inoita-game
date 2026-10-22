@@ -1,0 +1,7410 @@
+{
+  "definitions": {
+    "mercenary-black-knight": {
+      "id": "mercenary-black-knight",
+      "name": "黑暗骑士",
+      "actor": "mercenary-black-knight",
+      "classId": "dark-knight",
+      "elite": false,
+      "quality": 0,
+      "recruitable": true,
+      "fixedSkills": [],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-assassin": {
+      "id": "mercenary-assassin",
+      "name": "忍者",
+      "actor": "mercenary-assassin",
+      "classId": "assassin",
+      "elite": false,
+      "quality": 0,
+      "recruitable": true,
+      "fixedSkills": [],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-ranger": {
+      "id": "mercenary-ranger",
+      "name": "暗影猎手",
+      "actor": "mercenary-ranger",
+      "classId": "ranger",
+      "elite": false,
+      "quality": 0,
+      "recruitable": true,
+      "fixedSkills": [],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-warlock": {
+      "id": "mercenary-warlock",
+      "name": "黑魔导",
+      "actor": "mercenary-warlock",
+      "classId": "warlock",
+      "elite": false,
+      "quality": 0,
+      "recruitable": true,
+      "fixedSkills": [],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-priest": {
+      "id": "mercenary-priest",
+      "name": "祭司",
+      "actor": "mercenary-priest",
+      "classId": "priest",
+      "elite": false,
+      "quality": 0,
+      "recruitable": true,
+      "fixedSkills": [],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-warrior": {
+      "id": "mercenary-warrior",
+      "name": "狂战士",
+      "actor": "mercenary-warrior",
+      "classId": "warrior",
+      "elite": false,
+      "quality": 0,
+      "recruitable": true,
+      "fixedSkills": [],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-black-knight-trained": {
+      "id": "mercenary-black-knight-trained",
+      "name": "黑暗骑士",
+      "actor": "mercenary-black-knight",
+      "classId": "dark-knight",
+      "elite": false,
+      "quality": 1,
+      "recruitable": true,
+      "fixedSkills": [],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-assassin-trained": {
+      "id": "mercenary-assassin-trained",
+      "name": "忍者",
+      "actor": "mercenary-assassin",
+      "classId": "assassin",
+      "elite": false,
+      "quality": 1,
+      "recruitable": true,
+      "fixedSkills": [],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-ranger-trained": {
+      "id": "mercenary-ranger-trained",
+      "name": "暗影猎手",
+      "actor": "mercenary-ranger",
+      "classId": "ranger",
+      "elite": false,
+      "quality": 1,
+      "recruitable": true,
+      "fixedSkills": [],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-warlock-trained": {
+      "id": "mercenary-warlock-trained",
+      "name": "黑魔导",
+      "actor": "mercenary-warlock",
+      "classId": "warlock",
+      "elite": false,
+      "quality": 1,
+      "recruitable": true,
+      "fixedSkills": [],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-priest-trained": {
+      "id": "mercenary-priest-trained",
+      "name": "祭司",
+      "actor": "mercenary-priest",
+      "classId": "priest",
+      "elite": false,
+      "quality": 1,
+      "recruitable": true,
+      "fixedSkills": [],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-warrior-trained": {
+      "id": "mercenary-warrior-trained",
+      "name": "狂战士",
+      "actor": "mercenary-warrior",
+      "classId": "warrior",
+      "elite": false,
+      "quality": 1,
+      "recruitable": true,
+      "fixedSkills": [],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-portia": {
+      "id": "mercenary-portia",
+      "name": "费罗赛普妮",
+      "actor": "mercenary-portia",
+      "classId": "warlock",
+      "elite": true,
+      "quality": 3,
+      "recruitable": false,
+      "fixedSkills": [
+        "touch-of-agony",
+        "blood-curse",
+        "fire-offering",
+        "summon-hellfire",
+        "hell-s-pawn",
+        "summon-bard",
+        "monster-s-scream",
+        "mage-s-claw",
+        "blood-revenge",
+        "bard-of-destruction",
+        "blade-of-darkness",
+        "blood-feast",
+        "lightning-of-hell"
+      ],
+      "source": "story",
+      "defaultShield": false
+    },
+    "mercenary-olaf": {
+      "id": "mercenary-olaf",
+      "name": "沃尔达克",
+      "actor": "mercenary-olaf",
+      "classId": "warrior",
+      "elite": true,
+      "quality": 3,
+      "recruitable": false,
+      "fixedSkills": [
+        "rush-of-anger",
+        "shouts-of-threat",
+        "armor-penetration",
+        "weapon-specializing",
+        "skin-of-steel",
+        "soul-s-thirst"
+      ],
+      "source": "story",
+      "defaultShield": false
+    },
+    "mercenary-stranger-of-hwagan": {
+      "id": "mercenary-stranger-of-hwagan",
+      "name": "峡谷怪人",
+      "actor": "mercenary-stranger-of-hwagan",
+      "classId": "dark-knight",
+      "elite": true,
+      "quality": 3,
+      "recruitable": false,
+      "fixedSkills": [
+        "dark-strike",
+        "phantom-clash",
+        "curse-of-screams",
+        "demon-s-shield",
+        "guardian-of-darkness",
+        "improved-defense",
+        "soul-sword",
+        "blood-sword"
+      ],
+      "source": "story",
+      "defaultShield": false
+    },
+    "mercenary-azad": {
+      "id": "mercenary-azad",
+      "name": "凯萨尔",
+      "actor": "mercenary-azad",
+      "classId": "dark-knight",
+      "elite": true,
+      "quality": 3,
+      "recruitable": false,
+      "fixedSkills": [
+        "dark-strike",
+        "phantom-clash",
+        "curse-of-screams",
+        "shield-bash",
+        "firestorm",
+        "sword-of-hell",
+        "demon-s-shield",
+        "guardian-of-darkness",
+        "molten-armor",
+        "improved-defense",
+        "soul-sword",
+        "blood-sword",
+        "shield-of-rage",
+        "flares-of-pain",
+        "wrath-of-darkness"
+      ],
+      "source": "story",
+      "defaultShield": false
+    },
+    "mercenary-clea": {
+      "id": "mercenary-clea",
+      "name": "克雷尔",
+      "actor": "mercenary-clea",
+      "classId": "dark-knight",
+      "elite": true,
+      "quality": 2,
+      "recruitable": true,
+      "fixedSkills": [
+        "dark-strike",
+        "curse-of-screams",
+        "shield-bash",
+        "sword-of-hell",
+        "demon-s-shield",
+        "guardian-of-darkness",
+        "molten-armor",
+        "improved-defense",
+        "soul-sword",
+        "blood-sword",
+        "shield-of-rage",
+        "wrath-of-darkness"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-rosarine": {
+      "id": "mercenary-rosarine",
+      "name": "罗扎林",
+      "actor": "mercenary-rosarine",
+      "classId": "dark-knight",
+      "elite": true,
+      "quality": 2,
+      "recruitable": true,
+      "fixedSkills": [
+        "dark-strike",
+        "phantom-clash",
+        "curse-of-screams",
+        "firestorm",
+        "sword-of-hell",
+        "guardian-of-darkness",
+        "molten-armor",
+        "soul-sword",
+        "blood-sword",
+        "shield-of-rage",
+        "flares-of-pain",
+        "wrath-of-darkness"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-amelia": {
+      "id": "mercenary-amelia",
+      "name": "阿梅里尔",
+      "actor": "mercenary-amelia",
+      "classId": "dark-knight",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "dark-strike",
+        "phantom-clash",
+        "curse-of-screams",
+        "shield-bash",
+        "firestorm",
+        "sword-of-hell",
+        "demon-s-shield",
+        "guardian-of-darkness",
+        "molten-armor",
+        "improved-defense",
+        "soul-sword",
+        "blood-sword",
+        "shield-of-rage",
+        "wrath-of-darkness"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-deborah": {
+      "id": "mercenary-deborah",
+      "name": "多巴啦",
+      "actor": "mercenary-deborah",
+      "classId": "dark-knight",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "dark-strike",
+        "phantom-clash",
+        "curse-of-screams",
+        "shield-bash",
+        "firestorm",
+        "sword-of-hell",
+        "demon-s-shield",
+        "guardian-of-darkness",
+        "molten-armor",
+        "soul-sword",
+        "blood-sword",
+        "shield-of-rage",
+        "flares-of-pain",
+        "wrath-of-darkness"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-rica": {
+      "id": "mercenary-rica",
+      "name": "黎卡",
+      "actor": "mercenary-rica",
+      "classId": "assassin",
+      "elite": true,
+      "quality": 2,
+      "recruitable": true,
+      "fixedSkills": [
+        "continuous-slash",
+        "poison-touch",
+        "dark-attack",
+        "freeze-extreme",
+        "whist",
+        "energy-bodhi",
+        "twin-blade",
+        "dark-sense",
+        "fortitude",
+        "flare",
+        "deep-breath",
+        "shadow-phantom"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-morgana": {
+      "id": "mercenary-morgana",
+      "name": "莫尔加纳",
+      "actor": "mercenary-morgana",
+      "classId": "assassin",
+      "elite": true,
+      "quality": 2,
+      "recruitable": true,
+      "fixedSkills": [
+        "continuous-slash",
+        "spiritual-blade",
+        "assassin-s-sword",
+        "dark-attack",
+        "whist",
+        "energy-bodhi",
+        "twin-blade",
+        "dark-sense",
+        "fortitude",
+        "flare",
+        "deep-breath",
+        "shadow-phantom"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-maria": {
+      "id": "mercenary-maria",
+      "name": "露西",
+      "actor": "mercenary-maria",
+      "classId": "assassin",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "continuous-slash",
+        "spiritual-blade",
+        "poison-touch",
+        "dark-attack",
+        "freeze-extreme",
+        "whist",
+        "blade-deflection",
+        "energy-bodhi",
+        "twin-blade",
+        "dark-sense",
+        "fortitude",
+        "flare",
+        "deep-breath",
+        "shadow-phantom"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-pamina": {
+      "id": "mercenary-pamina",
+      "name": "法米诺",
+      "actor": "mercenary-pamina",
+      "classId": "assassin",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "continuous-slash",
+        "spiritual-blade",
+        "poison-touch",
+        "assassin-s-sword",
+        "dark-attack",
+        "freeze-extreme",
+        "whist",
+        "energy-bodhi",
+        "twin-blade",
+        "dark-sense",
+        "fortitude",
+        "flare",
+        "deep-breath",
+        "shadow-phantom"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-mares": {
+      "id": "mercenary-mares",
+      "name": "马雷斯",
+      "actor": "mercenary-mares",
+      "classId": "ranger",
+      "elite": true,
+      "quality": 2,
+      "recruitable": true,
+      "fixedSkills": [
+        "aimed-shot",
+        "multiple-shot",
+        "ambush",
+        "spiritual-arrow",
+        "rampage",
+        "beast-companion",
+        "survival-instinct",
+        "clever-fellow",
+        "forest-knowledge",
+        "rear-penetration",
+        "spiritual-affinity",
+        "sniping"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-loutch": {
+      "id": "mercenary-loutch",
+      "name": "勒兹",
+      "actor": "mercenary-loutch",
+      "classId": "ranger",
+      "elite": true,
+      "quality": 2,
+      "recruitable": true,
+      "fixedSkills": [
+        "multiple-shot",
+        "ambush",
+        "net-shackles",
+        "rampage",
+        "beast-companion",
+        "spirit-of-nature",
+        "survival-instinct",
+        "clever-fellow",
+        "forest-knowledge",
+        "rear-penetration",
+        "disturbance",
+        "spiritual-affinity"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-legolrhaz": {
+      "id": "mercenary-legolrhaz",
+      "name": "雷古拉斯",
+      "actor": "mercenary-legolrhaz",
+      "classId": "ranger",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "aimed-shot",
+        "multiple-shot",
+        "ambush",
+        "net-shackles",
+        "spiritual-arrow",
+        "rampage",
+        "beast-companion",
+        "spirit-of-nature",
+        "survival-instinct",
+        "clever-fellow",
+        "forest-knowledge",
+        "rear-penetration",
+        "spiritual-affinity",
+        "sniping"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-proto": {
+      "id": "mercenary-proto",
+      "name": "菲洛特",
+      "actor": "mercenary-proto",
+      "classId": "ranger",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "aimed-shot",
+        "multiple-shot",
+        "ambush",
+        "net-shackles",
+        "rampage",
+        "beast-companion",
+        "spirit-of-nature",
+        "survival-instinct",
+        "clever-fellow",
+        "forest-knowledge",
+        "rear-penetration",
+        "disturbance",
+        "spiritual-affinity",
+        "sniping"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-exion": {
+      "id": "mercenary-exion",
+      "name": "艾希文",
+      "actor": "mercenary-exion",
+      "classId": "warlock",
+      "elite": true,
+      "quality": 2,
+      "recruitable": true,
+      "fixedSkills": [
+        "touch-of-agony",
+        "fire-offering",
+        "summon-hellfire",
+        "spell-redemption",
+        "hell-s-pawn",
+        "summon-bard",
+        "monster-s-scream",
+        "mage-s-claw",
+        "blood-revenge",
+        "bard-of-destruction",
+        "blade-of-darkness",
+        "blood-feast",
+        "lightning-of-hell"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-lacroix": {
+      "id": "mercenary-lacroix",
+      "name": "拉卡诺斯",
+      "actor": "mercenary-lacroix",
+      "classId": "warlock",
+      "elite": true,
+      "quality": 2,
+      "recruitable": true,
+      "fixedSkills": [
+        "touch-of-agony",
+        "blood-curse",
+        "fire-offering",
+        "pain-overture",
+        "summon-hellfire",
+        "spell-redemption",
+        "summon-bard",
+        "blood-revenge",
+        "bard-of-destruction",
+        "blade-of-darkness",
+        "blood-feast",
+        "lightning-of-hell"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-romeo": {
+      "id": "mercenary-romeo",
+      "name": "卢马赫",
+      "actor": "mercenary-romeo",
+      "classId": "warlock",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "touch-of-agony",
+        "blood-curse",
+        "fire-offering",
+        "summon-hellfire",
+        "spell-redemption",
+        "hell-s-pawn",
+        "summon-bard",
+        "monster-s-scream",
+        "mage-s-claw",
+        "blood-revenge",
+        "bard-of-destruction",
+        "blade-of-darkness",
+        "blood-feast",
+        "lightning-of-hell"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-gabriel": {
+      "id": "mercenary-gabriel",
+      "name": "贾比尔",
+      "actor": "mercenary-gabriel",
+      "classId": "warlock",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "touch-of-agony",
+        "blood-curse",
+        "fire-offering",
+        "pain-overture",
+        "summon-hellfire",
+        "spell-redemption",
+        "hell-s-pawn",
+        "summon-bard",
+        "mage-s-claw",
+        "blood-revenge",
+        "bard-of-destruction",
+        "blade-of-darkness",
+        "blood-feast",
+        "lightning-of-hell"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-orbey": {
+      "id": "mercenary-orbey",
+      "name": "奥罗贝",
+      "actor": "mercenary-orbey",
+      "classId": "priest",
+      "elite": true,
+      "quality": 2,
+      "recruitable": true,
+      "fixedSkills": [
+        "prayer-of-recovery",
+        "light-command",
+        "celestial-armor",
+        "blinding-flash",
+        "holy-sacrifice",
+        "divine-strike",
+        "hammer-of-wrath",
+        "celestial-lightning",
+        "healing-enhancement",
+        "ordination-prayer",
+        "magic-insight",
+        "god-of-justice"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-enesse": {
+      "id": "mercenary-enesse",
+      "name": "埃尼斯",
+      "actor": "mercenary-enesse",
+      "classId": "priest",
+      "elite": true,
+      "quality": 2,
+      "recruitable": true,
+      "fixedSkills": [
+        "prayer-of-recovery",
+        "apostles-of-light",
+        "celestial-armor",
+        "blinding-flash",
+        "holy-sacrifice",
+        "divine-strike",
+        "hammer-of-wrath",
+        "celestial-lightning",
+        "healing-enhancement",
+        "shield-of-trust",
+        "divine-arms",
+        "god-of-justice"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-seraphina": {
+      "id": "mercenary-seraphina",
+      "name": "赛罗法纳",
+      "actor": "mercenary-seraphina",
+      "classId": "priest",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "prayer-of-recovery",
+        "apostles-of-light",
+        "light-command",
+        "celestial-armor",
+        "blinding-flash",
+        "holy-sacrifice",
+        "divine-strike",
+        "hammer-of-wrath",
+        "celestial-lightning",
+        "healing-enhancement",
+        "ordination-prayer",
+        "magic-insight",
+        "shield-of-trust",
+        "god-of-justice"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-derek": {
+      "id": "mercenary-derek",
+      "name": "多雷克德",
+      "actor": "mercenary-derek",
+      "classId": "priest",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "prayer-of-recovery",
+        "apostles-of-light",
+        "celestial-armor",
+        "blinding-flash",
+        "holy-sacrifice",
+        "divine-strike",
+        "hammer-of-wrath",
+        "celestial-lightning",
+        "healing-enhancement",
+        "ordination-prayer",
+        "magic-insight",
+        "shield-of-trust",
+        "divine-arms",
+        "god-of-justice"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-kirst": {
+      "id": "mercenary-kirst",
+      "name": "卡斯特",
+      "actor": "mercenary-kirst",
+      "classId": "warrior",
+      "elite": true,
+      "quality": 2,
+      "recruitable": true,
+      "fixedSkills": [
+        "rush-of-anger",
+        "shouts-of-threat",
+        "giant-blow",
+        "weapon-hitback",
+        "swirling-storm",
+        "blood-thirst",
+        "enrage",
+        "weapon-specializing",
+        "skin-of-steel",
+        "soul-s-thirst",
+        "warrior-s-instinct",
+        "insanity-thrills"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-duval": {
+      "id": "mercenary-duval",
+      "name": "多尔法",
+      "actor": "mercenary-duval",
+      "classId": "warrior",
+      "elite": true,
+      "quality": 2,
+      "recruitable": true,
+      "fixedSkills": [
+        "rush-of-anger",
+        "armor-penetration",
+        "weapon-hitback",
+        "swirling-storm",
+        "blood-thirst",
+        "storm-of-frenzy",
+        "enrage",
+        "weapon-specializing",
+        "soul-s-thirst",
+        "revenge-incarnate",
+        "warrior-s-instinct",
+        "insanity-thrills"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-granichos": {
+      "id": "mercenary-granichos",
+      "name": "格莱尼酷斯",
+      "actor": "mercenary-granichos",
+      "classId": "warrior",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "rush-of-anger",
+        "shouts-of-threat",
+        "armor-penetration",
+        "giant-blow",
+        "weapon-hitback",
+        "swirling-storm",
+        "blood-thirst",
+        "enrage",
+        "weapon-specializing",
+        "skin-of-steel",
+        "soul-s-thirst",
+        "revenge-incarnate",
+        "warrior-s-instinct",
+        "insanity-thrills"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-gurarde": {
+      "id": "mercenary-gurarde",
+      "name": "加拉德",
+      "actor": "mercenary-gurarde",
+      "classId": "warrior",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "rush-of-anger",
+        "shouts-of-threat",
+        "armor-penetration",
+        "giant-blow",
+        "swirling-storm",
+        "blood-thirst",
+        "storm-of-frenzy",
+        "enrage",
+        "weapon-specializing",
+        "skin-of-steel",
+        "soul-s-thirst",
+        "revenge-incarnate",
+        "warrior-s-instinct",
+        "insanity-thrills"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-ceres": {
+      "id": "mercenary-ceres",
+      "name": "西雷斯",
+      "actor": "mercenary-ceres",
+      "classId": "dark-knight",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "dark-strike",
+        "phantom-clash",
+        "curse-of-screams",
+        "shield-bash",
+        "firestorm",
+        "sword-of-hell",
+        "demon-s-shield",
+        "guardian-of-darkness",
+        "molten-armor",
+        "improved-defense",
+        "soul-sword",
+        "blood-sword",
+        "shield-of-rage",
+        "flares-of-pain",
+        "wrath-of-darkness"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-gumniang": {
+      "id": "mercenary-gumniang",
+      "name": "扎姆尼恩",
+      "actor": "mercenary-gumniang",
+      "classId": "assassin",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "continuous-slash",
+        "spiritual-blade",
+        "poison-touch",
+        "assassin-s-sword",
+        "dark-attack",
+        "freeze-extreme",
+        "whist",
+        "blade-deflection",
+        "energy-bodhi",
+        "twin-blade",
+        "dark-sense",
+        "fortitude",
+        "flare",
+        "deep-breath",
+        "shadow-phantom"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-kenjin": {
+      "id": "mercenary-kenjin",
+      "name": "肯金",
+      "actor": "mercenary-kenjin",
+      "classId": "ranger",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "aimed-shot",
+        "multiple-shot",
+        "ambush",
+        "net-shackles",
+        "spiritual-arrow",
+        "rampage",
+        "beast-companion",
+        "spirit-of-nature",
+        "survival-instinct",
+        "clever-fellow",
+        "forest-knowledge",
+        "rear-penetration",
+        "disturbance",
+        "spiritual-affinity",
+        "sniping"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-kane": {
+      "id": "mercenary-kane",
+      "name": "卡茵",
+      "actor": "mercenary-kane",
+      "classId": "warlock",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "touch-of-agony",
+        "blood-curse",
+        "fire-offering",
+        "pain-overture",
+        "summon-hellfire",
+        "spell-redemption",
+        "hell-s-pawn",
+        "summon-bard",
+        "monster-s-scream",
+        "mage-s-claw",
+        "blood-revenge",
+        "bard-of-destruction",
+        "blade-of-darkness",
+        "blood-feast",
+        "lightning-of-hell"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-rineah": {
+      "id": "mercenary-rineah",
+      "name": "里内亚",
+      "actor": "mercenary-rineah",
+      "classId": "priest",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "prayer-of-recovery",
+        "apostles-of-light",
+        "light-command",
+        "celestial-armor",
+        "blinding-flash",
+        "holy-sacrifice",
+        "divine-strike",
+        "hammer-of-wrath",
+        "celestial-lightning",
+        "healing-enhancement",
+        "ordination-prayer",
+        "magic-insight",
+        "shield-of-trust",
+        "divine-arms",
+        "god-of-justice"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-fenoa": {
+      "id": "mercenary-fenoa",
+      "name": "费诺亚",
+      "actor": "mercenary-fenoa",
+      "classId": "warrior",
+      "elite": true,
+      "quality": 3,
+      "recruitable": true,
+      "fixedSkills": [
+        "rush-of-anger",
+        "shouts-of-threat",
+        "armor-penetration",
+        "giant-blow",
+        "weapon-hitback",
+        "swirling-storm",
+        "blood-thirst",
+        "storm-of-frenzy",
+        "enrage",
+        "weapon-specializing",
+        "skin-of-steel",
+        "soul-s-thirst",
+        "revenge-incarnate",
+        "warrior-s-instinct",
+        "insanity-thrills"
+      ],
+      "source": "mercenary",
+      "defaultShield": false
+    },
+    "mercenary-shin": {
+      "id": "mercenary-shin",
+      "name": "鑫迪",
+      "actor": "mercenary-shin",
+      "classId": "warrior",
+      "elite": true,
+      "quality": 3,
+      "recruitable": false,
+      "fixedSkills": [
+        "rush-of-anger",
+        "shouts-of-threat",
+        "armor-penetration",
+        "giant-blow",
+        "swirling-storm",
+        "blood-thirst",
+        "enrage",
+        "weapon-specializing",
+        "skin-of-steel",
+        "soul-s-thirst",
+        "revenge-incarnate"
+      ],
+      "source": "story",
+      "defaultShield": false
+    }
+  },
+  "growth": {
+    "dark-knight": [
+      {
+        "strength": 14,
+        "dexterity": 10,
+        "vitality": 13,
+        "intelligence": 10,
+        "mentality": 5
+      },
+      {
+        "strength": 15,
+        "dexterity": 10,
+        "vitality": 14,
+        "intelligence": 10,
+        "mentality": 5
+      },
+      {
+        "strength": 16,
+        "dexterity": 11,
+        "vitality": 15,
+        "intelligence": 11,
+        "mentality": 5
+      },
+      {
+        "strength": 16,
+        "dexterity": 12,
+        "vitality": 15,
+        "intelligence": 12,
+        "mentality": 5
+      },
+      {
+        "strength": 17,
+        "dexterity": 12,
+        "vitality": 16,
+        "intelligence": 12,
+        "mentality": 6
+      },
+      {
+        "strength": 18,
+        "dexterity": 13,
+        "vitality": 17,
+        "intelligence": 13,
+        "mentality": 6
+      },
+      {
+        "strength": 19,
+        "dexterity": 13,
+        "vitality": 18,
+        "intelligence": 13,
+        "mentality": 6
+      },
+      {
+        "strength": 20,
+        "dexterity": 14,
+        "vitality": 19,
+        "intelligence": 14,
+        "mentality": 6
+      },
+      {
+        "strength": 20,
+        "dexterity": 15,
+        "vitality": 19,
+        "intelligence": 15,
+        "mentality": 6
+      },
+      {
+        "strength": 21,
+        "dexterity": 15,
+        "vitality": 20,
+        "intelligence": 15,
+        "mentality": 7
+      },
+      {
+        "strength": 22,
+        "dexterity": 16,
+        "vitality": 21,
+        "intelligence": 16,
+        "mentality": 7
+      },
+      {
+        "strength": 23,
+        "dexterity": 16,
+        "vitality": 22,
+        "intelligence": 16,
+        "mentality": 7
+      },
+      {
+        "strength": 24,
+        "dexterity": 17,
+        "vitality": 23,
+        "intelligence": 17,
+        "mentality": 7
+      },
+      {
+        "strength": 24,
+        "dexterity": 18,
+        "vitality": 23,
+        "intelligence": 18,
+        "mentality": 7
+      },
+      {
+        "strength": 25,
+        "dexterity": 18,
+        "vitality": 24,
+        "intelligence": 18,
+        "mentality": 8
+      },
+      {
+        "strength": 26,
+        "dexterity": 19,
+        "vitality": 25,
+        "intelligence": 19,
+        "mentality": 8
+      },
+      {
+        "strength": 27,
+        "dexterity": 19,
+        "vitality": 26,
+        "intelligence": 19,
+        "mentality": 8
+      },
+      {
+        "strength": 28,
+        "dexterity": 20,
+        "vitality": 27,
+        "intelligence": 20,
+        "mentality": 8
+      },
+      {
+        "strength": 28,
+        "dexterity": 21,
+        "vitality": 27,
+        "intelligence": 21,
+        "mentality": 8
+      },
+      {
+        "strength": 29,
+        "dexterity": 21,
+        "vitality": 28,
+        "intelligence": 21,
+        "mentality": 9
+      },
+      {
+        "strength": 30,
+        "dexterity": 22,
+        "vitality": 29,
+        "intelligence": 22,
+        "mentality": 9
+      },
+      {
+        "strength": 31,
+        "dexterity": 22,
+        "vitality": 30,
+        "intelligence": 22,
+        "mentality": 9
+      },
+      {
+        "strength": 32,
+        "dexterity": 23,
+        "vitality": 31,
+        "intelligence": 23,
+        "mentality": 9
+      },
+      {
+        "strength": 32,
+        "dexterity": 24,
+        "vitality": 31,
+        "intelligence": 24,
+        "mentality": 9
+      },
+      {
+        "strength": 33,
+        "dexterity": 24,
+        "vitality": 32,
+        "intelligence": 24,
+        "mentality": 10
+      },
+      {
+        "strength": 34,
+        "dexterity": 25,
+        "vitality": 33,
+        "intelligence": 25,
+        "mentality": 10
+      },
+      {
+        "strength": 35,
+        "dexterity": 25,
+        "vitality": 34,
+        "intelligence": 25,
+        "mentality": 10
+      },
+      {
+        "strength": 36,
+        "dexterity": 26,
+        "vitality": 35,
+        "intelligence": 26,
+        "mentality": 10
+      },
+      {
+        "strength": 36,
+        "dexterity": 27,
+        "vitality": 35,
+        "intelligence": 27,
+        "mentality": 10
+      },
+      {
+        "strength": 37,
+        "dexterity": 27,
+        "vitality": 36,
+        "intelligence": 27,
+        "mentality": 11
+      },
+      {
+        "strength": 38,
+        "dexterity": 28,
+        "vitality": 37,
+        "intelligence": 28,
+        "mentality": 11
+      },
+      {
+        "strength": 39,
+        "dexterity": 28,
+        "vitality": 38,
+        "intelligence": 28,
+        "mentality": 11
+      },
+      {
+        "strength": 40,
+        "dexterity": 29,
+        "vitality": 39,
+        "intelligence": 29,
+        "mentality": 11
+      },
+      {
+        "strength": 40,
+        "dexterity": 30,
+        "vitality": 39,
+        "intelligence": 30,
+        "mentality": 11
+      },
+      {
+        "strength": 41,
+        "dexterity": 30,
+        "vitality": 40,
+        "intelligence": 30,
+        "mentality": 12
+      },
+      {
+        "strength": 42,
+        "dexterity": 31,
+        "vitality": 41,
+        "intelligence": 31,
+        "mentality": 12
+      },
+      {
+        "strength": 43,
+        "dexterity": 31,
+        "vitality": 42,
+        "intelligence": 31,
+        "mentality": 12
+      },
+      {
+        "strength": 44,
+        "dexterity": 32,
+        "vitality": 43,
+        "intelligence": 32,
+        "mentality": 12
+      },
+      {
+        "strength": 44,
+        "dexterity": 33,
+        "vitality": 43,
+        "intelligence": 33,
+        "mentality": 12
+      },
+      {
+        "strength": 45,
+        "dexterity": 33,
+        "vitality": 44,
+        "intelligence": 33,
+        "mentality": 13
+      },
+      {
+        "strength": 46,
+        "dexterity": 34,
+        "vitality": 45,
+        "intelligence": 34,
+        "mentality": 13
+      },
+      {
+        "strength": 47,
+        "dexterity": 34,
+        "vitality": 46,
+        "intelligence": 34,
+        "mentality": 13
+      },
+      {
+        "strength": 48,
+        "dexterity": 35,
+        "vitality": 47,
+        "intelligence": 35,
+        "mentality": 13
+      },
+      {
+        "strength": 48,
+        "dexterity": 36,
+        "vitality": 47,
+        "intelligence": 36,
+        "mentality": 13
+      },
+      {
+        "strength": 49,
+        "dexterity": 36,
+        "vitality": 48,
+        "intelligence": 36,
+        "mentality": 14
+      },
+      {
+        "strength": 50,
+        "dexterity": 37,
+        "vitality": 49,
+        "intelligence": 37,
+        "mentality": 14
+      },
+      {
+        "strength": 51,
+        "dexterity": 37,
+        "vitality": 50,
+        "intelligence": 37,
+        "mentality": 14
+      },
+      {
+        "strength": 52,
+        "dexterity": 38,
+        "vitality": 51,
+        "intelligence": 38,
+        "mentality": 14
+      },
+      {
+        "strength": 52,
+        "dexterity": 39,
+        "vitality": 51,
+        "intelligence": 39,
+        "mentality": 14
+      },
+      {
+        "strength": 53,
+        "dexterity": 39,
+        "vitality": 52,
+        "intelligence": 39,
+        "mentality": 15
+      },
+      {
+        "strength": 54,
+        "dexterity": 40,
+        "vitality": 53,
+        "intelligence": 40,
+        "mentality": 15
+      },
+      {
+        "strength": 55,
+        "dexterity": 40,
+        "vitality": 54,
+        "intelligence": 40,
+        "mentality": 15
+      },
+      {
+        "strength": 56,
+        "dexterity": 41,
+        "vitality": 55,
+        "intelligence": 41,
+        "mentality": 15
+      },
+      {
+        "strength": 56,
+        "dexterity": 42,
+        "vitality": 55,
+        "intelligence": 42,
+        "mentality": 15
+      },
+      {
+        "strength": 57,
+        "dexterity": 42,
+        "vitality": 56,
+        "intelligence": 42,
+        "mentality": 16
+      },
+      {
+        "strength": 58,
+        "dexterity": 43,
+        "vitality": 57,
+        "intelligence": 43,
+        "mentality": 16
+      },
+      {
+        "strength": 59,
+        "dexterity": 43,
+        "vitality": 58,
+        "intelligence": 43,
+        "mentality": 16
+      },
+      {
+        "strength": 60,
+        "dexterity": 44,
+        "vitality": 59,
+        "intelligence": 44,
+        "mentality": 16
+      },
+      {
+        "strength": 60,
+        "dexterity": 45,
+        "vitality": 59,
+        "intelligence": 45,
+        "mentality": 16
+      },
+      {
+        "strength": 61,
+        "dexterity": 45,
+        "vitality": 60,
+        "intelligence": 45,
+        "mentality": 17
+      },
+      {
+        "strength": 62,
+        "dexterity": 46,
+        "vitality": 61,
+        "intelligence": 46,
+        "mentality": 17
+      },
+      {
+        "strength": 63,
+        "dexterity": 46,
+        "vitality": 62,
+        "intelligence": 46,
+        "mentality": 17
+      },
+      {
+        "strength": 64,
+        "dexterity": 47,
+        "vitality": 63,
+        "intelligence": 47,
+        "mentality": 17
+      },
+      {
+        "strength": 64,
+        "dexterity": 48,
+        "vitality": 63,
+        "intelligence": 48,
+        "mentality": 17
+      },
+      {
+        "strength": 65,
+        "dexterity": 48,
+        "vitality": 64,
+        "intelligence": 48,
+        "mentality": 18
+      },
+      {
+        "strength": 66,
+        "dexterity": 49,
+        "vitality": 65,
+        "intelligence": 49,
+        "mentality": 18
+      },
+      {
+        "strength": 67,
+        "dexterity": 49,
+        "vitality": 66,
+        "intelligence": 49,
+        "mentality": 18
+      },
+      {
+        "strength": 68,
+        "dexterity": 50,
+        "vitality": 67,
+        "intelligence": 50,
+        "mentality": 18
+      },
+      {
+        "strength": 68,
+        "dexterity": 51,
+        "vitality": 67,
+        "intelligence": 51,
+        "mentality": 18
+      },
+      {
+        "strength": 69,
+        "dexterity": 51,
+        "vitality": 68,
+        "intelligence": 51,
+        "mentality": 19
+      },
+      {
+        "strength": 70,
+        "dexterity": 52,
+        "vitality": 69,
+        "intelligence": 52,
+        "mentality": 19
+      },
+      {
+        "strength": 71,
+        "dexterity": 52,
+        "vitality": 70,
+        "intelligence": 52,
+        "mentality": 19
+      },
+      {
+        "strength": 72,
+        "dexterity": 53,
+        "vitality": 71,
+        "intelligence": 53,
+        "mentality": 19
+      },
+      {
+        "strength": 72,
+        "dexterity": 54,
+        "vitality": 71,
+        "intelligence": 54,
+        "mentality": 19
+      },
+      {
+        "strength": 73,
+        "dexterity": 54,
+        "vitality": 72,
+        "intelligence": 54,
+        "mentality": 20
+      },
+      {
+        "strength": 74,
+        "dexterity": 55,
+        "vitality": 73,
+        "intelligence": 55,
+        "mentality": 20
+      },
+      {
+        "strength": 75,
+        "dexterity": 55,
+        "vitality": 74,
+        "intelligence": 55,
+        "mentality": 20
+      },
+      {
+        "strength": 76,
+        "dexterity": 56,
+        "vitality": 75,
+        "intelligence": 56,
+        "mentality": 20
+      },
+      {
+        "strength": 76,
+        "dexterity": 57,
+        "vitality": 75,
+        "intelligence": 57,
+        "mentality": 20
+      },
+      {
+        "strength": 77,
+        "dexterity": 57,
+        "vitality": 76,
+        "intelligence": 57,
+        "mentality": 21
+      },
+      {
+        "strength": 78,
+        "dexterity": 58,
+        "vitality": 77,
+        "intelligence": 58,
+        "mentality": 21
+      },
+      {
+        "strength": 79,
+        "dexterity": 58,
+        "vitality": 78,
+        "intelligence": 58,
+        "mentality": 21
+      },
+      {
+        "strength": 80,
+        "dexterity": 59,
+        "vitality": 79,
+        "intelligence": 59,
+        "mentality": 21
+      },
+      {
+        "strength": 80,
+        "dexterity": 60,
+        "vitality": 79,
+        "intelligence": 60,
+        "mentality": 21
+      },
+      {
+        "strength": 81,
+        "dexterity": 60,
+        "vitality": 80,
+        "intelligence": 60,
+        "mentality": 22
+      },
+      {
+        "strength": 82,
+        "dexterity": 61,
+        "vitality": 81,
+        "intelligence": 61,
+        "mentality": 22
+      },
+      {
+        "strength": 83,
+        "dexterity": 61,
+        "vitality": 82,
+        "intelligence": 61,
+        "mentality": 22
+      },
+      {
+        "strength": 84,
+        "dexterity": 62,
+        "vitality": 83,
+        "intelligence": 62,
+        "mentality": 22
+      },
+      {
+        "strength": 84,
+        "dexterity": 63,
+        "vitality": 83,
+        "intelligence": 63,
+        "mentality": 22
+      },
+      {
+        "strength": 85,
+        "dexterity": 63,
+        "vitality": 84,
+        "intelligence": 63,
+        "mentality": 23
+      },
+      {
+        "strength": 86,
+        "dexterity": 64,
+        "vitality": 85,
+        "intelligence": 64,
+        "mentality": 23
+      },
+      {
+        "strength": 87,
+        "dexterity": 64,
+        "vitality": 86,
+        "intelligence": 64,
+        "mentality": 23
+      },
+      {
+        "strength": 88,
+        "dexterity": 65,
+        "vitality": 87,
+        "intelligence": 65,
+        "mentality": 23
+      },
+      {
+        "strength": 88,
+        "dexterity": 66,
+        "vitality": 87,
+        "intelligence": 66,
+        "mentality": 23
+      },
+      {
+        "strength": 89,
+        "dexterity": 66,
+        "vitality": 88,
+        "intelligence": 66,
+        "mentality": 24
+      },
+      {
+        "strength": 90,
+        "dexterity": 67,
+        "vitality": 89,
+        "intelligence": 67,
+        "mentality": 24
+      },
+      {
+        "strength": 91,
+        "dexterity": 67,
+        "vitality": 90,
+        "intelligence": 67,
+        "mentality": 24
+      },
+      {
+        "strength": 92,
+        "dexterity": 68,
+        "vitality": 91,
+        "intelligence": 68,
+        "mentality": 24
+      },
+      {
+        "strength": 92,
+        "dexterity": 69,
+        "vitality": 91,
+        "intelligence": 69,
+        "mentality": 24
+      },
+      {
+        "strength": 93,
+        "dexterity": 69,
+        "vitality": 92,
+        "intelligence": 69,
+        "mentality": 25
+      },
+      {
+        "strength": 94,
+        "dexterity": 70,
+        "vitality": 93,
+        "intelligence": 70,
+        "mentality": 25
+      },
+      {
+        "strength": 95,
+        "dexterity": 70,
+        "vitality": 94,
+        "intelligence": 70,
+        "mentality": 25
+      },
+      {
+        "strength": 96,
+        "dexterity": 71,
+        "vitality": 95,
+        "intelligence": 71,
+        "mentality": 25
+      },
+      {
+        "strength": 96,
+        "dexterity": 72,
+        "vitality": 95,
+        "intelligence": 72,
+        "mentality": 25
+      },
+      {
+        "strength": 97,
+        "dexterity": 72,
+        "vitality": 96,
+        "intelligence": 72,
+        "mentality": 26
+      }
+    ],
+    "assassin": [
+      {
+        "strength": 10,
+        "dexterity": 16,
+        "vitality": 12,
+        "intelligence": 7,
+        "mentality": 5
+      },
+      {
+        "strength": 11,
+        "dexterity": 17,
+        "vitality": 13,
+        "intelligence": 7,
+        "mentality": 5
+      },
+      {
+        "strength": 12,
+        "dexterity": 18,
+        "vitality": 14,
+        "intelligence": 7,
+        "mentality": 5
+      },
+      {
+        "strength": 12,
+        "dexterity": 19,
+        "vitality": 14,
+        "intelligence": 7,
+        "mentality": 5
+      },
+      {
+        "strength": 13,
+        "dexterity": 20,
+        "vitality": 15,
+        "intelligence": 8,
+        "mentality": 6
+      },
+      {
+        "strength": 14,
+        "dexterity": 21,
+        "vitality": 16,
+        "intelligence": 8,
+        "mentality": 6
+      },
+      {
+        "strength": 15,
+        "dexterity": 22,
+        "vitality": 17,
+        "intelligence": 8,
+        "mentality": 6
+      },
+      {
+        "strength": 16,
+        "dexterity": 23,
+        "vitality": 18,
+        "intelligence": 8,
+        "mentality": 6
+      },
+      {
+        "strength": 16,
+        "dexterity": 24,
+        "vitality": 18,
+        "intelligence": 8,
+        "mentality": 6
+      },
+      {
+        "strength": 17,
+        "dexterity": 25,
+        "vitality": 19,
+        "intelligence": 9,
+        "mentality": 7
+      },
+      {
+        "strength": 18,
+        "dexterity": 26,
+        "vitality": 20,
+        "intelligence": 9,
+        "mentality": 7
+      },
+      {
+        "strength": 19,
+        "dexterity": 27,
+        "vitality": 21,
+        "intelligence": 9,
+        "mentality": 7
+      },
+      {
+        "strength": 20,
+        "dexterity": 28,
+        "vitality": 22,
+        "intelligence": 9,
+        "mentality": 7
+      },
+      {
+        "strength": 20,
+        "dexterity": 29,
+        "vitality": 22,
+        "intelligence": 9,
+        "mentality": 7
+      },
+      {
+        "strength": 21,
+        "dexterity": 30,
+        "vitality": 23,
+        "intelligence": 10,
+        "mentality": 8
+      },
+      {
+        "strength": 22,
+        "dexterity": 31,
+        "vitality": 24,
+        "intelligence": 10,
+        "mentality": 8
+      },
+      {
+        "strength": 23,
+        "dexterity": 32,
+        "vitality": 25,
+        "intelligence": 10,
+        "mentality": 8
+      },
+      {
+        "strength": 24,
+        "dexterity": 33,
+        "vitality": 26,
+        "intelligence": 10,
+        "mentality": 8
+      },
+      {
+        "strength": 24,
+        "dexterity": 34,
+        "vitality": 26,
+        "intelligence": 10,
+        "mentality": 8
+      },
+      {
+        "strength": 25,
+        "dexterity": 35,
+        "vitality": 27,
+        "intelligence": 11,
+        "mentality": 9
+      },
+      {
+        "strength": 26,
+        "dexterity": 36,
+        "vitality": 28,
+        "intelligence": 11,
+        "mentality": 9
+      },
+      {
+        "strength": 27,
+        "dexterity": 37,
+        "vitality": 29,
+        "intelligence": 11,
+        "mentality": 9
+      },
+      {
+        "strength": 28,
+        "dexterity": 38,
+        "vitality": 30,
+        "intelligence": 11,
+        "mentality": 9
+      },
+      {
+        "strength": 28,
+        "dexterity": 39,
+        "vitality": 30,
+        "intelligence": 11,
+        "mentality": 9
+      },
+      {
+        "strength": 29,
+        "dexterity": 40,
+        "vitality": 31,
+        "intelligence": 12,
+        "mentality": 10
+      },
+      {
+        "strength": 30,
+        "dexterity": 41,
+        "vitality": 32,
+        "intelligence": 12,
+        "mentality": 10
+      },
+      {
+        "strength": 31,
+        "dexterity": 42,
+        "vitality": 33,
+        "intelligence": 12,
+        "mentality": 10
+      },
+      {
+        "strength": 32,
+        "dexterity": 43,
+        "vitality": 34,
+        "intelligence": 12,
+        "mentality": 10
+      },
+      {
+        "strength": 32,
+        "dexterity": 44,
+        "vitality": 34,
+        "intelligence": 12,
+        "mentality": 10
+      },
+      {
+        "strength": 33,
+        "dexterity": 45,
+        "vitality": 35,
+        "intelligence": 13,
+        "mentality": 11
+      },
+      {
+        "strength": 34,
+        "dexterity": 46,
+        "vitality": 36,
+        "intelligence": 13,
+        "mentality": 11
+      },
+      {
+        "strength": 35,
+        "dexterity": 47,
+        "vitality": 37,
+        "intelligence": 13,
+        "mentality": 11
+      },
+      {
+        "strength": 36,
+        "dexterity": 48,
+        "vitality": 38,
+        "intelligence": 13,
+        "mentality": 11
+      },
+      {
+        "strength": 36,
+        "dexterity": 49,
+        "vitality": 38,
+        "intelligence": 13,
+        "mentality": 11
+      },
+      {
+        "strength": 37,
+        "dexterity": 50,
+        "vitality": 39,
+        "intelligence": 14,
+        "mentality": 12
+      },
+      {
+        "strength": 38,
+        "dexterity": 51,
+        "vitality": 40,
+        "intelligence": 14,
+        "mentality": 12
+      },
+      {
+        "strength": 39,
+        "dexterity": 52,
+        "vitality": 41,
+        "intelligence": 14,
+        "mentality": 12
+      },
+      {
+        "strength": 40,
+        "dexterity": 53,
+        "vitality": 42,
+        "intelligence": 14,
+        "mentality": 12
+      },
+      {
+        "strength": 40,
+        "dexterity": 54,
+        "vitality": 42,
+        "intelligence": 14,
+        "mentality": 12
+      },
+      {
+        "strength": 41,
+        "dexterity": 55,
+        "vitality": 43,
+        "intelligence": 15,
+        "mentality": 13
+      },
+      {
+        "strength": 42,
+        "dexterity": 56,
+        "vitality": 44,
+        "intelligence": 15,
+        "mentality": 13
+      },
+      {
+        "strength": 43,
+        "dexterity": 57,
+        "vitality": 45,
+        "intelligence": 15,
+        "mentality": 13
+      },
+      {
+        "strength": 44,
+        "dexterity": 58,
+        "vitality": 46,
+        "intelligence": 15,
+        "mentality": 13
+      },
+      {
+        "strength": 44,
+        "dexterity": 59,
+        "vitality": 46,
+        "intelligence": 15,
+        "mentality": 13
+      },
+      {
+        "strength": 45,
+        "dexterity": 60,
+        "vitality": 47,
+        "intelligence": 16,
+        "mentality": 14
+      },
+      {
+        "strength": 46,
+        "dexterity": 61,
+        "vitality": 48,
+        "intelligence": 16,
+        "mentality": 14
+      },
+      {
+        "strength": 47,
+        "dexterity": 62,
+        "vitality": 49,
+        "intelligence": 16,
+        "mentality": 14
+      },
+      {
+        "strength": 48,
+        "dexterity": 63,
+        "vitality": 50,
+        "intelligence": 16,
+        "mentality": 14
+      },
+      {
+        "strength": 48,
+        "dexterity": 64,
+        "vitality": 50,
+        "intelligence": 16,
+        "mentality": 14
+      },
+      {
+        "strength": 49,
+        "dexterity": 65,
+        "vitality": 51,
+        "intelligence": 17,
+        "mentality": 15
+      },
+      {
+        "strength": 50,
+        "dexterity": 66,
+        "vitality": 52,
+        "intelligence": 17,
+        "mentality": 15
+      },
+      {
+        "strength": 51,
+        "dexterity": 67,
+        "vitality": 53,
+        "intelligence": 17,
+        "mentality": 15
+      },
+      {
+        "strength": 52,
+        "dexterity": 68,
+        "vitality": 54,
+        "intelligence": 17,
+        "mentality": 15
+      },
+      {
+        "strength": 52,
+        "dexterity": 69,
+        "vitality": 54,
+        "intelligence": 17,
+        "mentality": 15
+      },
+      {
+        "strength": 53,
+        "dexterity": 70,
+        "vitality": 55,
+        "intelligence": 18,
+        "mentality": 16
+      },
+      {
+        "strength": 54,
+        "dexterity": 71,
+        "vitality": 56,
+        "intelligence": 18,
+        "mentality": 16
+      },
+      {
+        "strength": 55,
+        "dexterity": 72,
+        "vitality": 57,
+        "intelligence": 18,
+        "mentality": 16
+      },
+      {
+        "strength": 56,
+        "dexterity": 73,
+        "vitality": 58,
+        "intelligence": 18,
+        "mentality": 16
+      },
+      {
+        "strength": 56,
+        "dexterity": 74,
+        "vitality": 58,
+        "intelligence": 18,
+        "mentality": 16
+      },
+      {
+        "strength": 57,
+        "dexterity": 75,
+        "vitality": 59,
+        "intelligence": 19,
+        "mentality": 17
+      },
+      {
+        "strength": 58,
+        "dexterity": 76,
+        "vitality": 60,
+        "intelligence": 19,
+        "mentality": 17
+      },
+      {
+        "strength": 59,
+        "dexterity": 77,
+        "vitality": 61,
+        "intelligence": 19,
+        "mentality": 17
+      },
+      {
+        "strength": 60,
+        "dexterity": 78,
+        "vitality": 62,
+        "intelligence": 19,
+        "mentality": 17
+      },
+      {
+        "strength": 60,
+        "dexterity": 79,
+        "vitality": 62,
+        "intelligence": 19,
+        "mentality": 17
+      },
+      {
+        "strength": 61,
+        "dexterity": 80,
+        "vitality": 63,
+        "intelligence": 20,
+        "mentality": 18
+      },
+      {
+        "strength": 62,
+        "dexterity": 81,
+        "vitality": 64,
+        "intelligence": 20,
+        "mentality": 18
+      },
+      {
+        "strength": 63,
+        "dexterity": 82,
+        "vitality": 65,
+        "intelligence": 20,
+        "mentality": 18
+      },
+      {
+        "strength": 64,
+        "dexterity": 83,
+        "vitality": 66,
+        "intelligence": 20,
+        "mentality": 18
+      },
+      {
+        "strength": 64,
+        "dexterity": 84,
+        "vitality": 66,
+        "intelligence": 20,
+        "mentality": 18
+      },
+      {
+        "strength": 65,
+        "dexterity": 85,
+        "vitality": 67,
+        "intelligence": 21,
+        "mentality": 19
+      },
+      {
+        "strength": 66,
+        "dexterity": 86,
+        "vitality": 68,
+        "intelligence": 21,
+        "mentality": 19
+      },
+      {
+        "strength": 67,
+        "dexterity": 87,
+        "vitality": 69,
+        "intelligence": 21,
+        "mentality": 19
+      },
+      {
+        "strength": 68,
+        "dexterity": 88,
+        "vitality": 70,
+        "intelligence": 21,
+        "mentality": 19
+      },
+      {
+        "strength": 68,
+        "dexterity": 89,
+        "vitality": 70,
+        "intelligence": 21,
+        "mentality": 19
+      },
+      {
+        "strength": 69,
+        "dexterity": 90,
+        "vitality": 71,
+        "intelligence": 22,
+        "mentality": 20
+      },
+      {
+        "strength": 70,
+        "dexterity": 91,
+        "vitality": 72,
+        "intelligence": 22,
+        "mentality": 20
+      },
+      {
+        "strength": 71,
+        "dexterity": 92,
+        "vitality": 73,
+        "intelligence": 22,
+        "mentality": 20
+      },
+      {
+        "strength": 72,
+        "dexterity": 93,
+        "vitality": 74,
+        "intelligence": 22,
+        "mentality": 20
+      },
+      {
+        "strength": 72,
+        "dexterity": 94,
+        "vitality": 74,
+        "intelligence": 22,
+        "mentality": 20
+      },
+      {
+        "strength": 73,
+        "dexterity": 95,
+        "vitality": 75,
+        "intelligence": 23,
+        "mentality": 21
+      },
+      {
+        "strength": 74,
+        "dexterity": 96,
+        "vitality": 76,
+        "intelligence": 23,
+        "mentality": 21
+      },
+      {
+        "strength": 75,
+        "dexterity": 97,
+        "vitality": 77,
+        "intelligence": 23,
+        "mentality": 21
+      },
+      {
+        "strength": 76,
+        "dexterity": 98,
+        "vitality": 78,
+        "intelligence": 23,
+        "mentality": 21
+      },
+      {
+        "strength": 76,
+        "dexterity": 99,
+        "vitality": 78,
+        "intelligence": 23,
+        "mentality": 21
+      },
+      {
+        "strength": 77,
+        "dexterity": 100,
+        "vitality": 79,
+        "intelligence": 24,
+        "mentality": 22
+      },
+      {
+        "strength": 78,
+        "dexterity": 101,
+        "vitality": 80,
+        "intelligence": 24,
+        "mentality": 22
+      },
+      {
+        "strength": 79,
+        "dexterity": 102,
+        "vitality": 81,
+        "intelligence": 24,
+        "mentality": 22
+      },
+      {
+        "strength": 80,
+        "dexterity": 103,
+        "vitality": 82,
+        "intelligence": 24,
+        "mentality": 22
+      },
+      {
+        "strength": 80,
+        "dexterity": 104,
+        "vitality": 82,
+        "intelligence": 24,
+        "mentality": 22
+      },
+      {
+        "strength": 81,
+        "dexterity": 105,
+        "vitality": 83,
+        "intelligence": 25,
+        "mentality": 23
+      },
+      {
+        "strength": 82,
+        "dexterity": 106,
+        "vitality": 84,
+        "intelligence": 25,
+        "mentality": 23
+      },
+      {
+        "strength": 83,
+        "dexterity": 107,
+        "vitality": 85,
+        "intelligence": 25,
+        "mentality": 23
+      },
+      {
+        "strength": 84,
+        "dexterity": 108,
+        "vitality": 86,
+        "intelligence": 25,
+        "mentality": 23
+      },
+      {
+        "strength": 84,
+        "dexterity": 109,
+        "vitality": 86,
+        "intelligence": 25,
+        "mentality": 23
+      },
+      {
+        "strength": 85,
+        "dexterity": 110,
+        "vitality": 87,
+        "intelligence": 26,
+        "mentality": 24
+      },
+      {
+        "strength": 86,
+        "dexterity": 111,
+        "vitality": 88,
+        "intelligence": 26,
+        "mentality": 24
+      },
+      {
+        "strength": 87,
+        "dexterity": 112,
+        "vitality": 89,
+        "intelligence": 26,
+        "mentality": 24
+      },
+      {
+        "strength": 88,
+        "dexterity": 113,
+        "vitality": 90,
+        "intelligence": 26,
+        "mentality": 24
+      },
+      {
+        "strength": 88,
+        "dexterity": 114,
+        "vitality": 90,
+        "intelligence": 26,
+        "mentality": 24
+      },
+      {
+        "strength": 89,
+        "dexterity": 115,
+        "vitality": 91,
+        "intelligence": 27,
+        "mentality": 25
+      },
+      {
+        "strength": 90,
+        "dexterity": 116,
+        "vitality": 92,
+        "intelligence": 27,
+        "mentality": 25
+      },
+      {
+        "strength": 91,
+        "dexterity": 117,
+        "vitality": 93,
+        "intelligence": 27,
+        "mentality": 25
+      },
+      {
+        "strength": 92,
+        "dexterity": 118,
+        "vitality": 94,
+        "intelligence": 27,
+        "mentality": 25
+      },
+      {
+        "strength": 92,
+        "dexterity": 119,
+        "vitality": 94,
+        "intelligence": 27,
+        "mentality": 25
+      },
+      {
+        "strength": 93,
+        "dexterity": 120,
+        "vitality": 95,
+        "intelligence": 28,
+        "mentality": 26
+      }
+    ],
+    "warlock": [
+      {
+        "strength": 5,
+        "dexterity": 7,
+        "vitality": 10,
+        "intelligence": 16,
+        "mentality": 12
+      },
+      {
+        "strength": 5,
+        "dexterity": 8,
+        "vitality": 10,
+        "intelligence": 17,
+        "mentality": 13
+      },
+      {
+        "strength": 5,
+        "dexterity": 8,
+        "vitality": 11,
+        "intelligence": 18,
+        "mentality": 14
+      },
+      {
+        "strength": 5,
+        "dexterity": 9,
+        "vitality": 12,
+        "intelligence": 19,
+        "mentality": 14
+      },
+      {
+        "strength": 6,
+        "dexterity": 9,
+        "vitality": 12,
+        "intelligence": 20,
+        "mentality": 15
+      },
+      {
+        "strength": 6,
+        "dexterity": 9,
+        "vitality": 13,
+        "intelligence": 21,
+        "mentality": 16
+      },
+      {
+        "strength": 6,
+        "dexterity": 10,
+        "vitality": 13,
+        "intelligence": 22,
+        "mentality": 17
+      },
+      {
+        "strength": 6,
+        "dexterity": 10,
+        "vitality": 14,
+        "intelligence": 23,
+        "mentality": 18
+      },
+      {
+        "strength": 6,
+        "dexterity": 11,
+        "vitality": 15,
+        "intelligence": 24,
+        "mentality": 18
+      },
+      {
+        "strength": 7,
+        "dexterity": 11,
+        "vitality": 15,
+        "intelligence": 25,
+        "mentality": 19
+      },
+      {
+        "strength": 7,
+        "dexterity": 11,
+        "vitality": 16,
+        "intelligence": 26,
+        "mentality": 20
+      },
+      {
+        "strength": 7,
+        "dexterity": 12,
+        "vitality": 16,
+        "intelligence": 27,
+        "mentality": 21
+      },
+      {
+        "strength": 7,
+        "dexterity": 12,
+        "vitality": 17,
+        "intelligence": 28,
+        "mentality": 22
+      },
+      {
+        "strength": 7,
+        "dexterity": 13,
+        "vitality": 18,
+        "intelligence": 29,
+        "mentality": 22
+      },
+      {
+        "strength": 8,
+        "dexterity": 13,
+        "vitality": 18,
+        "intelligence": 30,
+        "mentality": 23
+      },
+      {
+        "strength": 8,
+        "dexterity": 13,
+        "vitality": 19,
+        "intelligence": 31,
+        "mentality": 24
+      },
+      {
+        "strength": 8,
+        "dexterity": 14,
+        "vitality": 19,
+        "intelligence": 32,
+        "mentality": 25
+      },
+      {
+        "strength": 8,
+        "dexterity": 14,
+        "vitality": 20,
+        "intelligence": 33,
+        "mentality": 26
+      },
+      {
+        "strength": 8,
+        "dexterity": 15,
+        "vitality": 21,
+        "intelligence": 34,
+        "mentality": 26
+      },
+      {
+        "strength": 9,
+        "dexterity": 15,
+        "vitality": 21,
+        "intelligence": 35,
+        "mentality": 27
+      },
+      {
+        "strength": 9,
+        "dexterity": 15,
+        "vitality": 22,
+        "intelligence": 36,
+        "mentality": 28
+      },
+      {
+        "strength": 9,
+        "dexterity": 16,
+        "vitality": 22,
+        "intelligence": 37,
+        "mentality": 29
+      },
+      {
+        "strength": 9,
+        "dexterity": 16,
+        "vitality": 23,
+        "intelligence": 38,
+        "mentality": 30
+      },
+      {
+        "strength": 9,
+        "dexterity": 17,
+        "vitality": 24,
+        "intelligence": 39,
+        "mentality": 30
+      },
+      {
+        "strength": 10,
+        "dexterity": 17,
+        "vitality": 24,
+        "intelligence": 40,
+        "mentality": 31
+      },
+      {
+        "strength": 10,
+        "dexterity": 17,
+        "vitality": 25,
+        "intelligence": 41,
+        "mentality": 32
+      },
+      {
+        "strength": 10,
+        "dexterity": 18,
+        "vitality": 25,
+        "intelligence": 42,
+        "mentality": 33
+      },
+      {
+        "strength": 10,
+        "dexterity": 18,
+        "vitality": 26,
+        "intelligence": 43,
+        "mentality": 34
+      },
+      {
+        "strength": 10,
+        "dexterity": 19,
+        "vitality": 27,
+        "intelligence": 44,
+        "mentality": 34
+      },
+      {
+        "strength": 11,
+        "dexterity": 19,
+        "vitality": 27,
+        "intelligence": 45,
+        "mentality": 35
+      },
+      {
+        "strength": 11,
+        "dexterity": 19,
+        "vitality": 28,
+        "intelligence": 46,
+        "mentality": 36
+      },
+      {
+        "strength": 11,
+        "dexterity": 20,
+        "vitality": 28,
+        "intelligence": 47,
+        "mentality": 37
+      },
+      {
+        "strength": 11,
+        "dexterity": 20,
+        "vitality": 29,
+        "intelligence": 48,
+        "mentality": 38
+      },
+      {
+        "strength": 11,
+        "dexterity": 21,
+        "vitality": 30,
+        "intelligence": 49,
+        "mentality": 38
+      },
+      {
+        "strength": 12,
+        "dexterity": 21,
+        "vitality": 30,
+        "intelligence": 50,
+        "mentality": 39
+      },
+      {
+        "strength": 12,
+        "dexterity": 21,
+        "vitality": 31,
+        "intelligence": 51,
+        "mentality": 40
+      },
+      {
+        "strength": 12,
+        "dexterity": 22,
+        "vitality": 31,
+        "intelligence": 52,
+        "mentality": 41
+      },
+      {
+        "strength": 12,
+        "dexterity": 22,
+        "vitality": 32,
+        "intelligence": 53,
+        "mentality": 42
+      },
+      {
+        "strength": 12,
+        "dexterity": 23,
+        "vitality": 33,
+        "intelligence": 54,
+        "mentality": 42
+      },
+      {
+        "strength": 13,
+        "dexterity": 23,
+        "vitality": 33,
+        "intelligence": 55,
+        "mentality": 43
+      },
+      {
+        "strength": 13,
+        "dexterity": 23,
+        "vitality": 34,
+        "intelligence": 56,
+        "mentality": 44
+      },
+      {
+        "strength": 13,
+        "dexterity": 24,
+        "vitality": 34,
+        "intelligence": 57,
+        "mentality": 45
+      },
+      {
+        "strength": 13,
+        "dexterity": 24,
+        "vitality": 35,
+        "intelligence": 58,
+        "mentality": 46
+      },
+      {
+        "strength": 13,
+        "dexterity": 25,
+        "vitality": 36,
+        "intelligence": 59,
+        "mentality": 46
+      },
+      {
+        "strength": 14,
+        "dexterity": 25,
+        "vitality": 36,
+        "intelligence": 60,
+        "mentality": 47
+      },
+      {
+        "strength": 14,
+        "dexterity": 25,
+        "vitality": 37,
+        "intelligence": 61,
+        "mentality": 48
+      },
+      {
+        "strength": 14,
+        "dexterity": 26,
+        "vitality": 37,
+        "intelligence": 62,
+        "mentality": 49
+      },
+      {
+        "strength": 14,
+        "dexterity": 26,
+        "vitality": 38,
+        "intelligence": 63,
+        "mentality": 50
+      },
+      {
+        "strength": 14,
+        "dexterity": 27,
+        "vitality": 39,
+        "intelligence": 64,
+        "mentality": 50
+      },
+      {
+        "strength": 15,
+        "dexterity": 27,
+        "vitality": 39,
+        "intelligence": 65,
+        "mentality": 51
+      },
+      {
+        "strength": 15,
+        "dexterity": 27,
+        "vitality": 40,
+        "intelligence": 66,
+        "mentality": 52
+      },
+      {
+        "strength": 15,
+        "dexterity": 28,
+        "vitality": 40,
+        "intelligence": 67,
+        "mentality": 53
+      },
+      {
+        "strength": 15,
+        "dexterity": 28,
+        "vitality": 41,
+        "intelligence": 68,
+        "mentality": 54
+      },
+      {
+        "strength": 15,
+        "dexterity": 29,
+        "vitality": 42,
+        "intelligence": 69,
+        "mentality": 54
+      },
+      {
+        "strength": 16,
+        "dexterity": 29,
+        "vitality": 42,
+        "intelligence": 70,
+        "mentality": 55
+      },
+      {
+        "strength": 16,
+        "dexterity": 29,
+        "vitality": 43,
+        "intelligence": 71,
+        "mentality": 56
+      },
+      {
+        "strength": 16,
+        "dexterity": 30,
+        "vitality": 43,
+        "intelligence": 72,
+        "mentality": 57
+      },
+      {
+        "strength": 16,
+        "dexterity": 30,
+        "vitality": 44,
+        "intelligence": 73,
+        "mentality": 58
+      },
+      {
+        "strength": 16,
+        "dexterity": 31,
+        "vitality": 45,
+        "intelligence": 74,
+        "mentality": 58
+      },
+      {
+        "strength": 17,
+        "dexterity": 31,
+        "vitality": 45,
+        "intelligence": 75,
+        "mentality": 59
+      },
+      {
+        "strength": 17,
+        "dexterity": 31,
+        "vitality": 46,
+        "intelligence": 76,
+        "mentality": 60
+      },
+      {
+        "strength": 17,
+        "dexterity": 32,
+        "vitality": 46,
+        "intelligence": 77,
+        "mentality": 61
+      },
+      {
+        "strength": 17,
+        "dexterity": 32,
+        "vitality": 47,
+        "intelligence": 78,
+        "mentality": 62
+      },
+      {
+        "strength": 17,
+        "dexterity": 33,
+        "vitality": 48,
+        "intelligence": 79,
+        "mentality": 62
+      },
+      {
+        "strength": 18,
+        "dexterity": 33,
+        "vitality": 48,
+        "intelligence": 80,
+        "mentality": 63
+      },
+      {
+        "strength": 18,
+        "dexterity": 33,
+        "vitality": 49,
+        "intelligence": 81,
+        "mentality": 64
+      },
+      {
+        "strength": 18,
+        "dexterity": 34,
+        "vitality": 49,
+        "intelligence": 82,
+        "mentality": 65
+      },
+      {
+        "strength": 18,
+        "dexterity": 34,
+        "vitality": 50,
+        "intelligence": 83,
+        "mentality": 66
+      },
+      {
+        "strength": 18,
+        "dexterity": 35,
+        "vitality": 51,
+        "intelligence": 84,
+        "mentality": 66
+      },
+      {
+        "strength": 19,
+        "dexterity": 35,
+        "vitality": 51,
+        "intelligence": 85,
+        "mentality": 67
+      },
+      {
+        "strength": 19,
+        "dexterity": 35,
+        "vitality": 52,
+        "intelligence": 86,
+        "mentality": 68
+      },
+      {
+        "strength": 19,
+        "dexterity": 36,
+        "vitality": 52,
+        "intelligence": 87,
+        "mentality": 69
+      },
+      {
+        "strength": 19,
+        "dexterity": 36,
+        "vitality": 53,
+        "intelligence": 88,
+        "mentality": 70
+      },
+      {
+        "strength": 19,
+        "dexterity": 37,
+        "vitality": 54,
+        "intelligence": 89,
+        "mentality": 70
+      },
+      {
+        "strength": 20,
+        "dexterity": 37,
+        "vitality": 54,
+        "intelligence": 90,
+        "mentality": 71
+      },
+      {
+        "strength": 20,
+        "dexterity": 37,
+        "vitality": 55,
+        "intelligence": 91,
+        "mentality": 72
+      },
+      {
+        "strength": 20,
+        "dexterity": 38,
+        "vitality": 55,
+        "intelligence": 92,
+        "mentality": 73
+      },
+      {
+        "strength": 20,
+        "dexterity": 38,
+        "vitality": 56,
+        "intelligence": 93,
+        "mentality": 74
+      },
+      {
+        "strength": 20,
+        "dexterity": 39,
+        "vitality": 57,
+        "intelligence": 94,
+        "mentality": 74
+      },
+      {
+        "strength": 21,
+        "dexterity": 39,
+        "vitality": 57,
+        "intelligence": 95,
+        "mentality": 75
+      },
+      {
+        "strength": 21,
+        "dexterity": 39,
+        "vitality": 58,
+        "intelligence": 96,
+        "mentality": 76
+      },
+      {
+        "strength": 21,
+        "dexterity": 40,
+        "vitality": 58,
+        "intelligence": 97,
+        "mentality": 77
+      },
+      {
+        "strength": 21,
+        "dexterity": 40,
+        "vitality": 59,
+        "intelligence": 98,
+        "mentality": 78
+      },
+      {
+        "strength": 21,
+        "dexterity": 41,
+        "vitality": 60,
+        "intelligence": 99,
+        "mentality": 78
+      },
+      {
+        "strength": 22,
+        "dexterity": 41,
+        "vitality": 60,
+        "intelligence": 100,
+        "mentality": 79
+      },
+      {
+        "strength": 22,
+        "dexterity": 41,
+        "vitality": 61,
+        "intelligence": 101,
+        "mentality": 80
+      },
+      {
+        "strength": 22,
+        "dexterity": 42,
+        "vitality": 61,
+        "intelligence": 102,
+        "mentality": 81
+      },
+      {
+        "strength": 22,
+        "dexterity": 42,
+        "vitality": 62,
+        "intelligence": 103,
+        "mentality": 82
+      },
+      {
+        "strength": 22,
+        "dexterity": 43,
+        "vitality": 63,
+        "intelligence": 104,
+        "mentality": 82
+      },
+      {
+        "strength": 23,
+        "dexterity": 43,
+        "vitality": 63,
+        "intelligence": 105,
+        "mentality": 83
+      },
+      {
+        "strength": 23,
+        "dexterity": 43,
+        "vitality": 64,
+        "intelligence": 106,
+        "mentality": 84
+      },
+      {
+        "strength": 23,
+        "dexterity": 44,
+        "vitality": 64,
+        "intelligence": 107,
+        "mentality": 85
+      },
+      {
+        "strength": 23,
+        "dexterity": 44,
+        "vitality": 65,
+        "intelligence": 108,
+        "mentality": 86
+      },
+      {
+        "strength": 23,
+        "dexterity": 45,
+        "vitality": 66,
+        "intelligence": 109,
+        "mentality": 86
+      },
+      {
+        "strength": 24,
+        "dexterity": 45,
+        "vitality": 66,
+        "intelligence": 110,
+        "mentality": 87
+      },
+      {
+        "strength": 24,
+        "dexterity": 45,
+        "vitality": 67,
+        "intelligence": 111,
+        "mentality": 88
+      },
+      {
+        "strength": 24,
+        "dexterity": 46,
+        "vitality": 67,
+        "intelligence": 112,
+        "mentality": 89
+      },
+      {
+        "strength": 24,
+        "dexterity": 46,
+        "vitality": 68,
+        "intelligence": 113,
+        "mentality": 90
+      },
+      {
+        "strength": 24,
+        "dexterity": 47,
+        "vitality": 69,
+        "intelligence": 114,
+        "mentality": 90
+      },
+      {
+        "strength": 25,
+        "dexterity": 47,
+        "vitality": 69,
+        "intelligence": 115,
+        "mentality": 91
+      },
+      {
+        "strength": 25,
+        "dexterity": 47,
+        "vitality": 70,
+        "intelligence": 116,
+        "mentality": 92
+      },
+      {
+        "strength": 25,
+        "dexterity": 48,
+        "vitality": 70,
+        "intelligence": 117,
+        "mentality": 93
+      },
+      {
+        "strength": 25,
+        "dexterity": 48,
+        "vitality": 71,
+        "intelligence": 118,
+        "mentality": 94
+      },
+      {
+        "strength": 25,
+        "dexterity": 49,
+        "vitality": 72,
+        "intelligence": 119,
+        "mentality": 94
+      },
+      {
+        "strength": 26,
+        "dexterity": 49,
+        "vitality": 72,
+        "intelligence": 120,
+        "mentality": 95
+      }
+    ],
+    "priest": [
+      {
+        "strength": 11,
+        "dexterity": 7,
+        "vitality": 10,
+        "intelligence": 10,
+        "mentality": 16
+      },
+      {
+        "strength": 12,
+        "dexterity": 7,
+        "vitality": 11,
+        "intelligence": 10,
+        "mentality": 17
+      },
+      {
+        "strength": 12,
+        "dexterity": 7,
+        "vitality": 12,
+        "intelligence": 11,
+        "mentality": 18
+      },
+      {
+        "strength": 13,
+        "dexterity": 7,
+        "vitality": 12,
+        "intelligence": 12,
+        "mentality": 19
+      },
+      {
+        "strength": 13,
+        "dexterity": 8,
+        "vitality": 13,
+        "intelligence": 12,
+        "mentality": 20
+      },
+      {
+        "strength": 13,
+        "dexterity": 8,
+        "vitality": 14,
+        "intelligence": 13,
+        "mentality": 21
+      },
+      {
+        "strength": 14,
+        "dexterity": 8,
+        "vitality": 15,
+        "intelligence": 13,
+        "mentality": 22
+      },
+      {
+        "strength": 14,
+        "dexterity": 8,
+        "vitality": 16,
+        "intelligence": 14,
+        "mentality": 23
+      },
+      {
+        "strength": 15,
+        "dexterity": 8,
+        "vitality": 16,
+        "intelligence": 15,
+        "mentality": 24
+      },
+      {
+        "strength": 15,
+        "dexterity": 9,
+        "vitality": 17,
+        "intelligence": 15,
+        "mentality": 25
+      },
+      {
+        "strength": 15,
+        "dexterity": 9,
+        "vitality": 18,
+        "intelligence": 16,
+        "mentality": 26
+      },
+      {
+        "strength": 16,
+        "dexterity": 9,
+        "vitality": 19,
+        "intelligence": 16,
+        "mentality": 27
+      },
+      {
+        "strength": 16,
+        "dexterity": 9,
+        "vitality": 20,
+        "intelligence": 17,
+        "mentality": 28
+      },
+      {
+        "strength": 17,
+        "dexterity": 9,
+        "vitality": 20,
+        "intelligence": 18,
+        "mentality": 29
+      },
+      {
+        "strength": 17,
+        "dexterity": 10,
+        "vitality": 21,
+        "intelligence": 18,
+        "mentality": 30
+      },
+      {
+        "strength": 17,
+        "dexterity": 10,
+        "vitality": 22,
+        "intelligence": 19,
+        "mentality": 31
+      },
+      {
+        "strength": 18,
+        "dexterity": 10,
+        "vitality": 23,
+        "intelligence": 19,
+        "mentality": 32
+      },
+      {
+        "strength": 18,
+        "dexterity": 10,
+        "vitality": 24,
+        "intelligence": 20,
+        "mentality": 33
+      },
+      {
+        "strength": 19,
+        "dexterity": 10,
+        "vitality": 24,
+        "intelligence": 21,
+        "mentality": 34
+      },
+      {
+        "strength": 19,
+        "dexterity": 11,
+        "vitality": 25,
+        "intelligence": 21,
+        "mentality": 35
+      },
+      {
+        "strength": 19,
+        "dexterity": 11,
+        "vitality": 26,
+        "intelligence": 22,
+        "mentality": 36
+      },
+      {
+        "strength": 20,
+        "dexterity": 11,
+        "vitality": 27,
+        "intelligence": 22,
+        "mentality": 37
+      },
+      {
+        "strength": 20,
+        "dexterity": 11,
+        "vitality": 28,
+        "intelligence": 23,
+        "mentality": 38
+      },
+      {
+        "strength": 21,
+        "dexterity": 11,
+        "vitality": 28,
+        "intelligence": 24,
+        "mentality": 39
+      },
+      {
+        "strength": 21,
+        "dexterity": 12,
+        "vitality": 29,
+        "intelligence": 24,
+        "mentality": 40
+      },
+      {
+        "strength": 21,
+        "dexterity": 12,
+        "vitality": 30,
+        "intelligence": 25,
+        "mentality": 41
+      },
+      {
+        "strength": 22,
+        "dexterity": 12,
+        "vitality": 31,
+        "intelligence": 25,
+        "mentality": 42
+      },
+      {
+        "strength": 22,
+        "dexterity": 12,
+        "vitality": 32,
+        "intelligence": 26,
+        "mentality": 43
+      },
+      {
+        "strength": 23,
+        "dexterity": 12,
+        "vitality": 32,
+        "intelligence": 27,
+        "mentality": 44
+      },
+      {
+        "strength": 23,
+        "dexterity": 13,
+        "vitality": 33,
+        "intelligence": 27,
+        "mentality": 45
+      },
+      {
+        "strength": 23,
+        "dexterity": 13,
+        "vitality": 34,
+        "intelligence": 28,
+        "mentality": 46
+      },
+      {
+        "strength": 24,
+        "dexterity": 13,
+        "vitality": 35,
+        "intelligence": 28,
+        "mentality": 47
+      },
+      {
+        "strength": 24,
+        "dexterity": 13,
+        "vitality": 36,
+        "intelligence": 29,
+        "mentality": 48
+      },
+      {
+        "strength": 25,
+        "dexterity": 13,
+        "vitality": 36,
+        "intelligence": 30,
+        "mentality": 49
+      },
+      {
+        "strength": 25,
+        "dexterity": 14,
+        "vitality": 37,
+        "intelligence": 30,
+        "mentality": 50
+      },
+      {
+        "strength": 25,
+        "dexterity": 14,
+        "vitality": 38,
+        "intelligence": 31,
+        "mentality": 51
+      },
+      {
+        "strength": 26,
+        "dexterity": 14,
+        "vitality": 39,
+        "intelligence": 31,
+        "mentality": 52
+      },
+      {
+        "strength": 26,
+        "dexterity": 14,
+        "vitality": 40,
+        "intelligence": 32,
+        "mentality": 53
+      },
+      {
+        "strength": 27,
+        "dexterity": 14,
+        "vitality": 40,
+        "intelligence": 33,
+        "mentality": 54
+      },
+      {
+        "strength": 27,
+        "dexterity": 15,
+        "vitality": 41,
+        "intelligence": 33,
+        "mentality": 55
+      },
+      {
+        "strength": 27,
+        "dexterity": 15,
+        "vitality": 42,
+        "intelligence": 34,
+        "mentality": 56
+      },
+      {
+        "strength": 28,
+        "dexterity": 15,
+        "vitality": 43,
+        "intelligence": 34,
+        "mentality": 57
+      },
+      {
+        "strength": 28,
+        "dexterity": 15,
+        "vitality": 44,
+        "intelligence": 35,
+        "mentality": 58
+      },
+      {
+        "strength": 29,
+        "dexterity": 15,
+        "vitality": 44,
+        "intelligence": 36,
+        "mentality": 59
+      },
+      {
+        "strength": 29,
+        "dexterity": 16,
+        "vitality": 45,
+        "intelligence": 36,
+        "mentality": 60
+      },
+      {
+        "strength": 29,
+        "dexterity": 16,
+        "vitality": 46,
+        "intelligence": 37,
+        "mentality": 61
+      },
+      {
+        "strength": 30,
+        "dexterity": 16,
+        "vitality": 47,
+        "intelligence": 37,
+        "mentality": 62
+      },
+      {
+        "strength": 30,
+        "dexterity": 16,
+        "vitality": 48,
+        "intelligence": 38,
+        "mentality": 63
+      },
+      {
+        "strength": 31,
+        "dexterity": 16,
+        "vitality": 48,
+        "intelligence": 39,
+        "mentality": 64
+      },
+      {
+        "strength": 31,
+        "dexterity": 17,
+        "vitality": 49,
+        "intelligence": 39,
+        "mentality": 65
+      },
+      {
+        "strength": 31,
+        "dexterity": 17,
+        "vitality": 50,
+        "intelligence": 40,
+        "mentality": 66
+      },
+      {
+        "strength": 32,
+        "dexterity": 17,
+        "vitality": 51,
+        "intelligence": 40,
+        "mentality": 67
+      },
+      {
+        "strength": 32,
+        "dexterity": 17,
+        "vitality": 52,
+        "intelligence": 41,
+        "mentality": 68
+      },
+      {
+        "strength": 33,
+        "dexterity": 17,
+        "vitality": 52,
+        "intelligence": 42,
+        "mentality": 69
+      },
+      {
+        "strength": 33,
+        "dexterity": 18,
+        "vitality": 53,
+        "intelligence": 42,
+        "mentality": 70
+      },
+      {
+        "strength": 33,
+        "dexterity": 18,
+        "vitality": 54,
+        "intelligence": 43,
+        "mentality": 71
+      },
+      {
+        "strength": 34,
+        "dexterity": 18,
+        "vitality": 55,
+        "intelligence": 43,
+        "mentality": 72
+      },
+      {
+        "strength": 34,
+        "dexterity": 18,
+        "vitality": 56,
+        "intelligence": 44,
+        "mentality": 73
+      },
+      {
+        "strength": 35,
+        "dexterity": 18,
+        "vitality": 56,
+        "intelligence": 45,
+        "mentality": 74
+      },
+      {
+        "strength": 35,
+        "dexterity": 19,
+        "vitality": 57,
+        "intelligence": 45,
+        "mentality": 75
+      },
+      {
+        "strength": 35,
+        "dexterity": 19,
+        "vitality": 58,
+        "intelligence": 46,
+        "mentality": 76
+      },
+      {
+        "strength": 36,
+        "dexterity": 19,
+        "vitality": 59,
+        "intelligence": 46,
+        "mentality": 77
+      },
+      {
+        "strength": 36,
+        "dexterity": 19,
+        "vitality": 60,
+        "intelligence": 47,
+        "mentality": 78
+      },
+      {
+        "strength": 37,
+        "dexterity": 19,
+        "vitality": 60,
+        "intelligence": 48,
+        "mentality": 79
+      },
+      {
+        "strength": 37,
+        "dexterity": 20,
+        "vitality": 61,
+        "intelligence": 48,
+        "mentality": 80
+      },
+      {
+        "strength": 37,
+        "dexterity": 20,
+        "vitality": 62,
+        "intelligence": 49,
+        "mentality": 81
+      },
+      {
+        "strength": 38,
+        "dexterity": 20,
+        "vitality": 63,
+        "intelligence": 49,
+        "mentality": 82
+      },
+      {
+        "strength": 38,
+        "dexterity": 20,
+        "vitality": 64,
+        "intelligence": 50,
+        "mentality": 83
+      },
+      {
+        "strength": 39,
+        "dexterity": 20,
+        "vitality": 64,
+        "intelligence": 51,
+        "mentality": 84
+      },
+      {
+        "strength": 39,
+        "dexterity": 21,
+        "vitality": 65,
+        "intelligence": 51,
+        "mentality": 85
+      },
+      {
+        "strength": 39,
+        "dexterity": 21,
+        "vitality": 66,
+        "intelligence": 52,
+        "mentality": 86
+      },
+      {
+        "strength": 40,
+        "dexterity": 21,
+        "vitality": 67,
+        "intelligence": 52,
+        "mentality": 87
+      },
+      {
+        "strength": 40,
+        "dexterity": 21,
+        "vitality": 68,
+        "intelligence": 53,
+        "mentality": 88
+      },
+      {
+        "strength": 41,
+        "dexterity": 21,
+        "vitality": 68,
+        "intelligence": 54,
+        "mentality": 89
+      },
+      {
+        "strength": 41,
+        "dexterity": 22,
+        "vitality": 69,
+        "intelligence": 54,
+        "mentality": 90
+      },
+      {
+        "strength": 41,
+        "dexterity": 22,
+        "vitality": 70,
+        "intelligence": 55,
+        "mentality": 91
+      },
+      {
+        "strength": 42,
+        "dexterity": 22,
+        "vitality": 71,
+        "intelligence": 55,
+        "mentality": 92
+      },
+      {
+        "strength": 42,
+        "dexterity": 22,
+        "vitality": 72,
+        "intelligence": 56,
+        "mentality": 93
+      },
+      {
+        "strength": 43,
+        "dexterity": 22,
+        "vitality": 72,
+        "intelligence": 57,
+        "mentality": 94
+      },
+      {
+        "strength": 43,
+        "dexterity": 23,
+        "vitality": 73,
+        "intelligence": 57,
+        "mentality": 95
+      },
+      {
+        "strength": 43,
+        "dexterity": 23,
+        "vitality": 74,
+        "intelligence": 58,
+        "mentality": 96
+      },
+      {
+        "strength": 44,
+        "dexterity": 23,
+        "vitality": 75,
+        "intelligence": 58,
+        "mentality": 97
+      },
+      {
+        "strength": 44,
+        "dexterity": 23,
+        "vitality": 76,
+        "intelligence": 59,
+        "mentality": 98
+      },
+      {
+        "strength": 45,
+        "dexterity": 23,
+        "vitality": 76,
+        "intelligence": 60,
+        "mentality": 99
+      },
+      {
+        "strength": 45,
+        "dexterity": 24,
+        "vitality": 77,
+        "intelligence": 60,
+        "mentality": 100
+      },
+      {
+        "strength": 45,
+        "dexterity": 24,
+        "vitality": 78,
+        "intelligence": 61,
+        "mentality": 101
+      },
+      {
+        "strength": 46,
+        "dexterity": 24,
+        "vitality": 79,
+        "intelligence": 61,
+        "mentality": 102
+      },
+      {
+        "strength": 46,
+        "dexterity": 24,
+        "vitality": 80,
+        "intelligence": 62,
+        "mentality": 103
+      },
+      {
+        "strength": 47,
+        "dexterity": 24,
+        "vitality": 80,
+        "intelligence": 63,
+        "mentality": 104
+      },
+      {
+        "strength": 47,
+        "dexterity": 25,
+        "vitality": 81,
+        "intelligence": 63,
+        "mentality": 105
+      },
+      {
+        "strength": 47,
+        "dexterity": 25,
+        "vitality": 82,
+        "intelligence": 64,
+        "mentality": 106
+      },
+      {
+        "strength": 48,
+        "dexterity": 25,
+        "vitality": 83,
+        "intelligence": 64,
+        "mentality": 107
+      },
+      {
+        "strength": 48,
+        "dexterity": 25,
+        "vitality": 84,
+        "intelligence": 65,
+        "mentality": 108
+      },
+      {
+        "strength": 49,
+        "dexterity": 25,
+        "vitality": 84,
+        "intelligence": 66,
+        "mentality": 109
+      },
+      {
+        "strength": 49,
+        "dexterity": 26,
+        "vitality": 85,
+        "intelligence": 66,
+        "mentality": 110
+      },
+      {
+        "strength": 49,
+        "dexterity": 26,
+        "vitality": 86,
+        "intelligence": 67,
+        "mentality": 111
+      },
+      {
+        "strength": 50,
+        "dexterity": 26,
+        "vitality": 87,
+        "intelligence": 67,
+        "mentality": 112
+      },
+      {
+        "strength": 50,
+        "dexterity": 26,
+        "vitality": 88,
+        "intelligence": 68,
+        "mentality": 113
+      },
+      {
+        "strength": 51,
+        "dexterity": 26,
+        "vitality": 88,
+        "intelligence": 69,
+        "mentality": 114
+      },
+      {
+        "strength": 51,
+        "dexterity": 27,
+        "vitality": 89,
+        "intelligence": 69,
+        "mentality": 115
+      },
+      {
+        "strength": 51,
+        "dexterity": 27,
+        "vitality": 90,
+        "intelligence": 70,
+        "mentality": 116
+      },
+      {
+        "strength": 52,
+        "dexterity": 27,
+        "vitality": 91,
+        "intelligence": 70,
+        "mentality": 117
+      },
+      {
+        "strength": 52,
+        "dexterity": 27,
+        "vitality": 92,
+        "intelligence": 71,
+        "mentality": 118
+      },
+      {
+        "strength": 53,
+        "dexterity": 27,
+        "vitality": 92,
+        "intelligence": 72,
+        "mentality": 119
+      },
+      {
+        "strength": 53,
+        "dexterity": 28,
+        "vitality": 93,
+        "intelligence": 72,
+        "mentality": 120
+      }
+    ],
+    "ranger": [
+      {
+        "strength": 8,
+        "dexterity": 16,
+        "vitality": 11,
+        "intelligence": 5,
+        "mentality": 11
+      },
+      {
+        "strength": 8,
+        "dexterity": 17,
+        "vitality": 12,
+        "intelligence": 5,
+        "mentality": 12
+      },
+      {
+        "strength": 9,
+        "dexterity": 18,
+        "vitality": 13,
+        "intelligence": 5,
+        "mentality": 12
+      },
+      {
+        "strength": 10,
+        "dexterity": 19,
+        "vitality": 13,
+        "intelligence": 5,
+        "mentality": 13
+      },
+      {
+        "strength": 10,
+        "dexterity": 20,
+        "vitality": 14,
+        "intelligence": 6,
+        "mentality": 13
+      },
+      {
+        "strength": 11,
+        "dexterity": 21,
+        "vitality": 15,
+        "intelligence": 6,
+        "mentality": 13
+      },
+      {
+        "strength": 11,
+        "dexterity": 22,
+        "vitality": 16,
+        "intelligence": 6,
+        "mentality": 14
+      },
+      {
+        "strength": 12,
+        "dexterity": 23,
+        "vitality": 17,
+        "intelligence": 6,
+        "mentality": 14
+      },
+      {
+        "strength": 13,
+        "dexterity": 24,
+        "vitality": 17,
+        "intelligence": 6,
+        "mentality": 15
+      },
+      {
+        "strength": 13,
+        "dexterity": 25,
+        "vitality": 18,
+        "intelligence": 7,
+        "mentality": 15
+      },
+      {
+        "strength": 14,
+        "dexterity": 26,
+        "vitality": 19,
+        "intelligence": 7,
+        "mentality": 15
+      },
+      {
+        "strength": 14,
+        "dexterity": 27,
+        "vitality": 20,
+        "intelligence": 7,
+        "mentality": 16
+      },
+      {
+        "strength": 15,
+        "dexterity": 28,
+        "vitality": 21,
+        "intelligence": 7,
+        "mentality": 16
+      },
+      {
+        "strength": 16,
+        "dexterity": 29,
+        "vitality": 21,
+        "intelligence": 7,
+        "mentality": 17
+      },
+      {
+        "strength": 16,
+        "dexterity": 30,
+        "vitality": 22,
+        "intelligence": 8,
+        "mentality": 17
+      },
+      {
+        "strength": 17,
+        "dexterity": 31,
+        "vitality": 23,
+        "intelligence": 8,
+        "mentality": 17
+      },
+      {
+        "strength": 17,
+        "dexterity": 32,
+        "vitality": 24,
+        "intelligence": 8,
+        "mentality": 18
+      },
+      {
+        "strength": 18,
+        "dexterity": 33,
+        "vitality": 25,
+        "intelligence": 8,
+        "mentality": 18
+      },
+      {
+        "strength": 19,
+        "dexterity": 34,
+        "vitality": 25,
+        "intelligence": 8,
+        "mentality": 19
+      },
+      {
+        "strength": 19,
+        "dexterity": 35,
+        "vitality": 26,
+        "intelligence": 9,
+        "mentality": 19
+      },
+      {
+        "strength": 20,
+        "dexterity": 36,
+        "vitality": 27,
+        "intelligence": 9,
+        "mentality": 19
+      },
+      {
+        "strength": 20,
+        "dexterity": 37,
+        "vitality": 28,
+        "intelligence": 9,
+        "mentality": 20
+      },
+      {
+        "strength": 21,
+        "dexterity": 38,
+        "vitality": 29,
+        "intelligence": 9,
+        "mentality": 20
+      },
+      {
+        "strength": 22,
+        "dexterity": 39,
+        "vitality": 29,
+        "intelligence": 9,
+        "mentality": 21
+      },
+      {
+        "strength": 22,
+        "dexterity": 40,
+        "vitality": 30,
+        "intelligence": 10,
+        "mentality": 21
+      },
+      {
+        "strength": 23,
+        "dexterity": 41,
+        "vitality": 31,
+        "intelligence": 10,
+        "mentality": 21
+      },
+      {
+        "strength": 23,
+        "dexterity": 42,
+        "vitality": 32,
+        "intelligence": 10,
+        "mentality": 22
+      },
+      {
+        "strength": 24,
+        "dexterity": 43,
+        "vitality": 33,
+        "intelligence": 10,
+        "mentality": 22
+      },
+      {
+        "strength": 25,
+        "dexterity": 44,
+        "vitality": 33,
+        "intelligence": 10,
+        "mentality": 23
+      },
+      {
+        "strength": 25,
+        "dexterity": 45,
+        "vitality": 34,
+        "intelligence": 11,
+        "mentality": 23
+      },
+      {
+        "strength": 26,
+        "dexterity": 46,
+        "vitality": 35,
+        "intelligence": 11,
+        "mentality": 23
+      },
+      {
+        "strength": 26,
+        "dexterity": 47,
+        "vitality": 36,
+        "intelligence": 11,
+        "mentality": 24
+      },
+      {
+        "strength": 27,
+        "dexterity": 48,
+        "vitality": 37,
+        "intelligence": 11,
+        "mentality": 24
+      },
+      {
+        "strength": 28,
+        "dexterity": 49,
+        "vitality": 37,
+        "intelligence": 11,
+        "mentality": 25
+      },
+      {
+        "strength": 28,
+        "dexterity": 50,
+        "vitality": 38,
+        "intelligence": 12,
+        "mentality": 25
+      },
+      {
+        "strength": 29,
+        "dexterity": 51,
+        "vitality": 39,
+        "intelligence": 12,
+        "mentality": 25
+      },
+      {
+        "strength": 29,
+        "dexterity": 52,
+        "vitality": 40,
+        "intelligence": 12,
+        "mentality": 26
+      },
+      {
+        "strength": 30,
+        "dexterity": 53,
+        "vitality": 41,
+        "intelligence": 12,
+        "mentality": 26
+      },
+      {
+        "strength": 31,
+        "dexterity": 54,
+        "vitality": 41,
+        "intelligence": 12,
+        "mentality": 27
+      },
+      {
+        "strength": 31,
+        "dexterity": 55,
+        "vitality": 42,
+        "intelligence": 13,
+        "mentality": 27
+      },
+      {
+        "strength": 32,
+        "dexterity": 56,
+        "vitality": 43,
+        "intelligence": 13,
+        "mentality": 27
+      },
+      {
+        "strength": 32,
+        "dexterity": 57,
+        "vitality": 44,
+        "intelligence": 13,
+        "mentality": 28
+      },
+      {
+        "strength": 33,
+        "dexterity": 58,
+        "vitality": 45,
+        "intelligence": 13,
+        "mentality": 28
+      },
+      {
+        "strength": 34,
+        "dexterity": 59,
+        "vitality": 45,
+        "intelligence": 13,
+        "mentality": 29
+      },
+      {
+        "strength": 34,
+        "dexterity": 60,
+        "vitality": 46,
+        "intelligence": 14,
+        "mentality": 29
+      },
+      {
+        "strength": 35,
+        "dexterity": 61,
+        "vitality": 47,
+        "intelligence": 14,
+        "mentality": 29
+      },
+      {
+        "strength": 35,
+        "dexterity": 62,
+        "vitality": 48,
+        "intelligence": 14,
+        "mentality": 30
+      },
+      {
+        "strength": 36,
+        "dexterity": 63,
+        "vitality": 49,
+        "intelligence": 14,
+        "mentality": 30
+      },
+      {
+        "strength": 37,
+        "dexterity": 64,
+        "vitality": 49,
+        "intelligence": 14,
+        "mentality": 31
+      },
+      {
+        "strength": 37,
+        "dexterity": 65,
+        "vitality": 50,
+        "intelligence": 15,
+        "mentality": 31
+      },
+      {
+        "strength": 38,
+        "dexterity": 66,
+        "vitality": 51,
+        "intelligence": 15,
+        "mentality": 31
+      },
+      {
+        "strength": 38,
+        "dexterity": 67,
+        "vitality": 52,
+        "intelligence": 15,
+        "mentality": 32
+      },
+      {
+        "strength": 39,
+        "dexterity": 68,
+        "vitality": 53,
+        "intelligence": 15,
+        "mentality": 32
+      },
+      {
+        "strength": 40,
+        "dexterity": 69,
+        "vitality": 53,
+        "intelligence": 15,
+        "mentality": 33
+      },
+      {
+        "strength": 40,
+        "dexterity": 70,
+        "vitality": 54,
+        "intelligence": 16,
+        "mentality": 33
+      },
+      {
+        "strength": 41,
+        "dexterity": 71,
+        "vitality": 55,
+        "intelligence": 16,
+        "mentality": 33
+      },
+      {
+        "strength": 41,
+        "dexterity": 72,
+        "vitality": 56,
+        "intelligence": 16,
+        "mentality": 34
+      },
+      {
+        "strength": 42,
+        "dexterity": 73,
+        "vitality": 57,
+        "intelligence": 16,
+        "mentality": 34
+      },
+      {
+        "strength": 43,
+        "dexterity": 74,
+        "vitality": 57,
+        "intelligence": 16,
+        "mentality": 35
+      },
+      {
+        "strength": 43,
+        "dexterity": 75,
+        "vitality": 58,
+        "intelligence": 17,
+        "mentality": 35
+      },
+      {
+        "strength": 44,
+        "dexterity": 76,
+        "vitality": 59,
+        "intelligence": 17,
+        "mentality": 35
+      },
+      {
+        "strength": 44,
+        "dexterity": 77,
+        "vitality": 60,
+        "intelligence": 17,
+        "mentality": 36
+      },
+      {
+        "strength": 45,
+        "dexterity": 78,
+        "vitality": 61,
+        "intelligence": 17,
+        "mentality": 36
+      },
+      {
+        "strength": 46,
+        "dexterity": 79,
+        "vitality": 61,
+        "intelligence": 17,
+        "mentality": 37
+      },
+      {
+        "strength": 46,
+        "dexterity": 80,
+        "vitality": 62,
+        "intelligence": 18,
+        "mentality": 37
+      },
+      {
+        "strength": 47,
+        "dexterity": 81,
+        "vitality": 63,
+        "intelligence": 18,
+        "mentality": 37
+      },
+      {
+        "strength": 47,
+        "dexterity": 82,
+        "vitality": 64,
+        "intelligence": 18,
+        "mentality": 38
+      },
+      {
+        "strength": 48,
+        "dexterity": 83,
+        "vitality": 65,
+        "intelligence": 18,
+        "mentality": 38
+      },
+      {
+        "strength": 49,
+        "dexterity": 84,
+        "vitality": 65,
+        "intelligence": 18,
+        "mentality": 39
+      },
+      {
+        "strength": 49,
+        "dexterity": 85,
+        "vitality": 66,
+        "intelligence": 19,
+        "mentality": 39
+      },
+      {
+        "strength": 50,
+        "dexterity": 86,
+        "vitality": 67,
+        "intelligence": 19,
+        "mentality": 39
+      },
+      {
+        "strength": 50,
+        "dexterity": 87,
+        "vitality": 68,
+        "intelligence": 19,
+        "mentality": 40
+      },
+      {
+        "strength": 51,
+        "dexterity": 88,
+        "vitality": 69,
+        "intelligence": 19,
+        "mentality": 40
+      },
+      {
+        "strength": 52,
+        "dexterity": 89,
+        "vitality": 69,
+        "intelligence": 19,
+        "mentality": 41
+      },
+      {
+        "strength": 52,
+        "dexterity": 90,
+        "vitality": 70,
+        "intelligence": 20,
+        "mentality": 41
+      },
+      {
+        "strength": 53,
+        "dexterity": 91,
+        "vitality": 71,
+        "intelligence": 20,
+        "mentality": 41
+      },
+      {
+        "strength": 53,
+        "dexterity": 92,
+        "vitality": 72,
+        "intelligence": 20,
+        "mentality": 42
+      },
+      {
+        "strength": 54,
+        "dexterity": 93,
+        "vitality": 73,
+        "intelligence": 20,
+        "mentality": 42
+      },
+      {
+        "strength": 55,
+        "dexterity": 94,
+        "vitality": 73,
+        "intelligence": 20,
+        "mentality": 43
+      },
+      {
+        "strength": 55,
+        "dexterity": 95,
+        "vitality": 74,
+        "intelligence": 21,
+        "mentality": 43
+      },
+      {
+        "strength": 56,
+        "dexterity": 96,
+        "vitality": 75,
+        "intelligence": 21,
+        "mentality": 43
+      },
+      {
+        "strength": 56,
+        "dexterity": 97,
+        "vitality": 76,
+        "intelligence": 21,
+        "mentality": 44
+      },
+      {
+        "strength": 57,
+        "dexterity": 98,
+        "vitality": 77,
+        "intelligence": 21,
+        "mentality": 44
+      },
+      {
+        "strength": 58,
+        "dexterity": 99,
+        "vitality": 77,
+        "intelligence": 21,
+        "mentality": 45
+      },
+      {
+        "strength": 58,
+        "dexterity": 100,
+        "vitality": 78,
+        "intelligence": 22,
+        "mentality": 45
+      },
+      {
+        "strength": 59,
+        "dexterity": 101,
+        "vitality": 79,
+        "intelligence": 22,
+        "mentality": 45
+      },
+      {
+        "strength": 59,
+        "dexterity": 102,
+        "vitality": 80,
+        "intelligence": 22,
+        "mentality": 46
+      },
+      {
+        "strength": 60,
+        "dexterity": 103,
+        "vitality": 81,
+        "intelligence": 22,
+        "mentality": 46
+      },
+      {
+        "strength": 61,
+        "dexterity": 104,
+        "vitality": 81,
+        "intelligence": 22,
+        "mentality": 47
+      },
+      {
+        "strength": 61,
+        "dexterity": 105,
+        "vitality": 82,
+        "intelligence": 23,
+        "mentality": 47
+      },
+      {
+        "strength": 62,
+        "dexterity": 106,
+        "vitality": 83,
+        "intelligence": 23,
+        "mentality": 47
+      },
+      {
+        "strength": 62,
+        "dexterity": 107,
+        "vitality": 84,
+        "intelligence": 23,
+        "mentality": 48
+      },
+      {
+        "strength": 63,
+        "dexterity": 108,
+        "vitality": 85,
+        "intelligence": 23,
+        "mentality": 48
+      },
+      {
+        "strength": 64,
+        "dexterity": 109,
+        "vitality": 85,
+        "intelligence": 23,
+        "mentality": 49
+      },
+      {
+        "strength": 64,
+        "dexterity": 110,
+        "vitality": 86,
+        "intelligence": 24,
+        "mentality": 49
+      },
+      {
+        "strength": 65,
+        "dexterity": 111,
+        "vitality": 87,
+        "intelligence": 24,
+        "mentality": 49
+      },
+      {
+        "strength": 65,
+        "dexterity": 112,
+        "vitality": 88,
+        "intelligence": 24,
+        "mentality": 50
+      },
+      {
+        "strength": 66,
+        "dexterity": 113,
+        "vitality": 89,
+        "intelligence": 24,
+        "mentality": 50
+      },
+      {
+        "strength": 67,
+        "dexterity": 114,
+        "vitality": 89,
+        "intelligence": 24,
+        "mentality": 51
+      },
+      {
+        "strength": 67,
+        "dexterity": 115,
+        "vitality": 90,
+        "intelligence": 25,
+        "mentality": 51
+      },
+      {
+        "strength": 68,
+        "dexterity": 116,
+        "vitality": 91,
+        "intelligence": 25,
+        "mentality": 51
+      },
+      {
+        "strength": 68,
+        "dexterity": 117,
+        "vitality": 92,
+        "intelligence": 25,
+        "mentality": 52
+      },
+      {
+        "strength": 69,
+        "dexterity": 118,
+        "vitality": 93,
+        "intelligence": 25,
+        "mentality": 52
+      },
+      {
+        "strength": 70,
+        "dexterity": 119,
+        "vitality": 93,
+        "intelligence": 25,
+        "mentality": 53
+      },
+      {
+        "strength": 70,
+        "dexterity": 120,
+        "vitality": 94,
+        "intelligence": 26,
+        "mentality": 53
+      }
+    ],
+    "warrior": [
+      {
+        "strength": 14,
+        "dexterity": 12,
+        "vitality": 13,
+        "intelligence": 5,
+        "mentality": 6
+      },
+      {
+        "strength": 15,
+        "dexterity": 12,
+        "vitality": 14,
+        "intelligence": 6,
+        "mentality": 6
+      },
+      {
+        "strength": 16,
+        "dexterity": 13,
+        "vitality": 15,
+        "intelligence": 6,
+        "mentality": 6
+      },
+      {
+        "strength": 16,
+        "dexterity": 14,
+        "vitality": 16,
+        "intelligence": 7,
+        "mentality": 6
+      },
+      {
+        "strength": 17,
+        "dexterity": 14,
+        "vitality": 17,
+        "intelligence": 7,
+        "mentality": 7
+      },
+      {
+        "strength": 18,
+        "dexterity": 15,
+        "vitality": 18,
+        "intelligence": 7,
+        "mentality": 7
+      },
+      {
+        "strength": 19,
+        "dexterity": 15,
+        "vitality": 19,
+        "intelligence": 8,
+        "mentality": 7
+      },
+      {
+        "strength": 20,
+        "dexterity": 16,
+        "vitality": 20,
+        "intelligence": 8,
+        "mentality": 7
+      },
+      {
+        "strength": 20,
+        "dexterity": 17,
+        "vitality": 21,
+        "intelligence": 9,
+        "mentality": 7
+      },
+      {
+        "strength": 21,
+        "dexterity": 17,
+        "vitality": 22,
+        "intelligence": 9,
+        "mentality": 8
+      },
+      {
+        "strength": 22,
+        "dexterity": 18,
+        "vitality": 23,
+        "intelligence": 9,
+        "mentality": 8
+      },
+      {
+        "strength": 23,
+        "dexterity": 18,
+        "vitality": 24,
+        "intelligence": 10,
+        "mentality": 8
+      },
+      {
+        "strength": 24,
+        "dexterity": 19,
+        "vitality": 25,
+        "intelligence": 10,
+        "mentality": 8
+      },
+      {
+        "strength": 24,
+        "dexterity": 20,
+        "vitality": 26,
+        "intelligence": 11,
+        "mentality": 8
+      },
+      {
+        "strength": 25,
+        "dexterity": 20,
+        "vitality": 27,
+        "intelligence": 11,
+        "mentality": 9
+      },
+      {
+        "strength": 26,
+        "dexterity": 21,
+        "vitality": 28,
+        "intelligence": 11,
+        "mentality": 9
+      },
+      {
+        "strength": 27,
+        "dexterity": 21,
+        "vitality": 29,
+        "intelligence": 12,
+        "mentality": 9
+      },
+      {
+        "strength": 28,
+        "dexterity": 22,
+        "vitality": 30,
+        "intelligence": 12,
+        "mentality": 9
+      },
+      {
+        "strength": 28,
+        "dexterity": 23,
+        "vitality": 31,
+        "intelligence": 13,
+        "mentality": 9
+      },
+      {
+        "strength": 29,
+        "dexterity": 23,
+        "vitality": 32,
+        "intelligence": 13,
+        "mentality": 10
+      },
+      {
+        "strength": 30,
+        "dexterity": 24,
+        "vitality": 33,
+        "intelligence": 13,
+        "mentality": 10
+      },
+      {
+        "strength": 31,
+        "dexterity": 24,
+        "vitality": 34,
+        "intelligence": 14,
+        "mentality": 10
+      },
+      {
+        "strength": 32,
+        "dexterity": 25,
+        "vitality": 35,
+        "intelligence": 14,
+        "mentality": 10
+      },
+      {
+        "strength": 32,
+        "dexterity": 26,
+        "vitality": 36,
+        "intelligence": 15,
+        "mentality": 10
+      },
+      {
+        "strength": 33,
+        "dexterity": 26,
+        "vitality": 37,
+        "intelligence": 15,
+        "mentality": 11
+      },
+      {
+        "strength": 34,
+        "dexterity": 27,
+        "vitality": 38,
+        "intelligence": 15,
+        "mentality": 11
+      },
+      {
+        "strength": 35,
+        "dexterity": 27,
+        "vitality": 39,
+        "intelligence": 16,
+        "mentality": 11
+      },
+      {
+        "strength": 36,
+        "dexterity": 28,
+        "vitality": 40,
+        "intelligence": 16,
+        "mentality": 11
+      },
+      {
+        "strength": 36,
+        "dexterity": 29,
+        "vitality": 41,
+        "intelligence": 17,
+        "mentality": 11
+      },
+      {
+        "strength": 37,
+        "dexterity": 29,
+        "vitality": 42,
+        "intelligence": 17,
+        "mentality": 12
+      },
+      {
+        "strength": 38,
+        "dexterity": 30,
+        "vitality": 43,
+        "intelligence": 17,
+        "mentality": 12
+      },
+      {
+        "strength": 39,
+        "dexterity": 30,
+        "vitality": 44,
+        "intelligence": 18,
+        "mentality": 12
+      },
+      {
+        "strength": 40,
+        "dexterity": 31,
+        "vitality": 45,
+        "intelligence": 18,
+        "mentality": 12
+      },
+      {
+        "strength": 40,
+        "dexterity": 32,
+        "vitality": 46,
+        "intelligence": 19,
+        "mentality": 12
+      },
+      {
+        "strength": 41,
+        "dexterity": 32,
+        "vitality": 47,
+        "intelligence": 19,
+        "mentality": 13
+      },
+      {
+        "strength": 42,
+        "dexterity": 33,
+        "vitality": 48,
+        "intelligence": 19,
+        "mentality": 13
+      },
+      {
+        "strength": 43,
+        "dexterity": 33,
+        "vitality": 49,
+        "intelligence": 20,
+        "mentality": 13
+      },
+      {
+        "strength": 44,
+        "dexterity": 34,
+        "vitality": 50,
+        "intelligence": 20,
+        "mentality": 13
+      },
+      {
+        "strength": 44,
+        "dexterity": 35,
+        "vitality": 51,
+        "intelligence": 21,
+        "mentality": 13
+      },
+      {
+        "strength": 45,
+        "dexterity": 35,
+        "vitality": 52,
+        "intelligence": 21,
+        "mentality": 14
+      },
+      {
+        "strength": 46,
+        "dexterity": 36,
+        "vitality": 53,
+        "intelligence": 21,
+        "mentality": 14
+      },
+      {
+        "strength": 47,
+        "dexterity": 36,
+        "vitality": 54,
+        "intelligence": 22,
+        "mentality": 14
+      },
+      {
+        "strength": 48,
+        "dexterity": 37,
+        "vitality": 55,
+        "intelligence": 22,
+        "mentality": 14
+      },
+      {
+        "strength": 48,
+        "dexterity": 38,
+        "vitality": 56,
+        "intelligence": 23,
+        "mentality": 14
+      },
+      {
+        "strength": 49,
+        "dexterity": 38,
+        "vitality": 57,
+        "intelligence": 23,
+        "mentality": 15
+      },
+      {
+        "strength": 50,
+        "dexterity": 39,
+        "vitality": 58,
+        "intelligence": 23,
+        "mentality": 15
+      },
+      {
+        "strength": 51,
+        "dexterity": 39,
+        "vitality": 59,
+        "intelligence": 24,
+        "mentality": 15
+      },
+      {
+        "strength": 52,
+        "dexterity": 40,
+        "vitality": 60,
+        "intelligence": 24,
+        "mentality": 15
+      },
+      {
+        "strength": 52,
+        "dexterity": 41,
+        "vitality": 61,
+        "intelligence": 25,
+        "mentality": 15
+      },
+      {
+        "strength": 53,
+        "dexterity": 41,
+        "vitality": 62,
+        "intelligence": 25,
+        "mentality": 16
+      },
+      {
+        "strength": 54,
+        "dexterity": 42,
+        "vitality": 63,
+        "intelligence": 25,
+        "mentality": 16
+      },
+      {
+        "strength": 55,
+        "dexterity": 42,
+        "vitality": 64,
+        "intelligence": 26,
+        "mentality": 16
+      },
+      {
+        "strength": 56,
+        "dexterity": 43,
+        "vitality": 65,
+        "intelligence": 26,
+        "mentality": 16
+      },
+      {
+        "strength": 56,
+        "dexterity": 44,
+        "vitality": 66,
+        "intelligence": 27,
+        "mentality": 16
+      },
+      {
+        "strength": 57,
+        "dexterity": 44,
+        "vitality": 67,
+        "intelligence": 27,
+        "mentality": 17
+      },
+      {
+        "strength": 58,
+        "dexterity": 45,
+        "vitality": 68,
+        "intelligence": 27,
+        "mentality": 17
+      },
+      {
+        "strength": 59,
+        "dexterity": 45,
+        "vitality": 69,
+        "intelligence": 28,
+        "mentality": 17
+      },
+      {
+        "strength": 60,
+        "dexterity": 46,
+        "vitality": 70,
+        "intelligence": 28,
+        "mentality": 17
+      },
+      {
+        "strength": 60,
+        "dexterity": 47,
+        "vitality": 71,
+        "intelligence": 29,
+        "mentality": 17
+      },
+      {
+        "strength": 61,
+        "dexterity": 47,
+        "vitality": 72,
+        "intelligence": 29,
+        "mentality": 18
+      },
+      {
+        "strength": 62,
+        "dexterity": 48,
+        "vitality": 73,
+        "intelligence": 29,
+        "mentality": 18
+      },
+      {
+        "strength": 63,
+        "dexterity": 48,
+        "vitality": 74,
+        "intelligence": 30,
+        "mentality": 18
+      },
+      {
+        "strength": 64,
+        "dexterity": 49,
+        "vitality": 75,
+        "intelligence": 30,
+        "mentality": 18
+      },
+      {
+        "strength": 64,
+        "dexterity": 50,
+        "vitality": 76,
+        "intelligence": 31,
+        "mentality": 18
+      },
+      {
+        "strength": 65,
+        "dexterity": 50,
+        "vitality": 77,
+        "intelligence": 31,
+        "mentality": 19
+      },
+      {
+        "strength": 66,
+        "dexterity": 51,
+        "vitality": 78,
+        "intelligence": 31,
+        "mentality": 19
+      },
+      {
+        "strength": 67,
+        "dexterity": 51,
+        "vitality": 79,
+        "intelligence": 32,
+        "mentality": 19
+      },
+      {
+        "strength": 68,
+        "dexterity": 52,
+        "vitality": 80,
+        "intelligence": 32,
+        "mentality": 19
+      },
+      {
+        "strength": 68,
+        "dexterity": 53,
+        "vitality": 81,
+        "intelligence": 33,
+        "mentality": 19
+      },
+      {
+        "strength": 69,
+        "dexterity": 53,
+        "vitality": 82,
+        "intelligence": 33,
+        "mentality": 20
+      },
+      {
+        "strength": 70,
+        "dexterity": 54,
+        "vitality": 83,
+        "intelligence": 33,
+        "mentality": 20
+      },
+      {
+        "strength": 71,
+        "dexterity": 54,
+        "vitality": 84,
+        "intelligence": 34,
+        "mentality": 20
+      },
+      {
+        "strength": 72,
+        "dexterity": 55,
+        "vitality": 85,
+        "intelligence": 34,
+        "mentality": 20
+      },
+      {
+        "strength": 72,
+        "dexterity": 56,
+        "vitality": 86,
+        "intelligence": 35,
+        "mentality": 20
+      },
+      {
+        "strength": 73,
+        "dexterity": 56,
+        "vitality": 87,
+        "intelligence": 35,
+        "mentality": 21
+      },
+      {
+        "strength": 74,
+        "dexterity": 57,
+        "vitality": 88,
+        "intelligence": 35,
+        "mentality": 21
+      },
+      {
+        "strength": 75,
+        "dexterity": 57,
+        "vitality": 89,
+        "intelligence": 36,
+        "mentality": 21
+      },
+      {
+        "strength": 76,
+        "dexterity": 58,
+        "vitality": 90,
+        "intelligence": 36,
+        "mentality": 21
+      },
+      {
+        "strength": 76,
+        "dexterity": 59,
+        "vitality": 91,
+        "intelligence": 37,
+        "mentality": 21
+      },
+      {
+        "strength": 77,
+        "dexterity": 59,
+        "vitality": 92,
+        "intelligence": 37,
+        "mentality": 22
+      },
+      {
+        "strength": 78,
+        "dexterity": 60,
+        "vitality": 93,
+        "intelligence": 37,
+        "mentality": 22
+      },
+      {
+        "strength": 79,
+        "dexterity": 60,
+        "vitality": 94,
+        "intelligence": 38,
+        "mentality": 22
+      },
+      {
+        "strength": 80,
+        "dexterity": 61,
+        "vitality": 95,
+        "intelligence": 38,
+        "mentality": 22
+      },
+      {
+        "strength": 80,
+        "dexterity": 62,
+        "vitality": 96,
+        "intelligence": 39,
+        "mentality": 22
+      },
+      {
+        "strength": 81,
+        "dexterity": 62,
+        "vitality": 97,
+        "intelligence": 39,
+        "mentality": 23
+      },
+      {
+        "strength": 82,
+        "dexterity": 63,
+        "vitality": 98,
+        "intelligence": 39,
+        "mentality": 23
+      },
+      {
+        "strength": 83,
+        "dexterity": 63,
+        "vitality": 99,
+        "intelligence": 40,
+        "mentality": 23
+      },
+      {
+        "strength": 84,
+        "dexterity": 64,
+        "vitality": 100,
+        "intelligence": 40,
+        "mentality": 23
+      },
+      {
+        "strength": 84,
+        "dexterity": 65,
+        "vitality": 101,
+        "intelligence": 41,
+        "mentality": 23
+      },
+      {
+        "strength": 85,
+        "dexterity": 65,
+        "vitality": 102,
+        "intelligence": 41,
+        "mentality": 24
+      },
+      {
+        "strength": 86,
+        "dexterity": 66,
+        "vitality": 103,
+        "intelligence": 41,
+        "mentality": 24
+      },
+      {
+        "strength": 87,
+        "dexterity": 66,
+        "vitality": 104,
+        "intelligence": 42,
+        "mentality": 24
+      },
+      {
+        "strength": 88,
+        "dexterity": 67,
+        "vitality": 105,
+        "intelligence": 42,
+        "mentality": 24
+      },
+      {
+        "strength": 88,
+        "dexterity": 68,
+        "vitality": 106,
+        "intelligence": 43,
+        "mentality": 24
+      },
+      {
+        "strength": 89,
+        "dexterity": 68,
+        "vitality": 107,
+        "intelligence": 43,
+        "mentality": 25
+      },
+      {
+        "strength": 90,
+        "dexterity": 69,
+        "vitality": 108,
+        "intelligence": 43,
+        "mentality": 25
+      },
+      {
+        "strength": 91,
+        "dexterity": 69,
+        "vitality": 109,
+        "intelligence": 44,
+        "mentality": 25
+      },
+      {
+        "strength": 92,
+        "dexterity": 70,
+        "vitality": 110,
+        "intelligence": 44,
+        "mentality": 25
+      },
+      {
+        "strength": 92,
+        "dexterity": 71,
+        "vitality": 111,
+        "intelligence": 45,
+        "mentality": 25
+      },
+      {
+        "strength": 93,
+        "dexterity": 71,
+        "vitality": 112,
+        "intelligence": 45,
+        "mentality": 26
+      },
+      {
+        "strength": 94,
+        "dexterity": 72,
+        "vitality": 113,
+        "intelligence": 45,
+        "mentality": 26
+      },
+      {
+        "strength": 95,
+        "dexterity": 72,
+        "vitality": 114,
+        "intelligence": 46,
+        "mentality": 26
+      },
+      {
+        "strength": 96,
+        "dexterity": 73,
+        "vitality": 115,
+        "intelligence": 46,
+        "mentality": 26
+      },
+      {
+        "strength": 96,
+        "dexterity": 74,
+        "vitality": 116,
+        "intelligence": 47,
+        "mentality": 26
+      },
+      {
+        "strength": 97,
+        "dexterity": 74,
+        "vitality": 117,
+        "intelligence": 47,
+        "mentality": 27
+      }
+    ]
+  },
+  "generation": {
+    "emblems": {
+      "mercenary-emblem-black-knight": {
+        "classId": "dark-knight",
+        "qualityWeights": [
+          80,
+          20,
+          0,
+          0
+        ],
+        "guaranteedRare": false
+      },
+      "mercenary-emblem-assassin": {
+        "classId": "assassin",
+        "qualityWeights": [
+          80,
+          20,
+          0,
+          0
+        ],
+        "guaranteedRare": false
+      },
+      "mercenary-emblem-ranger": {
+        "classId": "ranger",
+        "qualityWeights": [
+          80,
+          20,
+          0,
+          0
+        ],
+        "guaranteedRare": false
+      },
+      "mercenary-emblem-warlock": {
+        "classId": "warlock",
+        "qualityWeights": [
+          80,
+          20,
+          0,
+          0
+        ],
+        "guaranteedRare": false
+      },
+      "mercenary-emblem-priest": {
+        "classId": "priest",
+        "qualityWeights": [
+          80,
+          20,
+          0,
+          0
+        ],
+        "guaranteedRare": false
+      },
+      "mercenary-emblem-warrior": {
+        "classId": "warrior",
+        "qualityWeights": [
+          80,
+          20,
+          0,
+          0
+        ],
+        "guaranteedRare": false
+      },
+      "divine-mercenary-emblem": {
+        "classId": null,
+        "qualityWeights": [
+          40,
+          40,
+          20,
+          0
+        ],
+        "guaranteedRare": false
+      },
+      "hero-emblem": {
+        "classId": null,
+        "qualityWeights": [
+          0,
+          0,
+          80,
+          20
+        ],
+        "guaranteedRare": true
+      },
+      "shadow-mercenary-emblem": {
+        "classId": null,
+        "qualityWeights": [
+          100,
+          0,
+          0,
+          0
+        ],
+        "guaranteedRare": false
+      },
+      "hero-s-emblem-black-knight": {
+        "classId": "dark-knight",
+        "qualityWeights": [
+          0,
+          0,
+          80,
+          20
+        ],
+        "guaranteedRare": true
+      },
+      "hero-s-emblem-assassin": {
+        "classId": "assassin",
+        "qualityWeights": [
+          0,
+          0,
+          80,
+          20
+        ],
+        "guaranteedRare": true
+      },
+      "hero-s-emblem-warlock": {
+        "classId": "warlock",
+        "qualityWeights": [
+          0,
+          0,
+          80,
+          20
+        ],
+        "guaranteedRare": true
+      },
+      "hero-s-emblem-priest": {
+        "classId": "priest",
+        "qualityWeights": [
+          0,
+          0,
+          80,
+          20
+        ],
+        "guaranteedRare": true
+      },
+      "hero-s-emblem-ranger": {
+        "classId": "ranger",
+        "qualityWeights": [
+          0,
+          0,
+          80,
+          20
+        ],
+        "guaranteedRare": true
+      },
+      "hero-s-emblem-warrior": {
+        "classId": "warrior",
+        "qualityWeights": [
+          0,
+          0,
+          80,
+          20
+        ],
+        "guaranteedRare": true
+      }
+    },
+    "training": {
+      "dark-strike": {
+        "classId": "dark-knight",
+        "position": 0,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "phantom-clash": {
+        "classId": "dark-knight",
+        "position": 1,
+        "maxLevel": 4,
+        "requiredLevels": [
+          10,
+          42,
+          58,
+          74
+        ]
+      },
+      "curse-of-screams": {
+        "classId": "dark-knight",
+        "position": 2,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "shield-bash": {
+        "classId": "dark-knight",
+        "position": 3,
+        "maxLevel": 4,
+        "requiredLevels": [
+          30,
+          54,
+          66,
+          78
+        ]
+      },
+      "firestorm": {
+        "classId": "dark-knight",
+        "position": 4,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "sword-of-hell": {
+        "classId": "dark-knight",
+        "position": 5,
+        "maxLevel": 3,
+        "requiredLevels": [
+          50,
+          70,
+          80
+        ]
+      },
+      "demon-s-shield": {
+        "classId": "dark-knight",
+        "position": 6,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "guardian-of-darkness": {
+        "classId": "dark-knight",
+        "position": 7,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "molten-armor": {
+        "classId": "dark-knight",
+        "position": 8,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "improved-defense": {
+        "classId": "dark-knight",
+        "position": 9,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "soul-sword": {
+        "classId": "dark-knight",
+        "position": 10,
+        "maxLevel": 4,
+        "requiredLevels": [
+          10,
+          42,
+          58,
+          74
+        ]
+      },
+      "blood-sword": {
+        "classId": "dark-knight",
+        "position": 11,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "shield-of-rage": {
+        "classId": "dark-knight",
+        "position": 12,
+        "maxLevel": 4,
+        "requiredLevels": [
+          30,
+          54,
+          66,
+          78
+        ]
+      },
+      "flares-of-pain": {
+        "classId": "dark-knight",
+        "position": 13,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "wrath-of-darkness": {
+        "classId": "dark-knight",
+        "position": 14,
+        "maxLevel": 3,
+        "requiredLevels": [
+          50,
+          70,
+          80
+        ]
+      },
+      "touch-of-agony": {
+        "classId": "warlock",
+        "position": 0,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "blood-curse": {
+        "classId": "warlock",
+        "position": 1,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "fire-offering": {
+        "classId": "warlock",
+        "position": 2,
+        "maxLevel": 4,
+        "requiredLevels": [
+          10,
+          42,
+          58,
+          74
+        ]
+      },
+      "pain-overture": {
+        "classId": "warlock",
+        "position": 3,
+        "maxLevel": 4,
+        "requiredLevels": [
+          30,
+          54,
+          66,
+          78
+        ]
+      },
+      "summon-hellfire": {
+        "classId": "warlock",
+        "position": 4,
+        "maxLevel": 4,
+        "requiredLevels": [
+          50,
+          70,
+          80,
+          90
+        ]
+      },
+      "spell-redemption": {
+        "classId": "warlock",
+        "position": 5,
+        "maxLevel": 3,
+        "requiredLevels": [
+          40,
+          64,
+          76
+        ]
+      },
+      "hell-s-pawn": {
+        "classId": "warlock",
+        "position": 6,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "summon-bard": {
+        "classId": "warlock",
+        "position": 7,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "monster-s-scream": {
+        "classId": "warlock",
+        "position": 8,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "mage-s-claw": {
+        "classId": "warlock",
+        "position": 9,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "blood-revenge": {
+        "classId": "warlock",
+        "position": 10,
+        "maxLevel": 4,
+        "requiredLevels": [
+          10,
+          42,
+          58,
+          74
+        ]
+      },
+      "bard-of-destruction": {
+        "classId": "warlock",
+        "position": 11,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "blade-of-darkness": {
+        "classId": "warlock",
+        "position": 12,
+        "maxLevel": 4,
+        "requiredLevels": [
+          30,
+          54,
+          66,
+          78
+        ]
+      },
+      "blood-feast": {
+        "classId": "warlock",
+        "position": 13,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "lightning-of-hell": {
+        "classId": "warlock",
+        "position": 14,
+        "maxLevel": 3,
+        "requiredLevels": [
+          50,
+          70,
+          80
+        ]
+      },
+      "prayer-of-recovery": {
+        "classId": "priest",
+        "position": 0,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "apostles-of-light": {
+        "classId": "priest",
+        "position": 1,
+        "maxLevel": 4,
+        "requiredLevels": [
+          10,
+          42,
+          58,
+          74
+        ]
+      },
+      "light-command": {
+        "classId": "priest",
+        "position": 2,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "celestial-armor": {
+        "classId": "priest",
+        "position": 3,
+        "maxLevel": 4,
+        "requiredLevels": [
+          30,
+          54,
+          66,
+          78
+        ]
+      },
+      "blinding-flash": {
+        "classId": "priest",
+        "position": 4,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "holy-sacrifice": {
+        "classId": "priest",
+        "position": 5,
+        "maxLevel": 3,
+        "requiredLevels": [
+          50,
+          70,
+          80
+        ]
+      },
+      "divine-strike": {
+        "classId": "priest",
+        "position": 6,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "hammer-of-wrath": {
+        "classId": "priest",
+        "position": 7,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "celestial-lightning": {
+        "classId": "priest",
+        "position": 8,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "healing-enhancement": {
+        "classId": "priest",
+        "position": 9,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "ordination-prayer": {
+        "classId": "priest",
+        "position": 10,
+        "maxLevel": 4,
+        "requiredLevels": [
+          10,
+          42,
+          58,
+          74
+        ]
+      },
+      "magic-insight": {
+        "classId": "priest",
+        "position": 11,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "shield-of-trust": {
+        "classId": "priest",
+        "position": 12,
+        "maxLevel": 4,
+        "requiredLevels": [
+          30,
+          54,
+          66,
+          78
+        ]
+      },
+      "divine-arms": {
+        "classId": "priest",
+        "position": 13,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "god-of-justice": {
+        "classId": "priest",
+        "position": 14,
+        "maxLevel": 3,
+        "requiredLevels": [
+          50,
+          70,
+          80
+        ]
+      },
+      "continuous-slash": {
+        "classId": "assassin",
+        "position": 0,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "spiritual-blade": {
+        "classId": "assassin",
+        "position": 1,
+        "maxLevel": 4,
+        "requiredLevels": [
+          10,
+          42,
+          58,
+          74
+        ]
+      },
+      "poison-touch": {
+        "classId": "assassin",
+        "position": 2,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "assassin-s-sword": {
+        "classId": "assassin",
+        "position": 3,
+        "maxLevel": 4,
+        "requiredLevels": [
+          30,
+          54,
+          66,
+          78
+        ]
+      },
+      "dark-attack": {
+        "classId": "assassin",
+        "position": 4,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "freeze-extreme": {
+        "classId": "assassin",
+        "position": 5,
+        "maxLevel": 3,
+        "requiredLevels": [
+          50,
+          70,
+          80
+        ]
+      },
+      "whist": {
+        "classId": "assassin",
+        "position": 6,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "blade-deflection": {
+        "classId": "assassin",
+        "position": 7,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "energy-bodhi": {
+        "classId": "assassin",
+        "position": 8,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "twin-blade": {
+        "classId": "assassin",
+        "position": 9,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "dark-sense": {
+        "classId": "assassin",
+        "position": 10,
+        "maxLevel": 4,
+        "requiredLevels": [
+          10,
+          42,
+          58,
+          74
+        ]
+      },
+      "fortitude": {
+        "classId": "assassin",
+        "position": 11,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "flare": {
+        "classId": "assassin",
+        "position": 12,
+        "maxLevel": 4,
+        "requiredLevels": [
+          30,
+          54,
+          66,
+          78
+        ]
+      },
+      "deep-breath": {
+        "classId": "assassin",
+        "position": 13,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "shadow-phantom": {
+        "classId": "assassin",
+        "position": 14,
+        "maxLevel": 3,
+        "requiredLevels": [
+          50,
+          70,
+          80
+        ]
+      },
+      "multiple-shot": {
+        "classId": "ranger",
+        "position": 0,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "aimed-shot": {
+        "classId": "ranger",
+        "position": 1,
+        "maxLevel": 4,
+        "requiredLevels": [
+          10,
+          42,
+          58,
+          74
+        ]
+      },
+      "ambush": {
+        "classId": "ranger",
+        "position": 2,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "net-shackles": {
+        "classId": "ranger",
+        "position": 3,
+        "maxLevel": 4,
+        "requiredLevels": [
+          30,
+          54,
+          66,
+          78
+        ]
+      },
+      "spiritual-arrow": {
+        "classId": "ranger",
+        "position": 4,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "rampage": {
+        "classId": "ranger",
+        "position": 5,
+        "maxLevel": 3,
+        "requiredLevels": [
+          50,
+          70,
+          80
+        ]
+      },
+      "beast-companion": {
+        "classId": "ranger",
+        "position": 6,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "spirit-of-nature": {
+        "classId": "ranger",
+        "position": 7,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "survival-instinct": {
+        "classId": "ranger",
+        "position": 8,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "clever-fellow": {
+        "classId": "ranger",
+        "position": 9,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "forest-knowledge": {
+        "classId": "ranger",
+        "position": 10,
+        "maxLevel": 4,
+        "requiredLevels": [
+          10,
+          42,
+          58,
+          74
+        ]
+      },
+      "rear-penetration": {
+        "classId": "ranger",
+        "position": 11,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "disturbance": {
+        "classId": "ranger",
+        "position": 12,
+        "maxLevel": 4,
+        "requiredLevels": [
+          30,
+          54,
+          66,
+          78
+        ]
+      },
+      "spiritual-affinity": {
+        "classId": "ranger",
+        "position": 13,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "sniping": {
+        "classId": "ranger",
+        "position": 14,
+        "maxLevel": 3,
+        "requiredLevels": [
+          50,
+          70,
+          80
+        ]
+      },
+      "rush-of-anger": {
+        "classId": "warrior",
+        "position": 0,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "shouts-of-threat": {
+        "classId": "warrior",
+        "position": 1,
+        "maxLevel": 4,
+        "requiredLevels": [
+          10,
+          42,
+          58,
+          74
+        ]
+      },
+      "armor-penetration": {
+        "classId": "warrior",
+        "position": 2,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "giant-blow": {
+        "classId": "warrior",
+        "position": 3,
+        "maxLevel": 4,
+        "requiredLevels": [
+          30,
+          54,
+          66,
+          78
+        ]
+      },
+      "weapon-hitback": {
+        "classId": "warrior",
+        "position": 4,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "swirling-storm": {
+        "classId": "warrior",
+        "position": 5,
+        "maxLevel": 3,
+        "requiredLevels": [
+          50,
+          70,
+          80
+        ]
+      },
+      "blood-thirst": {
+        "classId": "warrior",
+        "position": 6,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "storm-of-frenzy": {
+        "classId": "warrior",
+        "position": 7,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "enrage": {
+        "classId": "warrior",
+        "position": 8,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "weapon-specializing": {
+        "classId": "warrior",
+        "position": 9,
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          33,
+          49,
+          65
+        ]
+      },
+      "skin-of-steel": {
+        "classId": "warrior",
+        "position": 10,
+        "maxLevel": 4,
+        "requiredLevels": [
+          10,
+          42,
+          58,
+          74
+        ]
+      },
+      "soul-s-thirst": {
+        "classId": "warrior",
+        "position": 11,
+        "maxLevel": 4,
+        "requiredLevels": [
+          20,
+          48,
+          62,
+          76
+        ]
+      },
+      "revenge-incarnate": {
+        "classId": "warrior",
+        "position": 12,
+        "maxLevel": 4,
+        "requiredLevels": [
+          30,
+          54,
+          66,
+          78
+        ]
+      },
+      "warrior-s-instinct": {
+        "classId": "warrior",
+        "position": 13,
+        "maxLevel": 4,
+        "requiredLevels": [
+          40,
+          64,
+          76,
+          88
+        ]
+      },
+      "insanity-thrills": {
+        "classId": "warrior",
+        "position": 14,
+        "maxLevel": 3,
+        "requiredLevels": [
+          50,
+          70,
+          80
+        ]
+      }
+    },
+    "skillChoices": [
+      [
+        0,
+        6,
+        9
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        7,
+        11
+      ],
+      [
+        3,
+        12
+      ],
+      [
+        4,
+        8,
+        13
+      ],
+      [
+        5,
+        14
+      ]
+    ],
+    "skillCountWeights": [
+      [
+        [
+          70,
+          30,
+          0
+        ],
+        [
+          70,
+          30,
+          0
+        ],
+        [
+          50,
+          0,
+          0
+        ],
+        [
+          50,
+          0,
+          0
+        ],
+        [
+          50,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      [
+        [
+          30,
+          40,
+          30
+        ],
+        [
+          70,
+          30,
+          0
+        ],
+        [
+          70,
+          30,
+          0
+        ],
+        [
+          70,
+          30,
+          0
+        ],
+        [
+          70,
+          30,
+          0
+        ],
+        [
+          50,
+          0,
+          0
+        ]
+      ]
+    ],
+    "statDice": {
+      "dark-knight": {
+        "ordinary": [
+          {
+            "sides": 4,
+            "count": 10
+          },
+          {
+            "sides": 4,
+            "count": 8
+          },
+          {
+            "sides": 4,
+            "count": 10
+          },
+          {
+            "sides": 4,
+            "count": 8
+          },
+          {
+            "sides": 4,
+            "count": 4
+          }
+        ],
+        "rare": [
+          {
+            "sides": 5,
+            "count": 10
+          },
+          {
+            "sides": 5,
+            "count": 8
+          },
+          {
+            "sides": 5,
+            "count": 10
+          },
+          {
+            "sides": 5,
+            "count": 8
+          },
+          {
+            "sides": 5,
+            "count": 4
+          }
+        ]
+      },
+      "assassin": {
+        "ordinary": [
+          {
+            "sides": 4,
+            "count": 8
+          },
+          {
+            "sides": 4,
+            "count": 12
+          },
+          {
+            "sides": 4,
+            "count": 8
+          },
+          {
+            "sides": 4,
+            "count": 6
+          },
+          {
+            "sides": 4,
+            "count": 4
+          }
+        ],
+        "rare": [
+          {
+            "sides": 5,
+            "count": 8
+          },
+          {
+            "sides": 5,
+            "count": 12
+          },
+          {
+            "sides": 5,
+            "count": 8
+          },
+          {
+            "sides": 5,
+            "count": 6
+          },
+          {
+            "sides": 5,
+            "count": 4
+          }
+        ]
+      },
+      "warlock": {
+        "ordinary": [
+          {
+            "sides": 4,
+            "count": 6
+          },
+          {
+            "sides": 4,
+            "count": 12
+          },
+          {
+            "sides": 4,
+            "count": 8
+          },
+          {
+            "sides": 4,
+            "count": 4
+          },
+          {
+            "sides": 4,
+            "count": 10
+          }
+        ],
+        "rare": [
+          {
+            "sides": 5,
+            "count": 6
+          },
+          {
+            "sides": 5,
+            "count": 12
+          },
+          {
+            "sides": 5,
+            "count": 8
+          },
+          {
+            "sides": 5,
+            "count": 4
+          },
+          {
+            "sides": 5,
+            "count": 10
+          }
+        ]
+      },
+      "priest": {
+        "ordinary": [
+          {
+            "sides": 4,
+            "count": 8
+          },
+          {
+            "sides": 4,
+            "count": 6
+          },
+          {
+            "sides": 4,
+            "count": 8
+          },
+          {
+            "sides": 4,
+            "count": 8
+          },
+          {
+            "sides": 4,
+            "count": 10
+          }
+        ],
+        "rare": [
+          {
+            "sides": 5,
+            "count": 8
+          },
+          {
+            "sides": 5,
+            "count": 6
+          },
+          {
+            "sides": 5,
+            "count": 8
+          },
+          {
+            "sides": 5,
+            "count": 8
+          },
+          {
+            "sides": 5,
+            "count": 10
+          }
+        ]
+      },
+      "ranger": {
+        "ordinary": [
+          {
+            "sides": 4,
+            "count": 4
+          },
+          {
+            "sides": 4,
+            "count": 6
+          },
+          {
+            "sides": 4,
+            "count": 8
+          },
+          {
+            "sides": 4,
+            "count": 12
+          },
+          {
+            "sides": 4,
+            "count": 8
+          }
+        ],
+        "rare": [
+          {
+            "sides": 5,
+            "count": 4
+          },
+          {
+            "sides": 5,
+            "count": 6
+          },
+          {
+            "sides": 5,
+            "count": 8
+          },
+          {
+            "sides": 5,
+            "count": 12
+          },
+          {
+            "sides": 5,
+            "count": 8
+          }
+        ]
+      },
+      "warrior": {
+        "ordinary": [
+          {
+            "sides": 4,
+            "count": 10
+          },
+          {
+            "sides": 4,
+            "count": 10
+          },
+          {
+            "sides": 4,
+            "count": 10
+          },
+          {
+            "sides": 4,
+            "count": 4
+          },
+          {
+            "sides": 4,
+            "count": 4
+          }
+        ],
+        "rare": [
+          {
+            "sides": 5,
+            "count": 10
+          },
+          {
+            "sides": 5,
+            "count": 10
+          },
+          {
+            "sides": 5,
+            "count": 10
+          },
+          {
+            "sides": 5,
+            "count": 4
+          },
+          {
+            "sides": 5,
+            "count": 4
+          }
+        ]
+      }
+    },
+    "groupPools": {
+      "dark-knight": [
+        "low-health-resistance",
+        "sword-damage",
+        "plate-defense",
+        "ancient-legendary-chance"
+      ],
+      "assassin": [
+        "sell-price",
+        "critical-stun-chance",
+        "leather-physical-damage",
+        "chest-quality"
+      ],
+      "warlock": [
+        "magic-damage",
+        "cloth-magic-damage",
+        "magic-resistance",
+        "scroll-drop"
+      ],
+      "priest": [
+        "buy-discount",
+        "blunt-stun-chance",
+        "experience",
+        "rare-recruit-chance"
+      ],
+      "ranger": [
+        "potion-recovery",
+        "bow-damage",
+        "critical-damage",
+        "material-drop"
+      ],
+      "warrior": [
+        "status-resistance",
+        "two-hand-damage",
+        "potion-cooldown-ms",
+        "equipment-drop"
+      ]
+    }
+  },
+  "groupSkills": {
+    "low-health-resistance": {
+      "id": "low-health-resistance",
+      "effect": "low-health-resistance",
+      "value": 100,
+      "name": "抵抗力强化",
+      "description": "当HP降到30%以下时，增加10%的物理抵抗力和魔法抵抗力。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-low-health-resistance.png"
+    },
+    "sword-damage": {
+      "id": "sword-damage",
+      "effect": "sword-damage",
+      "value": 20,
+      "name": "剑之达人",
+      "description": "装备长剑类道具时，提高2%的物理攻击力和魔法攻击力。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-sword-damage.png"
+    },
+    "plate-defense": {
+      "id": "plate-defense",
+      "effect": "plate-defense",
+      "value": 100,
+      "name": "板甲专精",
+      "description": "装备板甲类道具时，增加10%的防御力。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-plate-defense.png"
+    },
+    "ancient-legendary-chance": {
+      "id": "ancient-legendary-chance",
+      "effect": "ancient-legendary-chance",
+      "value": 30,
+      "name": "被选择的英雄",
+      "description": "拔出古老武器时，得到传说装备的概率增加3%。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-ancient-legendary-chance.png"
+    },
+    "sell-price": {
+      "id": "sell-price",
+      "effect": "sell-price",
+      "value": 30,
+      "name": "富商",
+      "description": "出售道具时，价格增加3%。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-sell-price.png"
+    },
+    "critical-stun-chance": {
+      "id": "critical-stun-chance",
+      "effect": "critical-stun-chance",
+      "value": 30,
+      "name": "弱点攻击",
+      "description": "发动暴击时，有3%的概率使击晕敌人。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-critical-stun-chance.png"
+    },
+    "leather-physical-damage": {
+      "id": "leather-physical-damage",
+      "effect": "leather-physical-damage",
+      "value": 30,
+      "name": "皮甲专精",
+      "description": "装备皮甲类道具时，增加3%的物理攻击力。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-leather-physical-damage.png"
+    },
+    "chest-quality": {
+      "id": "chest-quality",
+      "effect": "chest-quality",
+      "value": 1,
+      "name": "寻宝猎人",
+      "description": "打开箱子时，增加得到好道具的概率。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "flag",
+      "icon": "assets/skills/group-chest-quality.png"
+    },
+    "magic-damage": {
+      "id": "magic-damage",
+      "effect": "magic-damage",
+      "value": 20,
+      "name": "魔法达人",
+      "description": "增加2%的魔法攻击力。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-magic-damage.png"
+    },
+    "cloth-magic-damage": {
+      "id": "cloth-magic-damage",
+      "effect": "cloth-magic-damage",
+      "value": 30,
+      "name": "布甲专精",
+      "description": "装备布甲类道具时，增加3%的魔法攻击力。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-cloth-magic-damage.png"
+    },
+    "magic-resistance": {
+      "id": "magic-resistance",
+      "effect": "magic-resistance",
+      "value": 30,
+      "name": "魔法研究",
+      "description": "增加3%的魔法伤害抵抗力。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-magic-resistance.png"
+    },
+    "scroll-drop": {
+      "id": "scroll-drop",
+      "effect": "scroll-drop",
+      "value": 20,
+      "name": "书籍收藏夹",
+      "description": "增加3%的卷轴类道具的掉落率。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "drop-ten-thousandth",
+      "icon": "assets/skills/group-scroll-drop.png"
+    },
+    "buy-discount": {
+      "id": "buy-discount",
+      "effect": "buy-discount",
+      "value": 20,
+      "name": "吝啬鬼",
+      "description": "购买道具时，减少2%的购买价格。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-buy-discount.png"
+    },
+    "blunt-stun-chance": {
+      "id": "blunt-stun-chance",
+      "effect": "blunt-stun-chance",
+      "value": 20,
+      "name": "钝器达人",
+      "description": "装备钝器类道具时，以1%的概率击晕敌人1秒。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-blunt-stun-chance.png"
+    },
+    "experience": {
+      "id": "experience",
+      "effect": "experience",
+      "value": 20,
+      "name": "升级达人",
+      "description": "增加2%的经验值获得量。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-experience.png"
+    },
+    "rare-recruit-chance": {
+      "id": "rare-recruit-chance",
+      "effect": "rare-recruit-chance",
+      "value": 2,
+      "name": "人气达人",
+      "description": "获得佣兵时，提高得到稀有佣兵的概率。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "percent",
+      "icon": "assets/skills/group-rare-recruit-chance.png"
+    },
+    "potion-recovery": {
+      "id": "potion-recovery",
+      "effect": "potion-recovery",
+      "value": 100,
+      "name": "体质强化",
+      "description": "增加10%的药水使用效果。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-potion-recovery.png"
+    },
+    "bow-damage": {
+      "id": "bow-damage",
+      "effect": "bow-damage",
+      "value": 30,
+      "name": "弓之达人",
+      "description": "装备弓类道具时，增加3%的物理攻击力。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-bow-damage.png"
+    },
+    "critical-damage": {
+      "id": "critical-damage",
+      "effect": "critical-damage",
+      "value": 50,
+      "name": "暴击提升",
+      "description": "增加5%的暴击伤害。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-critical-damage.png"
+    },
+    "material-drop": {
+      "id": "material-drop",
+      "effect": "material-drop",
+      "value": 20,
+      "name": "材料收集家",
+      "description": "增加2%的材料道具掉落率。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "drop-ten-thousandth",
+      "icon": "assets/skills/group-material-drop.png"
+    },
+    "status-resistance": {
+      "id": "status-resistance",
+      "effect": "status-resistance",
+      "value": 50,
+      "name": "精神强化",
+      "description": "减少5%的进入异常状态的几率。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-status-resistance.png"
+    },
+    "two-hand-damage": {
+      "id": "two-hand-damage",
+      "effect": "two-hand-damage",
+      "value": 30,
+      "name": "双手武器达人",
+      "description": "装备双手武器类道具时，增加3%的物理攻击力。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "per-thousand",
+      "icon": "assets/skills/group-two-hand-damage.png"
+    },
+    "potion-cooldown-ms": {
+      "id": "potion-cooldown-ms",
+      "effect": "potion-cooldown-ms",
+      "value": 2700,
+      "name": "消化力强化",
+      "description": "药水的冷却时间减少3秒。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "milliseconds",
+      "icon": "assets/skills/group-potion-cooldown-ms.png"
+    },
+    "equipment-drop": {
+      "id": "equipment-drop",
+      "effect": "equipment-drop",
+      "value": 10,
+      "name": "战利品收集家",
+      "description": "增加1%的装备掉落率。\n（佣兵团技能：适用于所有的佣兵）",
+      "unit": "drop-ten-thousandth",
+      "icon": "assets/skills/group-equipment-drop.png"
+    }
+  },
+  "autoSkills": {
+    "dark-strike": {
+      "kind": "chance"
+    },
+    "phantom-clash": {
+      "kind": "chance"
+    },
+    "curse-of-screams": {
+      "kind": "ally-combat"
+    },
+    "shield-bash": {
+      "kind": "chance"
+    },
+    "firestorm": {
+      "kind": "chance"
+    },
+    "sword-of-hell": {
+      "kind": "chance"
+    },
+    "demon-s-shield": {
+      "kind": "chance"
+    },
+    "guardian-of-darkness": {
+      "kind": "combat-chance"
+    },
+    "molten-armor": {
+      "kind": "combat-chance"
+    },
+    "continuous-slash": {
+      "kind": "chance"
+    },
+    "spiritual-blade": {
+      "kind": "combat-chance"
+    },
+    "poison-touch": {
+      "kind": "combat-chance"
+    },
+    "assassin-s-sword": {
+      "kind": "chance"
+    },
+    "dark-attack": {
+      "kind": "chance"
+    },
+    "freeze-extreme": {
+      "kind": "chance"
+    },
+    "whist": {
+      "kind": "combat-chance"
+    },
+    "blade-deflection": {
+      "kind": "emergency-heal"
+    },
+    "energy-bodhi": {
+      "kind": "combat-chance"
+    },
+    "touch-of-agony": {
+      "kind": "chance"
+    },
+    "blood-curse": {
+      "kind": "chance"
+    },
+    "fire-offering": {
+      "kind": "chance"
+    },
+    "pain-overture": {
+      "kind": "chance"
+    },
+    "summon-hellfire": {
+      "kind": "chance"
+    },
+    "spell-redemption": {
+      "kind": "combat-chance"
+    },
+    "hell-s-pawn": {
+      "kind": "combat-chance"
+    },
+    "summon-bard": {
+      "kind": "combat-chance"
+    },
+    "monster-s-scream": {
+      "kind": "ally-combat"
+    },
+    "prayer-of-recovery": {
+      "kind": "heal"
+    },
+    "apostles-of-light": {
+      "kind": "combat-chance"
+    },
+    "light-command": {
+      "kind": "combat-chance"
+    },
+    "celestial-armor": {
+      "kind": "combat-chance"
+    },
+    "blinding-flash": {
+      "kind": "emergency-heal"
+    },
+    "holy-sacrifice": {
+      "kind": "ally-combat"
+    },
+    "divine-strike": {
+      "kind": "chance"
+    },
+    "hammer-of-wrath": {
+      "kind": "chance"
+    },
+    "celestial-lightning": {
+      "kind": "chance"
+    },
+    "multiple-shot": {
+      "kind": "chance"
+    },
+    "aimed-shot": {
+      "kind": "chance"
+    },
+    "ambush": {
+      "kind": "combat-chance"
+    },
+    "net-shackles": {
+      "kind": "chance"
+    },
+    "spiritual-arrow": {
+      "kind": "chance"
+    },
+    "rampage": {
+      "kind": "chance"
+    },
+    "beast-companion": {
+      "kind": "combat-chance"
+    },
+    "spirit-of-nature": {
+      "kind": "heal"
+    },
+    "survival-instinct": {
+      "kind": "emergency-heal"
+    },
+    "rush-of-anger": {
+      "kind": "chance"
+    },
+    "shouts-of-threat": {
+      "kind": "ally-combat"
+    },
+    "armor-penetration": {
+      "kind": "chance"
+    },
+    "giant-blow": {
+      "kind": "chance"
+    },
+    "weapon-hitback": {
+      "kind": "heal"
+    },
+    "swirling-storm": {
+      "kind": "chance"
+    },
+    "blood-thirst": {
+      "kind": "combat-chance"
+    },
+    "storm-of-frenzy": {
+      "kind": "combat-chance"
+    },
+    "enrage": {
+      "kind": "combat-chance"
+    }
+  }
+}

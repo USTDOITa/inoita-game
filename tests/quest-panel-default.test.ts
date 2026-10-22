@@ -1,0 +1,58 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { registerHooks } from 'node:module';
+import test from 'node:test';
+import { parseCampaign, parseWorld } from '../src/application/content-validation.ts';
+import { Session } from '../src/domain/session.ts';
+
+const hook = registerHooks({ resolve(specifier, context, next) {
+  return specifier === 'phaser'
+    ? { shortCircuit: true, url: 'data:text/javascript,export default {GameObjects:{},Textures:{FilterMode:{LINEAR:1}}};' }
+    : next(specifier, context);
+} });
+const { QuestPanel } = await import('../src/ui/phaser/quest-panel.ts');
+hook.deregister();
+
+const read = (name: string) => JSON.parse(readFileSync(new URL(`../public/content/${name}.json`, import.meta.url), 'utf8'));
+const campaign = parseCampaign(read('campaign')), world = parseWorld(read('world'));
+
+function surface() {
+  const texts: string[] = [];
+  const scrolls: { content: object; guard: () => boolean; setHeight(value: number): void; scrollTop: number;
+    visible: boolean; onScroll?: () => void; cancelGesture(): void }[] = [];
+  const text = (_value: string) => ({
+    height: 20, context: { measureText: (value: string) => value.length * 10 },
+    setOrigin() { return this; }, setAlign() { return this; }, destroy() {},
+  });
+  const view = {
+    text(value: string) { texts.push(value); return text(value); },
+    border() {}, image() {},
+    button() { return { setData() { return this; } }; },
+    scroll() {
+      const area = { content: {}, guard: () => true, setHeight() {}, scrollTop: 0, visible: true,
+        cancelGesture() {} } as typeof scrolls[number];
+      scrolls.push(area); return area;
+    },
+  };
+  return { view, texts, scrolls };
+}
+
+test('the quest panel selects the first group and shows its detail on open', () => {
+  const session = new Session(campaign);
+  assert.equal(session.accept('grafton-mission'), true);
+  const { view, texts, scrolls } = surface();
+  const panel = new QuestPanel(session, world, { assets: {
+    'quest-row': 'row', 'quest-row-selected': 'row-selected', 'quest-row-pressed': 'row-pressed',
+    'quest-main': 'main', 'quest-ready': 'ready',
+  } } as never, () => {});
+  panel.render(view as never);
+  assert.equal(scrolls.length, 2, '列表之外还画出第一组的详情');
+  assert.match(texts.join(''), /格里普顿伯爵/);
+
+  // 再次绘制（会话通知）仍保留选中；滚动收起详情后不会因为重画又自动弹出。
+  panel.render(view as never);
+  assert.equal(scrolls.length, 4);
+  scrolls[0]!.onScroll?.();
+  panel.render(view as never);
+  assert.equal(scrolls.length, 5, '滚动只收起详情');
+});

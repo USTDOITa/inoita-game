@@ -1,0 +1,77 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { Session } from '../src/domain/session.ts';
+import { StoryDirector } from '../src/domain/story-director.ts';
+import type { StoryUI } from '../src/domain/story-director.ts';
+import { canStandOnTerrain, ExitTrigger } from '../src/domain/navigation.ts';
+import { NavigationWorld } from '../src/domain/navigation-world.ts';
+import type { Campaign } from '../src/domain/campaign.ts';
+const campaign=JSON.parse(fs.readFileSync(new URL('../public/content/campaign.json',import.meta.url),'utf8')) as Campaign;
+
+test('native assassination progress requires a defeat and markers follow its delivery state',()=>{
+ const session=new Session(campaign);
+ assert.equal(session.marker('darius','npc-40'),null);
+ assert.equal(session.interact('earl-grafton','cave-grafton','npc-109'),false);
+ assert.equal(session.complete('grafton-mission'),false);
+ assert.equal(session.accept('grafton-mission'),true);assert.equal(session.marker('darius','npc-40'),'active');
+ assert.equal(session.accept('grafton-mission'),false);
+ assert.equal(session.interact('earl-grafton','cave-grafton','npc-109'),false);
+ session.enemyDefeated({id:'earl',enemyId:'enemy-earl-grafton-1',x:0,y:0});
+ assert.equal(session.marker('darius','npc-40'),'ready');
+ assert.equal(session.complete('grafton-mission'),true);assert.equal(session.complete('grafton-mission'),false);
+ assert.equal(session.marker('darius','npc-40'),null);
+ assert.equal(session.status('cardinal-summons'),'available');
+ assert.equal(session.marker('janus','npc-55'),null,'event-granted quests have no offer marker before their script grants them');
+});
+test('a GM focus restricts quest projections to the focused task',()=>{
+ const session=new Session(campaign);
+ assert.equal(session.accept('grafton-mission'),true);
+ assert.equal(session.accept('cardinal-summons'),true);
+ assert.deepEqual(session.forActor('janus','npc-55').map(quest=>quest.id),['cardinal-summons']);
+ session.focusDebugQuest('grafton-mission');
+ assert.equal(session.currentQuest()?.id,'grafton-mission');
+ assert.deepEqual(session.forActor('janus','npc-55'),[],'焦点之外的任务不参与 HUD 投影');
+ assert.equal(session.markerActor('janus','npc-55'),false);
+ assert.equal(session.markerActor('darius','npc-40'),true,'焦点任务自己的交付人仍要挂标记');
+ assert.equal(session.trackQuest('cardinal-summons'),false);
+ assert.equal(session.trackQuest('grafton-mission'),true);
+ session.focusDebugQuest(undefined);
+ assert.equal(session.forActor('janus','npc-55')[0]?.id,'cardinal-summons','结束调试后恢复完整投影');
+});
+test('exits trigger on entry, ignore stationary spawns, and rearm after leaving the entire exit area',()=>{
+ const exits=[{x:32,y:32,width:16,height:16,destination:'next'},{x:32,y:48,width:16,height:16,destination:'next'}];
+ const gate=new ExitTrigger(exits,{x:24,y:40});
+ assert.equal(gate.update({x:23,y:40},true),null);
+ assert.equal(gate.update({x:25,y:40},true),exits[0]);
+ assert.equal(gate.update({x:40,y:48},true),null);
+ gate.update({x:24,y:40},true);
+ assert.equal(gate.update({x:40,y:40},true),exits[0]);
+ const spawned=new ExitTrigger(exits,{x:40,y:40});
+ assert.equal(spawned.update({x:40,y:40},false),null);
+ assert.equal(spawned.update({x:40,y:49},true),null);
+ spawned.update({x:24,y:40},true);
+ assert.equal(spawned.update({x:40,y:40},true),exits[0]);
+});
+test('the foot can reach a blocked edge exit from its walkable approach',()=>{
+ const map={name:'fixture',tileSize:16,columns:4,rows:3,blocked:Array.from({length:12},(_,i)=>i%4===3)};
+ const exit={x:48,y:16,width:16,height:16},gate=new ExitTrigger([exit],{x:24,y:24});
+ const p=new NavigationWorld(map).constrainTerrain({x:24,y:24},30,0);
+ assert.ok(p.x<48&&canStandOnTerrain(map,p.x,p.y));
+ assert.equal(gate.update(p,true),exit);
+});
+test('dialogue work serializes and always releases the input lock',async()=>{
+ const session=new Session(campaign),locks: boolean[]=[];
+ const ui: StoryUI={closeDialogue(){},skipDialogue(){},dialogue:async()=>{},choice:async()=>{throw new Error('unused');},questPopup:async()=>{},toast(){}};
+ const director=new StoryDirector(campaign,session,ui,v=>locks.push(v));
+ let release!: (value?: void | PromiseLike<void>) => void;const work=director.run(()=>new Promise(resolve=>release=resolve));
+ assert.equal(await director.run(()=>{throw new Error('duplicate');}),false);
+ release();await work;assert.deepEqual(locks,[true,false]);
+ await assert.rejects(director.run(()=>Promise.reject(new Error('failed'))));assert.equal(director.busy,false);
+});
+test('blocking cells, diagonal sliding, bounds and long frames cannot be crossed',()=>{
+ const map={name:'fixture',tileSize:16,columns:5,rows:5,blocked:Array.from({length:25},(_,i)=>i%5===2)};
+ assert.equal(canStandOnTerrain(map,40,24),false);assert.equal(canStandOnTerrain(map,-2,24),false);
+ const end=new NavigationWorld(map).constrainTerrain({x:8,y:24},200,12);assert.ok(end.x<32);assert.ok(end.y>24);
+ const corrected=new NavigationWorld(map).nearest({}, {x:40,y:24});assert.equal(canStandOnTerrain(map,corrected.x,corrected.y),true);
+});

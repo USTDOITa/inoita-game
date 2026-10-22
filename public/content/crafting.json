@@ -1,0 +1,72 @@
+{
+  "operations": {
+    "chaos": {
+      "name": "混沌",
+      "costPerLevel": 700,
+      "materials": [
+        {
+          "item": "magic-branch",
+          "quantity": 2
+        },
+        {
+          "item": "spell-crystal",
+          "quantity": 2
+        },
+        {
+          "item": "mithril",
+          "quantity": 6
+        },
+        {
+          "item": "chaos-scale",
+          "quantity": 1
+        }
+      ],
+      "rule": {
+        "valueDelta": [
+          -23,
+          25
+        ],
+        "valueBounds": [
+          0,
+          150
+        ],
+        "levelDiceDivisor": 40,
+        "levelClampDivisor": 10
+      }
+    },
+    "epic-chaos": {
+      "name": "深渊混沌",
+      "costPerLevel": 900,
+      "materials": [
+        {
+          "item": "transcendent-flower",
+          "quantity": 1
+        },
+        {
+          "item": "palpitant-crystal",
+          "quantity": 3
+        },
+        {
+          "item": "mithril",
+          "quantity": 8
+        },
+        {
+          "item": "chaos-scale",
+          "quantity": 1
+        }
+      ],
+      "rule": {
+        "valueDelta": [
+          -20,
+          22
+        ],
+        "valueBounds": [
+          0,
+          200
+        ],
+        "levelDiceDivisor": 30,
+        "levelClampDivisor": 5
+      }
+    }
+  }
+}

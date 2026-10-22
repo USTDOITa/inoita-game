@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import test from 'node:test';
+import type { Campaign } from '../src/domain/campaign.ts';
+import { Session } from '../src/domain/session.ts';
+import { StoryDirector, type StoryUI } from '../src/domain/story-director.ts';
+
+const campaign = JSON.parse(readFileSync(new URL('../public/content/campaign.json', import.meta.url), 'utf8')) as Campaign;
+const ui: StoryUI = { async dialogue() {}, async choice(_prompt, options) { return options[0]; }, async questPopup() {}, closeDialogue() {}, skipDialogue() {}, toast() {} };
+const presentation = { begin() {}, async execute() {}, async finish() {}, async release() {} };
+
+/** 统计 `Session.quests` 被读了几次：每读一次都要克隆并序列化全部 505 条任务状态。 */
+function countQuestReads(session: Session) {
+  const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(session), 'quests')!;
+  let reads = 0;
+  Object.defineProperty(session, 'quests', { configurable: true, get() { reads++; return descriptor.get!.call(session); } });
+  return () => reads;
+}
+
+test('quest observation reuses the quest book version instead of re-reading every quest', () => {
+  const session = new Session(campaign), director = new StoryDirector(campaign, session, ui, () => {}, presentation);
+  const reads = countQuestReads(session);
+  session.emit();                       // 预热：先让任务投影与版本稳定下来
+  const base = reads();
+  // 与任务无关的通知（血量、金币、位置……频率远高于任务变化）不该重新采集任务状态。
+  for (let index = 0; index < 10; index++) session.emit();
+  assert.equal(reads(), base);
+  // 任务真的变了必须重新采集，否则剧情事件会漏触发（`recordQuestFact` 自己会发一次通知）。
+  session.recordQuestFact('defeat', 'enemy-wolf-1', 'combat');
+  assert.ok(reads() > base, '任务变化后应当重新采集');
+  director.dispose();
+});

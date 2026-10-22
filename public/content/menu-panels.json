@@ -1,0 +1,360 @@
+{
+  "assets": {
+    "edge-horizontal": "assets/ui/menus/edge-horizontal.png",
+    "edge-vertical": "assets/ui/menus/edge-vertical.png",
+    "corner-nw": "assets/ui/menus/corner-nw.png",
+    "corner-ne": "assets/ui/menus/corner-ne.png",
+    "corner-sw": "assets/ui/menus/corner-sw.png",
+    "corner-se": "assets/ui/menus/corner-se.png",
+    "close": "assets/ui/menus/close.png",
+    "confirm": "assets/ui/menus/confirm.png",
+    "back": "assets/ui/menus/back.png",
+    "menu-back": "assets/ui/menus/menu-back.png",
+    "menu-back-pressed": "assets/ui/menus/menu-back-pressed.png",
+    "close-pressed": "assets/ui/menus/close-pressed.png",
+    "inventory-slot": "assets/ui/menus/inventory-slot.png",
+    "inventory-selected": "assets/ui/menus/inventory-selected.png",
+    "page-button-frame": "assets/ui/menus/page-button-frame.png",
+    "page-button-selected": "assets/ui/menus/page-button-selected.png",
+    "text-plate-left": "assets/ui/menus/text-plate-left.png",
+    "text-plate-right": "assets/ui/menus/text-plate-right.png",
+    "popup-corner-nw": "assets/ui/menus/popup-corner-nw.png",
+    "popup-corner-ne": "assets/ui/menus/popup-corner-ne.png",
+    "popup-corner-sw": "assets/ui/menus/popup-corner-sw.png",
+    "popup-corner-se": "assets/ui/menus/popup-corner-se.png",
+    "popup-edge-horizontal": "assets/ui/menus/popup-edge-horizontal.png",
+    "popup-edge-vertical": "assets/ui/menus/popup-edge-vertical.png",
+    "round-nw": "assets/ui/menus/round-nw.png",
+    "round-ne": "assets/ui/menus/round-ne.png",
+    "round-sw": "assets/ui/menus/round-sw.png",
+    "round-se": "assets/ui/menus/round-se.png",
+    "solid-nw": "assets/ui/menus/solid-nw.png",
+    "solid-ne": "assets/ui/menus/solid-ne.png",
+    "solid-sw": "assets/ui/menus/solid-sw.png",
+    "solid-se": "assets/ui/menus/solid-se.png",
+    "solid-edge": "assets/ui/menus/solid-edge.png",
+    "column-cap-top": "assets/ui/menus/column-cap-top.png",
+    "column-cap-bottom": "assets/ui/menus/column-cap-bottom.png",
+    "skill-slot": "assets/ui/menus/skill-slot.png",
+    "item-equip": "assets/ui/menus/item-equip.png",
+    "item-unequip": "assets/ui/menus/item-unequip.png",
+    "item-use": "assets/ui/menus/item-use.png",
+    "item-discard": "assets/ui/menus/item-discard.png",
+    "skill-selected": "assets/ui/menus/skill-selected.png",
+    "skill-rank": "assets/ui/menus/skill-rank.png",
+    "skill-tab-directory": "assets/ui/menus/skill-tab-directory.png",
+    "skill-tab-ai": "assets/ui/menus/skill-tab-ai.png",
+    "skill-tab-settings": "assets/ui/menus/skill-tab-settings.png",
+    "skill-confirm": "assets/ui/menus/skill-confirm.png",
+    "skill-learn": "assets/ui/menus/skill-learn.png",
+    "skill-shortcut": "assets/ui/menus/skill-shortcut.png",
+    "skill-shortcut-cancel": "assets/ui/menus/skill-shortcut-cancel.png",
+    "skill-button-pressed": "assets/ui/menus/skill-button-pressed.png",
+    "skill-compare-arrow": "assets/ui/menus/skill-compare-arrow.png",
+    "skill-rank-1": "assets/ui/menus/skill-rank-1.png",
+    "skill-rank-2": "assets/ui/menus/skill-rank-2.png",
+    "skill-rank-3": "assets/ui/menus/skill-rank-3.png",
+    "skill-rank-4": "assets/ui/menus/skill-rank-4.png",
+    "skill-rank-5": "assets/ui/menus/skill-rank-5.png",
+    "skill-rank-6": "assets/ui/menus/skill-rank-6.png",
+    "skill-rank-7": "assets/ui/menus/skill-rank-7.png",
+    "skill-rank-8": "assets/ui/menus/skill-rank-8.png",
+    "skill-level-none": "assets/ui/menus/skill-level-none.png",
+    "skill-level-normal": "assets/ui/menus/skill-level-normal.png",
+    "skill-level-high": "assets/ui/menus/skill-level-high.png",
+    "skill-level-pressed": "assets/ui/menus/skill-level-pressed.png",
+    "skill-locked": "assets/ui/menus/skill-locked.png",
+    "skill-selected-ai": "assets/ui/menus/skill-selected-ai.png",
+    "character-nw": "assets/ui/menus/character-nw.png",
+    "character-ne": "assets/ui/menus/character-ne.png",
+    "character-sw": "assets/ui/menus/character-sw.png",
+    "character-se": "assets/ui/menus/character-se.png",
+    "character-gauge": "assets/ui/menus/character-gauge.png",
+    "character-adjust": "assets/ui/menus/character-adjust.png",
+    "character-step": "assets/ui/menus/character-step.png",
+    "character-step-pressed": "assets/ui/menus/character-step-pressed.png",
+    "character-health-start": "assets/ui/menus/character-health-start.png",
+    "character-health-fill": "assets/ui/menus/character-health-fill.png",
+    "character-health-end": "assets/ui/menus/character-health-end.png",
+    "character-mana-start": "assets/ui/menus/character-mana-start.png",
+    "character-mana-fill": "assets/ui/menus/character-mana-fill.png",
+    "character-mana-end": "assets/ui/menus/character-mana-end.png",
+    "character-experience-start": "assets/ui/menus/character-experience-start.png",
+    "character-experience-fill": "assets/ui/menus/character-experience-fill.png",
+    "character-experience-end": "assets/ui/menus/character-experience-end.png",
+    "character-party-frame": "assets/ui/menus/character-party-frame.png",
+    "quest-main": "assets/ui/menus/quest-main.png",
+    "quest-ready": "assets/ui/menus/quest-ready.png",
+    "quest-row": "assets/ui/menus/quest-row.png",
+    "quest-row-selected": "assets/ui/menus/quest-row-selected.png",
+    "quest-row-pressed": "assets/ui/menus/quest-row-pressed.png",
+    "party-slot": "assets/ui/menus/party-slot.png",
+    "party-empty": "assets/ui/menus/party-empty.png",
+    "party-frame": "assets/ui/menus/party-frame.png",
+    "party-selected": "assets/ui/menus/party-selected.png",
+    "party-deployed": "assets/ui/menus/party-deployed.png",
+    "party-page-1": "assets/ui/menus/party-page-1.png",
+    "party-page-2": "assets/ui/menus/party-page-2.png",
+    "party-dismiss": "assets/ui/menus/party-dismiss.png",
+    "party-join": "assets/ui/menus/party-join.png",
+    "party-reserve": "assets/ui/menus/party-reserve.png",
+    "party-button-pressed": "assets/ui/menus/party-button-pressed.png",
+    "party-tab-info": "assets/ui/menus/party-tab-info.png",
+    "party-tab-equipment": "assets/ui/menus/party-tab-equipment.png",
+    "party-tab-skills": "assets/ui/menus/party-tab-skills.png",
+    "party-skill-unavailable": "assets/ui/menus/party-skill-unavailable.png",
+    "party-class-dark-knight": "assets/ui/menus/party-class-dark-knight.png",
+    "party-class-assassin": "assets/ui/menus/party-class-assassin.png",
+    "party-class-warlock": "assets/ui/menus/party-class-warlock.png",
+    "party-class-priest": "assets/ui/menus/party-class-priest.png",
+    "party-class-ranger": "assets/ui/menus/party-class-ranger.png",
+    "party-class-warrior": "assets/ui/menus/party-class-warrior.png",
+    "message-edge": "assets/ui/menus/message-edge.png",
+    "message-ok": "assets/ui/menus/message-ok.png",
+    "message-ok-pressed": "assets/ui/menus/message-ok-pressed.png",
+    "message-yes": "assets/ui/menus/message-yes.png",
+    "message-yes-pressed": "assets/ui/menus/message-yes-pressed.png",
+    "message-no": "assets/ui/menus/message-no.png",
+    "message-no-pressed": "assets/ui/menus/message-no-pressed.png",
+    "craft-button": "assets/ui/menus/craft-button.png",
+    "craft-button-pressed": "assets/ui/menus/craft-button-pressed.png",
+    "craft-button-disabled": "assets/ui/menus/craft-button-disabled.png",
+    "craft-money-gold": "assets/ui/menus/craft-money-gold.png",
+    "craft-money-silver": "assets/ui/menus/craft-money-silver.png",
+    "craft-money-copper": "assets/ui/menus/craft-money-copper.png"
+  },
+  "equipmentSlots": [
+    {
+      "id": "head",
+      "name": "头部",
+      "x": 129,
+      "y": 27,
+      "emptyIcon": "assets/ui/menus/equipment-empty-head.png"
+    },
+    {
+      "id": "neck",
+      "name": "项链",
+      "x": 212,
+      "y": 27,
+      "emptyIcon": "assets/ui/menus/equipment-empty-neck.png"
+    },
+    {
+      "id": "ring",
+      "name": "戒指",
+      "x": 46,
+      "y": 68,
+      "emptyIcon": "assets/ui/menus/equipment-empty-ring.png"
+    },
+    {
+      "id": "accessory",
+      "name": "饰品",
+      "x": 295,
+      "y": 68,
+      "emptyIcon": "assets/ui/menus/equipment-empty-accessory.png"
+    },
+    {
+      "id": "body",
+      "name": "身体",
+      "x": 46,
+      "y": 151,
+      "emptyIcon": "assets/ui/menus/equipment-empty-body.png"
+    },
+    {
+      "id": "back",
+      "name": "披风",
+      "x": 295,
+      "y": 151,
+      "emptyIcon": "assets/ui/menus/equipment-empty-back.png"
+    },
+    {
+      "id": "main-hand",
+      "name": "主手",
+      "x": 46,
+      "y": 234,
+      "emptyIcon": "assets/ui/menus/equipment-empty-main-hand.png"
+    },
+    {
+      "id": "off-hand",
+      "name": "副手",
+      "x": 295,
+      "y": 234,
+      "emptyIcon": "assets/ui/menus/equipment-empty-off-hand.png"
+    },
+    {
+      "id": "hands",
+      "name": "手部",
+      "x": 129,
+      "y": 276,
+      "emptyIcon": "assets/ui/menus/equipment-empty-hands.png"
+    },
+    {
+      "id": "feet",
+      "name": "脚部",
+      "x": 212,
+      "y": 276,
+      "emptyIcon": "assets/ui/menus/equipment-empty-feet.png"
+    }
+  ],
+  "skillPositions": [
+    {
+      "column": 0,
+      "row": 0
+    },
+    {
+      "column": 0,
+      "row": 1
+    },
+    {
+      "column": 0,
+      "row": 2
+    },
+    {
+      "column": 0,
+      "row": 3
+    },
+    {
+      "column": 0,
+      "row": 4
+    },
+    {
+      "column": 0,
+      "row": 5
+    },
+    {
+      "column": 1,
+      "row": 0
+    },
+    {
+      "column": 1,
+      "row": 2
+    },
+    {
+      "column": 1,
+      "row": 4
+    },
+    {
+      "column": 2,
+      "row": 0
+    },
+    {
+      "column": 2,
+      "row": 1
+    },
+    {
+      "column": 2,
+      "row": 2
+    },
+    {
+      "column": 2,
+      "row": 3
+    },
+    {
+      "column": 2,
+      "row": 4
+    },
+    {
+      "column": 2,
+      "row": 5
+    }
+  ],
+  "skillColumns": [
+    {
+      "label": "主动技能1",
+      "image": "assets/ui/menus/skill-column-primary.png"
+    },
+    {
+      "label": "主动技能2",
+      "image": "assets/ui/menus/skill-column-secondary.png"
+    },
+    {
+      "label": "被动技能",
+      "image": "assets/ui/menus/skill-column-passive.png"
+    }
+  ],
+  "classes": {
+    "dark-knight": {
+      "preview": "assets/characters/battle-dark-knight/preview.png"
+    },
+    "assassin": {
+      "preview": "assets/characters/battle-assassin/preview.png"
+    },
+    "warlock": {
+      "preview": "assets/characters/battle-warlock/preview.png"
+    },
+    "priest": {
+      "preview": "assets/characters/battle-priest/preview.png"
+    },
+    "ranger": {
+      "preview": "assets/characters/battle-ranger/preview.png"
+    },
+    "warrior": {
+      "preview": "assets/characters/battle-warrior/preview.png"
+    }
+  },
+  "character": {
+    "portraits": {
+      "kiyan": {
+        "image": "assets/ui/menus/character-kiyan.png",
+        "partyIcon": "assets/ui/menus/character-party-kiyan.png"
+      },
+      "azad-053": {
+        "image": "assets/ui/menus/character-azad-053.png",
+        "partyIcon": "assets/ui/menus/character-party-azad-053.png"
+      },
+      "portia": {
+        "image": "assets/ui/menus/character-portia.png",
+        "partyIcon": "assets/ui/menus/character-party-portia.png"
+      },
+      "shinty": {
+        "image": "assets/ui/menus/character-shinty.png",
+        "partyIcon": "assets/ui/menus/character-party-shinty.png"
+      }
+    },
+    "combatLabels": [
+      "物理攻击",
+      "魔法攻击",
+      "暴击率",
+      "命中率",
+      "暴击伤害",
+      "防御力",
+      "物理抗性",
+      "魔法抗性",
+      "闪避率",
+      "武器格挡率",
+      "盾牌格挡率"
+    ],
+    "labels": {
+      "statPoints": "能力点:",
+      "skillPoints": "技能点:",
+      "health": "生命",
+      "mana": "魔法",
+      "experience": "经验"
+    }
+  },
+  "skillPanel": {
+    "labels": {
+      "counterattackTitle": "设置自动反击",
+      "initialSkillPoints": "初始技能点",
+      "resetButton": "能力初始化"
+    }
+  },
+  "itemMessages": {
+    "enchant-double": "强化+2成功！",
+    "enchant-level": "等级不符。",
+    "enchant-durability": "耐久度不足。",
+    "enchant-rule": "与一般的强化卷轴不同。",
+    "enchant-first": "至少需要强化+1以上。",
+    "enchant-chaos-durability": "混沌强化卷轴只有在耐久度为0的状态下才可以使用。",
+    "socket-incompatible": "该道具不适合。",
+    "socket-full": "宝石孔不足。",
+    "craft-incompatible": "武器、防具类道具才可以进行合成。",
+    "craft-needs-chaos": "深渊混沌道具只适用于混沌道具。",
+    "craft-epic": "深渊混沌道具无法进行混沌合成。",
+    "craft-max": "已经达到合成最大值，无法再次进行合成。",
+    "craft-money": "您的金币不足。",
+    "craft-confirm": "是否以当前的配方来合成？",
+    "craft-materials": "材料不足。\n无法进行合成。",
+    "craft-target": "需要在背包中\n选择要进行合成的道具。",
+    "enchant-max": "强化已达到上限。"
+  }
+}

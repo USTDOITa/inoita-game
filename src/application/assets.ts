@@ -1,0 +1,19 @@
+export interface AssetLease { release(): void }
+/** 资源使用者持有独立凭据；最后一个使用者离开时释放资源。 */
+export class AssetPool {
+  private users = new Map<string, number>();
+  private readonly dispose: (key: string) => void;
+  constructor(dispose: (key: string) => void) { this.dispose = dispose; }
+  acquire(keys: Iterable<string>): AssetLease {
+    const owned = new Set(keys);
+    for (const key of owned) this.users.set(key, (this.users.get(key) ?? 0) + 1);
+    let released = false;
+    return {release: () => {
+      if (released) return; released = true;
+      for (const key of owned) {
+        const count = this.users.get(key)! - 1;
+        if (count) this.users.set(key,count); else {this.users.delete(key); this.dispose(key);}
+      }
+    }};
+  }
+}

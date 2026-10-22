@@ -1,0 +1,4869 @@
+{
+  "version": 3,
+  "music": {
+    "BGM01": "assets/audio/bgm/BGM01.mp3",
+    "BGM02": "assets/audio/bgm/BGM02.mp3",
+    "BGM03": "assets/audio/bgm/BGM03.mp3",
+    "BGM04": "assets/audio/bgm/BGM04.mp3",
+    "BGM05": "assets/audio/bgm/BGM05.mp3",
+    "BGM06": "assets/audio/bgm/BGM06.mp3",
+    "BGM07": "assets/audio/bgm/BGM07.mp3",
+    "BGM08": "assets/audio/bgm/BGM08.mp3",
+    "BGM09": "assets/audio/bgm/BGM09.mp3",
+    "BGM10": "assets/audio/bgm/BGM10.mp3",
+    "BGM11": "assets/audio/bgm/BGM11.mp3",
+    "BGM12": "assets/audio/bgm/BGM12.mp3",
+    "BGM13": "assets/audio/bgm/BGM13.mp3"
+  },
+  "effects": {
+    "A_Skill_01": "assets/audio/se/A_Skill_01.mp3",
+    "A_Skill_02": "assets/audio/se/A_Skill_02.mp3",
+    "A_Skill_03": "assets/audio/se/A_Skill_03.mp3",
+    "A_Skill_04": "assets/audio/se/A_Skill_04.mp3",
+    "A_Skill_05": "assets/audio/se/A_Skill_05.mp3",
+    "A_Skill_Attack01": "assets/audio/se/A_Skill_Attack01.mp3",
+    "Ambience_Cave": "assets/audio/se/Ambience_Cave.mp3",
+    "Ambience_Dark_Forest": "assets/audio/se/Ambience_Dark_Forest.mp3",
+    "Ambience_Death_Forest": "assets/audio/se/Ambience_Death_Forest.mp3",
+    "Ambience_Desert": "assets/audio/se/Ambience_Desert.mp3",
+    "Ambience_Dungeon": "assets/audio/se/Ambience_Dungeon.mp3",
+    "Ambience_Final_Dungeon": "assets/audio/se/Ambience_Final_Dungeon.mp3",
+    "Ambience_Plain": "assets/audio/se/Ambience_Plain.mp3",
+    "Ambience_ancient_temple": "assets/audio/se/Ambience_ancient_temple.mp3",
+    "As_Assassination_Sword": "assets/audio/se/As_Assassination_Sword.mp3",
+    "As_Dark_Raid": "assets/audio/se/As_Dark_Raid.mp3",
+    "As_Mind_Sword": "assets/audio/se/As_Mind_Sword.mp3",
+    "As_Sword_Dance": "assets/audio/se/As_Sword_Dance.mp3",
+    "As_Take_Sword": "assets/audio/se/As_Take_Sword.mp3",
+    "Bn_Curse_Yell": "assets/audio/se/Bn_Curse_Yell.mp3",
+    "Bn_Fa_Sword": "assets/audio/se/Bn_Fa_Sword.mp3",
+    "Bn_Flame_Storm": "assets/audio/se/Bn_Flame_Storm.mp3",
+    "Bn_Hell_Sword": "assets/audio/se/Bn_Hell_Sword.mp3",
+    "Bn_Shield_Bang": "assets/audio/se/Bn_Shield_Bang.mp3",
+    "Common_Buckler_Defense": "assets/audio/se/Common_Buckler_Defense.mp3",
+    "Common_Dot_Damage": "assets/audio/se/Common_Dot_Damage.mp3",
+    "Common_GameOver": "assets/audio/se/Common_GameOver.mp3",
+    "Common_LevelUp": "assets/audio/se/Common_LevelUp.mp3",
+    "Monster_Bee_Attack": "assets/audio/se/Monster_Bee_Attack.mp3",
+    "Monster_Bee_Death": "assets/audio/se/Monster_Bee_Death.mp3",
+    "Monster_Beholder_type_Attack": "assets/audio/se/Monster_Beholder_type_Attack.mp3",
+    "Monster_Beholder_type_Death": "assets/audio/se/Monster_Beholder_type_Death.mp3",
+    "Monster_Big_Animal_type_Attack": "assets/audio/se/Monster_Big_Animal_type_Attack.mp3",
+    "Monster_Big_Animal_type_Death": "assets/audio/se/Monster_Big_Animal_type_Death.mp3",
+    "Monster_Book_type_Attack": "assets/audio/se/Monster_Book_type_Attack.mp3",
+    "Monster_Book_type_Death": "assets/audio/se/Monster_Book_type_Death.mp3",
+    "Monster_Cactus_type_Attack": "assets/audio/se/Monster_Cactus_type_Attack.mp3",
+    "Monster_Cactus_type_Death": "assets/audio/se/Monster_Cactus_type_Death.mp3",
+    "Monster_Curse_type_Attack": "assets/audio/se/Monster_Curse_type_Attack.mp3",
+    "Monster_Curse_type_Death": "assets/audio/se/Monster_Curse_type_Death.mp3",
+    "Monster_DarkGod_type_Attack": "assets/audio/se/Monster_DarkGod_type_Attack.mp3",
+    "Monster_DarkGod_type_Death": "assets/audio/se/Monster_DarkGod_type_Death.mp3",
+    "Monster_Demon_type_Attack": "assets/audio/se/Monster_Demon_type_Attack.mp3",
+    "Monster_Demon_type_Death": "assets/audio/se/Monster_Demon_type_Death.mp3",
+    "Monster_Dragon_Attack": "assets/audio/se/Monster_Dragon_Attack.mp3",
+    "Monster_Dragon_Death": "assets/audio/se/Monster_Dragon_Death.mp3",
+    "Monster_Egg_type_Attack": "assets/audio/se/Monster_Egg_type_Attack.mp3",
+    "Monster_Egg_type_Death": "assets/audio/se/Monster_Egg_type_Death.mp3",
+    "Monster_Ghost_type_Attack": "assets/audio/se/Monster_Ghost_type_Attack.mp3",
+    "Monster_Ghost_type_Death": "assets/audio/se/Monster_Ghost_type_Death.mp3",
+    "Monster_Goblin_type_Attack": "assets/audio/se/Monster_Goblin_type_Attack.mp3",
+    "Monster_Goblin_type_Death": "assets/audio/se/Monster_Goblin_type_Death.mp3",
+    "Monster_Golem_type_Attack": "assets/audio/se/Monster_Golem_type_Attack.mp3",
+    "Monster_Golem_type_Death": "assets/audio/se/Monster_Golem_type_Death.mp3",
+    "Monster_Hell_type_Attack": "assets/audio/se/Monster_Hell_type_Attack.mp3",
+    "Monster_Hell_type_Death": "assets/audio/se/Monster_Hell_type_Death.mp3",
+    "Monster_Human01_Attack": "assets/audio/se/Monster_Human01_Attack.mp3",
+    "Monster_Human01_Death": "assets/audio/se/Monster_Human01_Death.mp3",
+    "Monster_Human02_Attack": "assets/audio/se/Monster_Human02_Attack.mp3",
+    "Monster_Human02_Death": "assets/audio/se/Monster_Human02_Death.mp3",
+    "Monster_Human03_Attack": "assets/audio/se/Monster_Human03_Attack.mp3",
+    "Monster_Human03_Death": "assets/audio/se/Monster_Human03_Death.mp3",
+    "Monster_Mimic_Attack": "assets/audio/se/Monster_Mimic_Attack.mp3",
+    "Monster_Mimic_Death": "assets/audio/se/Monster_Mimic_Death.mp3",
+    "Monster_Mino_type_Attack": "assets/audio/se/Monster_Mino_type_Attack.mp3",
+    "Monster_Mino_type_Death": "assets/audio/se/Monster_Mino_type_Death.mp3",
+    "Monster_Mouse_type_Attack": "assets/audio/se/Monster_Mouse_type_Attack.mp3",
+    "Monster_Mouse_type_Death": "assets/audio/se/Monster_Mouse_type_Death.mp3",
+    "Monster_Orc_type_Attack": "assets/audio/se/Monster_Orc_type_Attack.mp3",
+    "Monster_Orc_type_Death": "assets/audio/se/Monster_Orc_type_Death.mp3",
+    "Monster_Plant_Attack": "assets/audio/se/Monster_Plant_Attack.mp3",
+    "Monster_Plant_Death": "assets/audio/se/Monster_Plant_Death.mp3",
+    "Monster_Skeleton_type_Attack": "assets/audio/se/Monster_Skeleton_type_Attack.mp3",
+    "Monster_Skeleton_type_Death": "assets/audio/se/Monster_Skeleton_type_Death.mp3",
+    "Monster_Slime_type_Attack": "assets/audio/se/Monster_Slime_type_Attack.mp3",
+    "Monster_Slime_type_Death": "assets/audio/se/Monster_Slime_type_Death.mp3",
+    "Monster_Snake_type_Attack": "assets/audio/se/Monster_Snake_type_Attack.mp3",
+    "Monster_Snake_type_Death": "assets/audio/se/Monster_Snake_type_Death.mp3",
+    "Monster_Succubus_type_Attack": "assets/audio/se/Monster_Succubus_type_Attack.mp3",
+    "Monster_Succubus_type_Death": "assets/audio/se/Monster_Succubus_type_Death.mp3",
+    "Monster_Turtle_type_Attack": "assets/audio/se/Monster_Turtle_type_Attack.mp3",
+    "Monster_Turtle_type_Death": "assets/audio/se/Monster_Turtle_type_Death.mp3",
+    "Monster_Wolf01_Attack": "assets/audio/se/Monster_Wolf01_Attack.mp3",
+    "Monster_Wolf01_Death": "assets/audio/se/Monster_Wolf01_Death.mp3",
+    "Monster_Wolf02_Attack": "assets/audio/se/Monster_Wolf02_Attack.mp3",
+    "Monster_Wolf02_Death": "assets/audio/se/Monster_Wolf02_Death.mp3",
+    "Monster_Worm01_type_Attack": "assets/audio/se/Monster_Worm01_type_Attack.mp3",
+    "Monster_Worm01_type_Death": "assets/audio/se/Monster_Worm01_type_Death.mp3",
+    "Monster_Worm02_type_Attack": "assets/audio/se/Monster_Worm02_type_Attack.mp3",
+    "Monster_Worm02_type_Death": "assets/audio/se/Monster_Worm02_type_Death.mp3",
+    "Monster_Worm03_type_Attack": "assets/audio/se/Monster_Worm03_type_Attack.mp3",
+    "Monster_Worm03_type_Death": "assets/audio/se/Monster_Worm03_type_Death.mp3",
+    "Monster_Zombie_type_Attack": "assets/audio/se/Monster_Zombie_type_Attack.mp3",
+    "Monster_Zombie_type_Death": "assets/audio/se/Monster_Zombie_type_Death.mp3",
+    "Object_Box": "assets/audio/se/Object_Box.mp3",
+    "Object_Door": "assets/audio/se/Object_Door.mp3",
+    "Object_Grass": "assets/audio/se/Object_Grass.mp3",
+    "Object_Jar": "assets/audio/se/Object_Jar.mp3",
+    "Object_Treasure_Open": "assets/audio/se/Object_Treasure_Open.mp3",
+    "Object_Trigger1": "assets/audio/se/Object_Trigger1.mp3",
+    "Object_Trigger2": "assets/audio/se/Object_Trigger2.mp3",
+    "Object_Well": "assets/audio/se/Object_Well.mp3",
+    "Object_Well_no_effect": "assets/audio/se/Object_Well_no_effect.mp3",
+    "Pr_Flash": "assets/audio/se/Pr_Flash.mp3",
+    "Pr_Hammer": "assets/audio/se/Pr_Hammer.mp3",
+    "Pr_Lightning": "assets/audio/se/Pr_Lightning.mp3",
+    "Ra_Aim": "assets/audio/se/Ra_Aim.mp3",
+    "Ra_Energy_Shot": "assets/audio/se/Ra_Energy_Shot.mp3",
+    "Ra_Multiple_Shot": "assets/audio/se/Ra_Multiple_Shot.mp3",
+    "Ra_Net": "assets/audio/se/Ra_Net.mp3",
+    "Ra_Random_Shot": "assets/audio/se/Ra_Random_Shot.mp3",
+    "Ra_wild_Friend": "assets/audio/se/Ra_wild_Friend.mp3",
+    "UI_Bag_open": "assets/audio/se/UI_Bag_open.mp3",
+    "UI_Craft": "assets/audio/se/UI_Craft.mp3",
+    "UI_Enchant": "assets/audio/se/UI_Enchant.mp3",
+    "UI_Ground_sword": "assets/audio/se/UI_Ground_sword.mp3",
+    "UI_Health": "assets/audio/se/UI_Health.mp3",
+    "UI_Item_Bag": "assets/audio/se/UI_Item_Bag.mp3",
+    "UI_Item_Glass": "assets/audio/se/UI_Item_Glass.mp3",
+    "UI_Item_Iron": "assets/audio/se/UI_Item_Iron.mp3",
+    "UI_Item_Iron_Weapon": "assets/audio/se/UI_Item_Iron_Weapon.mp3",
+    "UI_Item_Leather": "assets/audio/se/UI_Item_Leather.mp3",
+    "UI_Item_Looting": "assets/audio/se/UI_Item_Looting.mp3",
+    "UI_Item_Weapon": "assets/audio/se/UI_Item_Weapon.mp3",
+    "UI_Item_Wood_Weapon": "assets/audio/se/UI_Item_Wood_Weapon.mp3",
+    "UI_Item_move": "assets/audio/se/UI_Item_move.mp3",
+    "UI_Menu_Op": "assets/audio/se/UI_Menu_Op.mp3",
+    "UI_Menu_move": "assets/audio/se/UI_Menu_move.mp3",
+    "UI_Menu_select": "assets/audio/se/UI_Menu_select.mp3",
+    "UI_Quest_01": "assets/audio/se/UI_Quest_01.mp3",
+    "UI_Quest_02": "assets/audio/se/UI_Quest_02.mp3",
+    "UI_Skill": "assets/audio/se/UI_Skill.mp3",
+    "UI_Whistle": "assets/audio/se/UI_Whistle.mp3",
+    "Wa_Anger_Rush": "assets/audio/se/Wa_Anger_Rush.mp3",
+    "Wa_Boom": "assets/audio/se/Wa_Boom.mp3",
+    "Wa_Defense": "assets/audio/se/Wa_Defense.mp3",
+    "Wa_Storm": "assets/audio/se/Wa_Storm.mp3",
+    "Wa_Titan_Attack": "assets/audio/se/Wa_Titan_Attack.mp3",
+    "Wa_Wheel_Wind": "assets/audio/se/Wa_Wheel_Wind.mp3",
+    "Weapon_Arrow_Attack": "assets/audio/se/Weapon_Arrow_Attack.mp3",
+    "Weapon_Arrow_Attack_voice": "assets/audio/se/Weapon_Arrow_Attack_voice.mp3",
+    "Weapon_Arrow_Critical": "assets/audio/se/Weapon_Arrow_Critical.mp3",
+    "Weapon_Arrow_Miss": "assets/audio/se/Weapon_Arrow_Miss.mp3",
+    "Weapon_Dagger_Attack": "assets/audio/se/Weapon_Dagger_Attack.mp3",
+    "Weapon_Dagger_Attack_voice": "assets/audio/se/Weapon_Dagger_Attack_voice.mp3",
+    "Weapon_Dagger_Critical": "assets/audio/se/Weapon_Dagger_Critical.mp3",
+    "Weapon_Dagger_Miss": "assets/audio/se/Weapon_Dagger_Miss.mp3",
+    "Weapon_Magic_Attack01": "assets/audio/se/Weapon_Magic_Attack01.mp3",
+    "Weapon_Magic_Attack01_voice": "assets/audio/se/Weapon_Magic_Attack01_voice.mp3",
+    "Weapon_Magic_Attack02": "assets/audio/se/Weapon_Magic_Attack02.mp3",
+    "Weapon_Magic_Critical": "assets/audio/se/Weapon_Magic_Critical.mp3",
+    "Weapon_Magic_Miss": "assets/audio/se/Weapon_Magic_Miss.mp3",
+    "Weapon_Punch": "assets/audio/se/Weapon_Punch.mp3",
+    "Weapon_Punch_Critical": "assets/audio/se/Weapon_Punch_Critical.mp3",
+    "Weapon_Stick_Dull_Attack": "assets/audio/se/Weapon_Stick_Dull_Attack.mp3",
+    "Weapon_Stick_Dull_Attack_voice": "assets/audio/se/Weapon_Stick_Dull_Attack_voice.mp3",
+    "Weapon_Stick_Dull_Critical": "assets/audio/se/Weapon_Stick_Dull_Critical.mp3",
+    "Weapon_Stick_Dull_Miss": "assets/audio/se/Weapon_Stick_Dull_Miss.mp3",
+    "Weapon_Sword_Attack": "assets/audio/se/Weapon_Sword_Attack.mp3",
+    "Weapon_Sword_Attack_voice": "assets/audio/se/Weapon_Sword_Attack_voice.mp3",
+    "Weapon_Sword_Critical": "assets/audio/se/Weapon_Sword_Critical.mp3",
+    "Weapon_Sword_Miss": "assets/audio/se/Weapon_Sword_Miss.mp3",
+    "Weapon_TwoHand_Sword_Attack": "assets/audio/se/Weapon_TwoHand_Sword_Attack.mp3",
+    "Weapon_TwoHand_Sword_Attack_voice": "assets/audio/se/Weapon_TwoHand_Sword_Attack_voice.mp3",
+    "Weapon_TwoHand_Sword_Critical": "assets/audio/se/Weapon_TwoHand_Sword_Critical.mp3",
+    "Weapon_TwoHand_Sword_Miss": "assets/audio/se/Weapon_TwoHand_Sword_Miss.mp3",
+    "Wr_Blood_Curse": "assets/audio/se/Wr_Blood_Curse.mp3",
+    "Wr_Fire_Hell": "assets/audio/se/Wr_Fire_Hell.mp3",
+    "Wr_Fire_Offerings": "assets/audio/se/Wr_Fire_Offerings.mp3",
+    "Wr_Pain_Hand": "assets/audio/se/Wr_Pain_Hand.mp3"
+  },
+  "menuMusic": "BGM09",
+  "maps": {
+    "shadow-camp": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "network-map-9dee3b9b": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "begin-map-85f4ad8e": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "castle-base-map2-c241059c": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "guild-base-map2-66dd3043": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "mercenary-office-map-2-5867b53b": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "choice-map2-a7a7f0e6": {
+      "music": "BGM10",
+      "ambience": null
+    },
+    "arena-map2-aa7923cc": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "barrack-map2-076f249a": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "hospital-map2-0a1f6bec": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "warehouse-map2-e64decb4": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "siege-main-map2-42026e3e": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "network-mine-map2-a2dd7602": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "room-red-map2-79a1315b": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "room-blue-map2-0ad43483": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "room-yellow-map2-1ee3decb": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "fishsage-map2-6fe01d6f": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "fishsage-gate-map2-5cb71301": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "dimensionmap2-472a4652": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "practice01-1f8d080f": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "shadow-hall": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "kiyan-s-room-3b44ed56": {
+      "music": null,
+      "ambience": null
+    },
+    "cardinal-study": {
+      "music": null,
+      "ambience": null
+    },
+    "sanctus-church": {
+      "music": null,
+      "ambience": null
+    },
+    "shadow-training-dungeon1-5e8c19b4": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "old-sanctuary-54cffd62": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "inside-arnen-castle01-8b6ce276": {
+      "music": "BGM08",
+      "ambience": null
+    },
+    "inside-arnen-castle02-9a1430d7": {
+      "music": "BGM08",
+      "ambience": null
+    },
+    "northwest-side-of-arnen-castle-1b3a4e22": {
+      "music": "BGM08",
+      "ambience": null
+    },
+    "channel-s-room-7b015862": {
+      "music": "BGM02",
+      "ambience": null
+    },
+    "shadow-forest-west": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "shadow-forest-east": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "silent-cave-entrance": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "silent-cave-depths": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "shadow-warehouse-364a26cb": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "inn-cd5c33da": {
+      "music": "BGM03",
+      "ambience": null
+    },
+    "no-text-17500fa8": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "berkel-capital": {
+      "music": "BGM03",
+      "ambience": null
+    },
+    "training-dungeon-one": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "training-dungeon-two": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "merchandise-store-7ac7ea0f": {
+      "music": "BGM03",
+      "ambience": null
+    },
+    "weapons-store-217e4dc9": {
+      "music": "BGM03",
+      "ambience": null
+    },
+    "hakan-desert-1-f08340a0": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "hakan-desert-2-95444e0c": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "hakan-desert-3-60e61eaf": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "hakan-desert-4-7c711a9e": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "goblin-s-lair-1-2fddb530": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "goblin-s-lair-2-86774f0b": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "goblin-s-lair-3-82cc1474": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "goblin-s-kitchen-f55c20ca": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "goblin-s-storage-b89e5292": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "spider-s-lair-1-bd2e620c": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "spider-s-lair-2-ba4a24b9": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "goblin-prison-1-cee53ab6": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "goblin-prison-2-27ab25e1": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "goblin-s-lair-1-85ba48c0": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "goblins-store-ee1cf9e6": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "goblin-s-lair-2-49c1710f": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "goblin-s-lair-3-c6e77244": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "oasis-8ae7d564": {
+      "music": null,
+      "ambience": null
+    },
+    "leap-gate-district-1da2f793": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "hakan-desert-5-5067c1d3": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "nirniti-s-house-96a77301": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "kamuran-village-ea786378": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "dwarf-village-mayor-s-house-7d3aec06": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "dwarf-village-east-30be1f8e": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "werewolf-lair-43f5b4c5": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "dwarf-village-f9a49628": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "mines-west-section-b1-92dc85b5": {
+      "music": "BGM07",
+      "ambience": "Ambience_Cave"
+    },
+    "mines-west-section2-b1-83d7f81e": {
+      "music": "BGM07",
+      "ambience": "Ambience_Cave"
+    },
+    "mines-lowest-floor-22a46945": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "mine-undergrounds-b1-2a701c06": {
+      "music": "BGM07",
+      "ambience": "Ambience_Cave"
+    },
+    "leap-gate-district-a474941a": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "kamuran-hills-350a0327": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "east-kamuran-b52d2b0e": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "mine-undergrounds-b2-9407459c": {
+      "music": "BGM07",
+      "ambience": "Ambience_Cave"
+    },
+    "mine-undergrounds-b3-36207370": {
+      "music": "BGM07",
+      "ambience": "Ambience_Cave"
+    },
+    "dwarf-village-inn-673592b5": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "no-text-45bcc8ae": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "kamuran-wilderness-cave-018dc18d": {
+      "music": "BGM05",
+      "ambience": "Ambience_Cave"
+    },
+    "kamuran-wilderness-d37060c8": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "south-kamuran-078a9df3": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "mine-undergrounds-b4-c02a1615": {
+      "music": "BGM05",
+      "ambience": "Ambience_Cave"
+    },
+    "kamuran-village-inn-29c0e2b1": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "no-text-93364743": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "border-gateway-67e044a2": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "ben-s-mansion-6cab4760": {
+      "music": null,
+      "ambience": null
+    },
+    "redhoods-hideout-59b7c357": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "redhoods-boss-room-c9f73fd1": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "guardpost-floor-3-de2fa89d": {
+      "music": null,
+      "ambience": null
+    },
+    "pendrik-village-safehouse-b26c31d1": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "underground-prison-guardpost-358b2781": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "south-pendrik-6312caf9": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "pendrik-village-14276a64": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "pendrik-village-inn-ecaa041a": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "no-text-5b4476ef": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "pendrik-northern-plains-e7377ecb": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "delos-swamps-1-00698303": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "smugglers-secret-entrance-2-4fe1a00d": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "delos-swamps-2-a4b229dc": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "land-of-exile-1-8e5e8e5e": {
+      "music": "BGM05",
+      "ambience": "Ambience_Dungeon"
+    },
+    "land-of-exile-4-dffe6d0c": {
+      "music": "BGM05",
+      "ambience": "Ambience_Dungeon"
+    },
+    "land-of-exile-3-b913f17f": {
+      "music": "BGM05",
+      "ambience": "Ambience_Dungeon"
+    },
+    "land-of-exile-8-0cb03742": {
+      "music": "BGM05",
+      "ambience": "Ambience_Dungeon"
+    },
+    "land-of-exile-9-1c78a4b7": {
+      "music": "BGM12",
+      "ambience": null
+    },
+    "land-of-exile-8-49bd8b1f": {
+      "music": "BGM05",
+      "ambience": "Ambience_Dungeon"
+    },
+    "delos-highlands-fe5f9057": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "heket-greenlands-38fa92bf": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "guardpost-secret-entrance-828ed5f5": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "pendrik-s-deserted-house-29903441": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "redhoods-hideout-basement-6ad1e625": {
+      "music": "BGM05",
+      "ambience": "Ambience_ancient_temple"
+    },
+    "delos-cave-9172c82a": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "guardpost-floor-1-6dd871eb": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "guardpost-floor-2-8ffd8a17": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "land-of-exile-2-859138cb": {
+      "music": "BGM05",
+      "ambience": "Ambience_Dungeon"
+    },
+    "smugglers-secret-entrance-1-e71dddea": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "land-of-exile-7-70affc13": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "berkelen-knights-headquarters-8ee0e218": {
+      "music": "BGM10",
+      "ambience": null
+    },
+    "divine-berkelen-knights-5824a33e": {
+      "music": "BGM10",
+      "ambience": null
+    },
+    "closed-dungeon-2-563efc16": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "shadow-training-dungeon-2-a6b8293b": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "leiden-s-house-42b05b3c": {
+      "music": null,
+      "ambience": null
+    },
+    "closed-dungeon-1-61475d35": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "secret-sanctum-1-86626b1e": {
+      "music": "BGM04",
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "secret-sanctum-2-4e041f9e": {
+      "music": "BGM04",
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "steel-orc-village-57c67f8c": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "steel-orc-village-guardpost-296888b5": {
+      "music": null,
+      "ambience": null
+    },
+    "steel-altar-a048555a": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "shadow-swamp-7f52a3b0": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "hwagan-canyon-2-c2fa2ee1": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "stranger-s-house-b201c183": {
+      "music": null,
+      "ambience": null
+    },
+    "hwagan-canyon-cave-3-65c295e1": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "hwagan-canyon-cave-4-229b88ec": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "bone-orc-district-1-e7b02a4c": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "hwagan-canyon-4-2fa90a5c": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "fort-of-screams-floor-2-17b0bc2d": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "bone-orc-district-2-33ebe13c": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "fort-of-screams-floor-3-c78c50b3": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "fort-of-screams-top-floor-91c86054": {
+      "music": "BGM12",
+      "ambience": null
+    },
+    "fort-of-screams-floor-1-c9fd5293": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "steel-orc-elder-s-house-8c51a1ae": {
+      "music": null,
+      "ambience": null
+    },
+    "noxious-sanctum-entrance-75c3e355": {
+      "music": "BGM04",
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "noxious-sanctum-basement-1-15574f1e": {
+      "music": "BGM04",
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "noxious-sanctum-basement-1-d0edc449": {
+      "music": "BGM04",
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "noxious-sanctum-basement-2-c853be2b": {
+      "music": "BGM04",
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "noxious-sanctum-chapel-0f48cdaf": {
+      "music": "BGM12",
+      "ambience": null
+    },
+    "noxious-sanctum-main-hall-2e80d907": {
+      "music": "BGM04",
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "reminiscence-map-b3c7c620": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "cliff-road-e5bff2ab": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "hwagan-canyon-cave-1-bdaaf954": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "hwagan-canyon-cave-2-db7ab085": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "hwagan-canyon-3-3ce58aef": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "noxious-sanctum-hall-94557645": {
+      "music": "BGM04",
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "steel-swamp-1-4b04cba4": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "steel-swamp-2-2dae7d1a": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "hwagan-canyon-1-a557cd60": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "steel-village-weapons-store-78108c17": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "steel-orc-village-mercenary-wait-area-039f10ed": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "steel-village-inn-445bbdcf": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "berkel-church-monastery-4-73f46059": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "hanun-forest-4-3a7b18ae": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "berkel-church-monastery-1-16c1f7e2": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "berkel-church-monastery-2-9be24245": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "berkel-church-hall-b0cfa8b1": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "berkel-capital-square-3807c990": {
+      "music": "BGM03",
+      "ambience": null
+    },
+    "empire-capital-alley-1-81ac0655": {
+      "music": "BGM03",
+      "ambience": null
+    },
+    "empire-capital-alley-2-fedba5da": {
+      "music": "BGM03",
+      "ambience": null
+    },
+    "empire-capital-alley-3-b7bc4d6b": {
+      "music": "BGM03",
+      "ambience": null
+    },
+    "empire-capital-alley-4-6f3073bb": {
+      "music": "BGM03",
+      "ambience": null
+    },
+    "empire-capital-alley-5-30743650": {
+      "music": "BGM03",
+      "ambience": null
+    },
+    "hanun-forest-3-3a1017a4": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "monster-ai-test-map-9ac66f1c": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "eternal-world-1-0d80e2c5": {
+      "music": null,
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "eternal-world-2-5661fabf": {
+      "music": null,
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "eternal-world-3-a8c872e8": {
+      "music": null,
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "eldorn-forest-3-6672bfd8": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "eldorn-forest-4-280f2bf7": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "southern-deponin-2c09661f": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "deponin-village-7e425d51": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "blackhoods-prison-1edb468e": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "blackhoods-boss-room-2b6ae48c": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "blackhoods-hideout-86afa206": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "blackhoods-stronghold-1-734bd36d": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "blackhoods-stronghold-2-4dc049d1": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "blackhoods-storage-0bf7e1a1": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "rinoen-village-07e6707c": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "oogle-habitat-1-f4a8baa3": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "oogle-habitat-2-92d8a154": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "oogle-habitat-3-85b56ac1": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "oogle-queen-s-room-e76e8b18": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "deponin-dealers-union-d78b718f": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "rinoen-forest-4e3bc80a": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "rinoen-safehouse-109e5fcb": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "deponin-s-herbhouse-b551b38c": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "west-rinoen-4886d4f6": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "eldorn-forest-clearings-9c7ba488": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "rinoen-inn-10140c57": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "rinoen-mayor-s-house-31c42422": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "ronarck-cliffs-4f1b6c32": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "ronarck-canyon-1-ae9578a7": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "ronarck-canyon-2-8b7ae7cb": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "maze-of-death-1-516dea72": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "maze-of-death-2-6cf130f6": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "maze-of-death-3-9ec0d0d0": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "maze-of-death-4-d1ddaa6a": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "beacon-hill-floor-1-7f80ae24": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "beacon-hill-floor-2-62359518": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "beacon-hill-floor-3-d41d0a7d": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "beacon-hill-rooftop-bdd50817": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "eldorn-gateway-ccbaaf87": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "eldorn-forest-1-2ed30fcf": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "eldorn-forest-2-88398fe9": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "takal-woods-51810b26": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "piolren-meadows-6-24b3a457": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "piolren-meadows-7-4c61d9fe": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "piolren-meadows-8-15074cb1": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "piolren-rocky-mountain-d5173358": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "piolren-underground-cave-1-c52909b2": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "piolren-underground-cave-2-39c07842": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "piolren-underground-cave-3-a5f0d6cf": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "piolren-underground-cave-4-686c6617": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "piolren-meadows-1-b925efce": {
+      "music": "BGM08",
+      "ambience": null
+    },
+    "piolren-meadows-2-3af4c9e5": {
+      "music": "BGM08",
+      "ambience": null
+    },
+    "piolren-meadows-3-c38ac6b1": {
+      "music": "BGM08",
+      "ambience": null
+    },
+    "piolren-meadows-4-391c0785": {
+      "music": "BGM08",
+      "ambience": null
+    },
+    "piolren-meadows-5-0f858895": {
+      "music": "BGM08",
+      "ambience": null
+    },
+    "north-rinoen-e6f9b31f": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "eternal-forest-entrance-e878e87b": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "snow-fey-village-b6acd59c": {
+      "music": "BGM02",
+      "ambience": null
+    },
+    "clear-frost-plains-bda4aeea": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "snow-fey-weapons-store-3aa042d9": {
+      "music": "BGM02",
+      "ambience": null
+    },
+    "white-valley-1-d6c55108": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "white-valley-2-4d816430": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "northern-winds-forest-9e4c10fe": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "sage-s-house-e9fc38c1": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "snowfield-forest-81c8d4d0": {
+      "music": "BGM06",
+      "ambience": "Ambience_Plain"
+    },
+    "ice-fortress-cde704d5": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "snow-elf-village-inn-33e152f3": {
+      "music": "BGM02",
+      "ambience": null
+    },
+    "eternal-winter-swamps-40e6e0d1": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "fey-village-mercenary-wait-area-f598a346": {
+      "music": "BGM02",
+      "ambience": null
+    },
+    "purification-cave-1-9fd1733b": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "purification-cave-2-464c743f": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "purification-cave-3-f9fbfeae": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "miller-s-house-92326c07": {
+      "music": "BGM01",
+      "ambience": null
+    },
+    "cure-room-f01a2e90": {
+      "music": "BGM02",
+      "ambience": null
+    },
+    "healer-s-house-d95340da": {
+      "music": "BGM02",
+      "ambience": null
+    },
+    "berkel-church-monastery-3-2a901d11": {
+      "music": "BGM07",
+      "ambience": null
+    },
+    "snow-fey-village-entrance-b3b45a65": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "drow-fortress-1-b648f447": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "drow-fortress-2-36d4fdda": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "drow-fortress-3-ed91ddeb": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "snowfield-1-2c795118": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "snowfield-2-669b8e3a": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "snowfield-4-70e9d02f": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "snowfield-5-cd2e1c6a": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "snowfield-crossroad-fde2eab2": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "snowfield-east-crossroad-45fcbc15": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "snowfield-north-crossroad-1ebeeab2": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "snowfield-west-crossroad-c7b20634": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "snowfield-caves-0d30c36e": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "snowfield-cliffs-caf97633": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "eternal-forest-1-9dc5139f": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "eternal-forest-1-2-2e9426f3": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "eternal-forest-2-a10ecefa": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "eternal-forest-3-2956520c": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "drow-s-soul-district-1-0a15bce1": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "drow-s-soul-district-2-6eb82a4a": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "eternal-forest-6-ea15883d": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "eternal-forest-7-1bc06bd6": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "eternal-forest-bounds-1-ee91af66": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "eternal-forest-4-b171b16c": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "eternal-forest-bounds-3-422e3aba": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "eternal-forest-exit-670ba6cc": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "eldorn-forest-5-952a3f2b": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "eternal-forest-cave-a23ae3ff": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "eternal-forest-bounds-2-ab6dcdea": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "snowfield-hills-67c3dd3b": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "eternal-snowy-forest-1-e60f16ff": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "lonely-plains-2171f652": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "forest-of-enlightenment-b4fad832": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "room-of-death-e4cb9150": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "royal-burial-chamber-2733bc39": {
+      "music": null,
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "royal-burial-chamber-2-c16d9342": {
+      "music": null,
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "royal-burial-chamber-3-3572199d": {
+      "music": null,
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "hunter-s-cabin-2b338220": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "new-way-of-life-a1b9d47f": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "styx-road-f5f4e846": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "styx-road-2-f4d7dc4d": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "styx-road-3-4d009abf": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "noxious-sanctum-floor-b1-047319bf": {
+      "music": "BGM05",
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "noxious-sanctum-floor-b2-06be5919": {
+      "music": "BGM05",
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "noxious-sanctum-floor-b3-a2b38108": {
+      "music": "BGM05",
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "noxious-sanctum-floor-b4-17f15794": {
+      "music": "BGM05",
+      "ambience": "Ambience_Final_Dungeon"
+    },
+    "abyss-engine-room-be5a127f": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "abyss-warehouse-806a3779": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "hall-of-abyss-f7a501f5": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "room-of-patience-1cfb7d72": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "room-of-life-ec807886": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "south-room-of-afterlife-49a62d06": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "east-room-of-afterlife-1a5eb722": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "west-room-of-afterlife-a247174f": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "hall-of-afterlife-0780bd4c": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "engine-room-of-reality-a06620c7": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "hall-of-reality-bf3cc6de": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "hall-of-resurrection-0784afc3": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "room-of-resurrection-394abb48": {
+      "music": "BGM09",
+      "ambience": null
+    },
+    "room-of-regression-e6dc8769": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "room-of-trials-14ea25e4": {
+      "music": "BGM09",
+      "ambience": null
+    },
+    "road-of-crusade-86f796ae": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "road-of-truth-4458f0db": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "snowfield-3-62da5337": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "western-deponin-9159ab84": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "eternal-snowy-valley-f39c6607": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "eternal-snowy-forest-2-b7e43e5f": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "eternal-snowy-forest-3-d519c1d9": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "eternal-snowy-forest-4-6952252e": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "eternal-snowy-forest-5-295d94f6": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "mist-village-clearings-c1defcd5": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "abandoned-camp-6126dbdc": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "sealed-dungeon-1-1-78024c9d": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "sealed-dungeon-1-2-c824bb14": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "sealed-dungeon-1-3-3275afd4": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "hunter-s-house-41096fbb": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "mist-village-store-7026696d": {
+      "music": "BGM02",
+      "ambience": null
+    },
+    "forest-graveyard-5c61d015": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "mist-village-1b503cf0": {
+      "music": "BGM02",
+      "ambience": null
+    },
+    "mist-forest-1-897898be": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "mist-forest-2-3df7a201": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "mist-forest-3-371a9766": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "mist-village-inn-3ff8b0e2": {
+      "music": "BGM02",
+      "ambience": null
+    },
+    "mist-village-healing-center-dcf13e21": {
+      "music": null,
+      "ambience": null
+    },
+    "mayor-s-house-7dcaf242": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "mayor-s-house-basement-1-474a8755": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "mist-village-deserted-house-1-bd53f732": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "mist-village-deserted-house-3-cb62c9f2": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "sealed-dungeon-2-1-d239bb43": {
+      "music": "BGM05",
+      "ambience": "Ambience_Cave"
+    },
+    "sealed-dungeon-2-2-db892f3d": {
+      "music": "BGM05",
+      "ambience": "Ambience_Cave"
+    },
+    "sealed-dungeon-2-3-cdbbbb1d": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "sealed-dungeon-3-1-91c5d116": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "sealed-dungeon-3-2-c961dc79": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "sealed-dungeon-3-3-11ff2101": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "sealed-room-south-52aee6b4": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "sealed-room-east-eeb848fc": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "sealed-room-north-83f01435": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "sealed-room-west-a0be4dae": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "elven-sanctuary-entrance-36976f1d": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "mist-forest-4-5479c20f": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "final-sealed-boss-room-0a1ba3bd": {
+      "music": "BGM12",
+      "ambience": null
+    },
+    "final-seal-s-center-93cc4231": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "mayor-s-house-basement-2-6c2f1a8c": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "mayor-s-house-basement-3-b330d29e": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "beach-146bd453": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "lake-sellen-af6b453c": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "dark-space-b5a13a13": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "space-of-despair-d3eec6ed": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "road-of-renewal-7aa7059d": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "phantom-forest-1-bbe4caac": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "phantom-forest-2-19d246f5": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "sellen-meadows-1-47c5028a": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "lake-sellen-ad439b74": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "sellen-meadows-2-8fee3900": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "eternal-forest-5-b4c4967b": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "eternal-forest-8-94f20a7d": {
+      "music": null,
+      "ambience": "Ambience_Plain"
+    },
+    "road-of-renewal-01db105a": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "kiyan-s-memory-layer-1-631d46d8": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "eternal-world-1-e47b51f2": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "eternal-world-2-918657cd": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "eternal-world-3-9676ac48": {
+      "music": "BGM04",
+      "ambience": null
+    },
+    "dark-woods-1-bc45ec02": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "dark-woods-2-02c7c690": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "dark-woods-3-2bda69eb": {
+      "music": null,
+      "ambience": "Ambience_Dark_Forest"
+    },
+    "piolren-meadows-9-8fb6c766": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "goblin-s-lair-1-8c747b73": {
+      "music": "BGM07",
+      "ambience": "Ambience_Cave"
+    },
+    "goblin-s-lair-2-50b32f60": {
+      "music": "BGM07",
+      "ambience": "Ambience_Cave"
+    },
+    "goblin-s-lair-3-c47d6e5f": {
+      "music": "BGM07",
+      "ambience": "Ambience_Cave"
+    },
+    "kiyan-s-memory-layer-2-85e3306a": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "abandoned-mines-1-b31ae85e": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "empire-capital-inn-48f1ee09": {
+      "music": "BGM03",
+      "ambience": null
+    },
+    "abandoned-mines-2-2fa7e35c": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "abandoned-mines-3-219fbb39": {
+      "music": null,
+      "ambience": "Ambience_Cave"
+    },
+    "blazing-desert-1-f2552cd7": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "blazing-desert-2-0c8b8e59": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "blazing-desert-3-c9bdc250": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "lonely-plateaus-1-4717fad8": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "lonely-plateaus-2-07b3e47c": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "lonely-plateaus-3-949e4555": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "kiyan-s-memory-layer-3-b767da17": {
+      "music": "BGM10",
+      "ambience": null
+    },
+    "wrecked-castle-1-c941aa51": {
+      "music": "BGM08",
+      "ambience": null
+    },
+    "wrecked-castle-2-7ccec265": {
+      "music": "BGM08",
+      "ambience": null
+    },
+    "wrecked-castle-3-8c106224": {
+      "music": "BGM08",
+      "ambience": null
+    },
+    "land-of-death-1-acf5623d": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "land-of-death-2-d10d46f2": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "land-of-death-3-69219137": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "spiritual-forest-1-03adf4d5": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "spiritual-forest-2-0dc60bc8": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "spiritual-forest-3-972c267b": {
+      "music": "BGM11",
+      "ambience": null
+    },
+    "kiyan-s-memory-layer-4-d2d5bba8": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "endless-snowfield-1-8ea71cda": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "endless-snowfield-2-3f6ae6b6": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "endless-snowfield-3-7aae3af7": {
+      "music": null,
+      "ambience": "Ambience_Desert"
+    },
+    "cave-of-trials-1-769fa4fb": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "cave-of-trials-2-c1a862a7": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "cave-of-trials-3-e9363ac6": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "forgotten-ruins-1-1f0b614a": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "forgotten-ruins-2-a502bdcc": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    },
+    "forgotten-ruins-3-39193752": {
+      "music": "BGM12",
+      "ambience": null
+    },
+    "kiyan-s-final-memory-layer-1-3f5f502a": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "kiyan-s-final-memory-layer-3-2d9382f1": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "kiyan-s-final-memory-layer-4-a5a86c30": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "kiyan-s-final-memory-layer-5-b43f5857": {
+      "music": "BGM09",
+      "ambience": null
+    },
+    "land-of-exile-5-2872c710": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "land-of-exile-6-d87a215d": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "land-of-exile-7-78b5df46": {
+      "music": null,
+      "ambience": "Ambience_Dungeon"
+    },
+    "eternal-forest-1-1-bd658e2a": {
+      "music": "BGM05",
+      "ambience": null
+    },
+    "kiyan-s-final-memory-layer-2-ecc3d1ca": {
+      "music": "BGM06",
+      "ambience": null
+    },
+    "mist-village-deserted-house-2-cfd8b6d3": {
+      "music": null,
+      "ambience": "Ambience_ancient_temple"
+    }
+  },
+  "enemies": {
+    "enemy-bush-1": {
+      "attack": null,
+      "death": null,
+      "struck": "UI_Item_Glass"
+    },
+    "enemy-jar-1": {
+      "attack": null,
+      "death": null,
+      "struck": "UI_Item_Iron"
+    },
+    "enemy-box-1": {
+      "attack": null,
+      "death": null,
+      "struck": "UI_Item_Leather"
+    },
+    "enemy-scorpion-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-snake-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-cactus-1": {
+      "attack": "Monster_Cactus_type_Attack",
+      "death": "Monster_Cactus_type_Death",
+      "struck": null
+    },
+    "enemy-maggot-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-mimic-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-rat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-spider-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-wolf-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-wing-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-sproot-1": {
+      "attack": "Monster_Plant_Attack",
+      "death": "Monster_Plant_Death",
+      "struck": null
+    },
+    "enemy-skeleton-1": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-flying-book-1": {
+      "attack": "Monster_Book_type_Attack",
+      "death": "Monster_Book_type_Death",
+      "struck": null
+    },
+    "enemy-bear-1": {
+      "attack": "Monster_Big_Animal_type_Attack",
+      "death": "Monster_Big_Animal_type_Death",
+      "struck": null
+    },
+    "enemy-oogle-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-turtle-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-artillery-turtle-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-zombie-prisoner-1": {
+      "attack": "Monster_Zombie_type_Attack",
+      "death": "Monster_Zombie_type_Death",
+      "struck": null
+    },
+    "enemy-minotaur-1": {
+      "attack": "Monster_Mino_type_Attack",
+      "death": "Monster_Mino_type_Death",
+      "struck": null
+    },
+    "enemy-golem-1": {
+      "attack": "Monster_Golem_type_Attack",
+      "death": "Monster_Golem_type_Death",
+      "struck": null
+    },
+    "enemy-werewolf-1": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-mosquito-1": {
+      "attack": "Monster_Worm02_type_Attack",
+      "death": "Monster_Worm02_type_Death",
+      "struck": null
+    },
+    "enemy-bees-1": {
+      "attack": "Monster_Bee_Attack",
+      "death": "Monster_Bee_Death",
+      "struck": null
+    },
+    "enemy-beehive-1": {
+      "attack": "Monster_Bee_Attack",
+      "death": "Monster_Bee_Death",
+      "struck": null
+    },
+    "enemy-ghost-1": {
+      "attack": "Monster_Hell_type_Attack",
+      "death": "Monster_Hell_type_Death",
+      "struck": null
+    },
+    "enemy-fireball-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-cursed-creature-1": {
+      "attack": "Monster_Curse_type_Attack",
+      "death": "Monster_Curse_type_Death",
+      "struck": null
+    },
+    "enemy-demon-road-1": {
+      "attack": "Monster_Demon_type_Attack",
+      "death": "Monster_Demon_type_Death",
+      "struck": null
+    },
+    "enemy-berkel-soldier-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-archer-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-knight-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-priest-1": {
+      "attack": "Monster_Human03_Attack",
+      "death": "Monster_Human03_Death",
+      "struck": null
+    },
+    "enemy-human-monk-1": {
+      "attack": "Monster_Human03_Attack",
+      "death": "Monster_Human03_Death",
+      "struck": null
+    },
+    "enemy-dark-soldier-1": {
+      "attack": "Monster_Human02_Attack",
+      "death": "Monster_Human02_Death",
+      "struck": null
+    },
+    "enemy-dark-archer-1": {
+      "attack": "Monster_Human02_Attack",
+      "death": "Monster_Human02_Death",
+      "struck": null
+    },
+    "enemy-dark-knight-1": {
+      "attack": "Monster_Human02_Attack",
+      "death": "Monster_Human02_Death",
+      "struck": null
+    },
+    "enemy-shadow-priest-1": {
+      "attack": "Monster_Human02_Attack",
+      "death": "Monster_Human02_Death",
+      "struck": null
+    },
+    "enemy-dark-monk-1": {
+      "attack": "Monster_Human03_Attack",
+      "death": "Monster_Human03_Death",
+      "struck": null
+    },
+    "enemy-desert-soldier-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-desert-assassin-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-orc-warrior-1": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-dark-creature-s-eggs-1": {
+      "attack": "Monster_Egg_type_Attack",
+      "death": "Monster_Egg_type_Death",
+      "struck": null
+    },
+    "enemy-succubus-1": {
+      "attack": "Monster_Succubus_type_Attack",
+      "death": "Monster_Succubus_type_Death",
+      "struck": null
+    },
+    "enemy-hell-s-pawn-1": {
+      "attack": "Monster_Hell_type_Attack",
+      "death": "Monster_Hell_type_Death",
+      "struck": null
+    },
+    "enemy-beast-companion-1": {
+      "attack": "Monster_Big_Animal_type_Attack",
+      "death": "Monster_Big_Animal_type_Death",
+      "struck": null
+    },
+    "enemy-mutated-prisoner-1": {
+      "attack": "Monster_Zombie_type_Attack",
+      "death": "Monster_Zombie_type_Death",
+      "struck": null
+    },
+    "enemy-mysterious-monster-1": {
+      "attack": "Monster_Zombie_type_Attack",
+      "death": "Monster_Zombie_type_Death",
+      "struck": null
+    },
+    "enemy-shin-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-hard-boned-skeleton-soldier-1": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-human-priest-s-test-1": {
+      "attack": "Monster_Human03_Attack",
+      "death": "Monster_Human03_Death",
+      "struck": null
+    },
+    "enemy-earl-grafton-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-dispatch-soldier-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-soldier-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-soldier-3": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-soldier-4": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-soldier-5": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-cave-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-fragile-skeleton-soldier-1": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-sleek-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-shaggy-grayfang-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-forest-snake-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-wild-wolf-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-arnen-sentinel-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-tamed-battle-turtle-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-leader-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-goblin-cave-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-guard-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-head-goblin-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-cave-2": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-cave-3": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-cave-4": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-cave-5": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-cave-6": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-cave-7": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-calcareous-maggots-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-cave-spider-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-vampire-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-plump-maggots-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-blue-pocket-cavespider-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-warder-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-warder-2": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-warder-3": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-leader-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-head-werewolf-1": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-purity-stone-protector-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-cornette-1": {
+      "attack": "Monster_Human03_Attack",
+      "death": "Monster_Human03_Death",
+      "struck": null
+    },
+    "enemy-gigantic-werewolf-1": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-rigid-wing-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-poisonous-cactus-1": {
+      "attack": "Monster_Cactus_type_Attack",
+      "death": "Monster_Cactus_type_Death",
+      "struck": null
+    },
+    "enemy-gigantic-werewolf-2": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-shin-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-sword-master-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-cave-mouse-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-queen-spider-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-giant-tarantula-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-guard-2": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-slime-2": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-desert-tortoise-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-sand-scorpion-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-head-goblin-yirzuch-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-weak-cactus-1": {
+      "attack": "Monster_Cactus_type_Attack",
+      "death": "Monster_Cactus_type_Death",
+      "struck": null
+    },
+    "enemy-night-hunters-scout-1": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-night-hunters-scout-2": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-night-hunters-scout-3": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-night-hunters-scout-4": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-summoned-pawn-of-hell-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-summoned-cursed-creature-1": {
+      "attack": "Monster_Curse_type_Attack",
+      "death": "Monster_Curse_type_Death",
+      "struck": null
+    },
+    "enemy-contaminated-berkel-priest-1": {
+      "attack": "Monster_Human03_Attack",
+      "death": "Monster_Human03_Death",
+      "struck": null
+    },
+    "enemy-lunatic-guard-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-mutated-abbot-1": {
+      "attack": "Monster_Zombie_type_Attack",
+      "death": "Monster_Zombie_type_Death",
+      "struck": null
+    },
+    "enemy-bizarre-flying-book-1": {
+      "attack": "Monster_Book_type_Attack",
+      "death": "Monster_Book_type_Death",
+      "struck": null
+    },
+    "enemy-poisonous-spider-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-hybrid-wolf-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-mutinous-benukes-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-zealot-manson-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-golem-2": {
+      "attack": "Monster_Golem_type_Attack",
+      "death": "Monster_Golem_type_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-3": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-4": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-5": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-6": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-adjutant-general-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-7": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-8": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-desert-wasphive-1": {
+      "attack": "Monster_Bee_Attack",
+      "death": "Monster_Bee_Death",
+      "struck": null
+    },
+    "enemy-gray-scorpion-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-red-winged-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-9": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-10": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-11": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-12": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-blue-wolf-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-voracious-maggots-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-loud-mimic-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-sly-mimic-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-lunatic-djinn-1": {
+      "attack": "Monster_Demon_type_Attack",
+      "death": "Monster_Demon_type_Death",
+      "struck": null
+    },
+    "enemy-acid-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-starving-boss-wolf-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-tarantula-spider-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-alligator-turtle-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-black-vampire-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-savage-rat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-swordsman-magnatue-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-steelbox-mimic-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-death-stalker-scorpion-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-porcupine-cactus-1": {
+      "attack": "Monster_Cactus_type_Attack",
+      "death": "Monster_Cactus_type_Death",
+      "struck": null
+    },
+    "enemy-killer-werewolf-jack-1": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-starving-maggots-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-legendary-silverwolf-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-demon-scriptures-1": {
+      "attack": "Monster_Book_type_Attack",
+      "death": "Monster_Book_type_Death",
+      "struck": null
+    },
+    "enemy-hwagan-brown-bear-1": {
+      "attack": "Monster_Big_Animal_type_Attack",
+      "death": "Monster_Big_Animal_type_Death",
+      "struck": null
+    },
+    "enemy-slayer-jurupaz-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-branded-spirit-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-viper-black-mamba-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-thief-gunnishe-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-aggressive-mimic-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-delos-swamp-snake-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-redhood-bandits-boss-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-captain-of-arnen-chasers-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-ben-s-men-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-ben-s-men-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-ben-s-men-3": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-ben-s-men-4": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-ben-s-men-5": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-ben-s-men-6": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-acts-leader-schmitt-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-trained-battle-turtle-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-black-rattlesnake-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-red-flower-cactus-1": {
+      "attack": "Monster_Cactus_type_Attack",
+      "death": "Monster_Cactus_type_Death",
+      "struck": null
+    },
+    "enemy-swamp-turtle-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-cursed-creature-2": {
+      "attack": "Monster_Curse_type_Attack",
+      "death": "Monster_Curse_type_Death",
+      "struck": null
+    },
+    "enemy-red-claw-bear-1": {
+      "attack": "Monster_Big_Animal_type_Attack",
+      "death": "Monster_Big_Animal_type_Death",
+      "struck": null
+    },
+    "enemy-bone-orc-guard-1": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-prison-of-screams-headguard-1": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-zahad-kuruhatt-1": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-black-giant-maggots-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-black-skeleton-1": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-boss-skeleton-1": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-heresy-leader-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-baron-borgia-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-red-snake-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-black-wolf-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-berkel-dispatch-soldier-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-soldier-6": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-soldier-7": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-soldier-8": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-inquisitor-s-legionnaire-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-inquisitor-s-legionnaire-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-inquisitor-s-legionnaire-3": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-inquisitor-s-legionnaire-4": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-soldier-9": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-dungeon-mimics-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-enraged-magic-book-1": {
+      "attack": "Monster_Book_type_Attack",
+      "death": "Monster_Book_type_Death",
+      "struck": null
+    },
+    "enemy-ghost-2": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-vicious-ghost-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-nibbler-mimics-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-rednosed-swamp-turtle-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-revealed-spy-duhammel-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-fort-of-screams-guard-1": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-fort-of-screams-guard-leader-1": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-cursed-ghost-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-resurrected-orc-ancestors-1": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-angered-spirit-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-mysterious-spring-s-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-swamp-mosquitoes-1": {
+      "attack": "Monster_Worm02_type_Attack",
+      "death": "Monster_Worm02_type_Death",
+      "struck": null
+    },
+    "enemy-strayed-artillery-turtles-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-steel-teethed-cave-mice-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-traveler-s-wrath-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-contaminated-berkel-soldier-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-contaminated-arnen-soldier-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-blood-hungry-mosquito-1": {
+      "attack": "Monster_Worm02_type_Attack",
+      "death": "Monster_Worm02_type_Death",
+      "struck": null
+    },
+    "enemy-redhood-bandits-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-captured-archers-of-arnen-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-pendrik-guard-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-dispatched-monk-of-arnen-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-black-giant-maggot-cocoons-1": {
+      "attack": "Monster_Egg_type_Attack",
+      "death": "Monster_Egg_type_Death",
+      "struck": null
+    },
+    "enemy-forest-snake-2": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-slime-3": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-shrubber-1": {
+      "attack": "Monster_Plant_Attack",
+      "death": "Monster_Plant_Death",
+      "struck": null
+    },
+    "enemy-enraged-shrubber-1": {
+      "attack": "Monster_Plant_Attack",
+      "death": "Monster_Plant_Death",
+      "struck": null
+    },
+    "enemy-berkelan-church-priest-1": {
+      "attack": "Monster_Human03_Attack",
+      "death": "Monster_Human03_Death",
+      "struck": null
+    },
+    "enemy-shadow-s-senior-priest-traitor-1": {
+      "attack": "Monster_Human03_Attack",
+      "death": "Monster_Human03_Death",
+      "struck": null
+    },
+    "enemy-berkelen-guards-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkelen-castle-guards-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berkel-wizard-guards-1": {
+      "attack": "Monster_Human03_Attack",
+      "death": "Monster_Human03_Death",
+      "struck": null
+    },
+    "enemy-geyorgk-the-cruel-enemy-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-skeleton-2": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-bat-2": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-evil-creatures-1": {
+      "attack": "Monster_Curse_type_Attack",
+      "death": "Monster_Curse_type_Death",
+      "struck": null
+    },
+    "enemy-tainted-dark-ghost-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-contaminated-monsters-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-sin-carrier-1": {
+      "attack": "Monster_Zombie_type_Attack",
+      "death": "Monster_Zombie_type_Death",
+      "struck": null
+    },
+    "enemy-principle-guardian-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-blackhood-thieves-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-blackhoods-boss-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-mine-bats-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-abandoned-creature-1": {
+      "attack": "Monster_Curse_type_Attack",
+      "death": "Monster_Curse_type_Death",
+      "struck": null
+    },
+    "enemy-watcher-s-eye-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-contaminated-elementals-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-experimented-djinn-1": {
+      "attack": "Monster_Zombie_type_Attack",
+      "death": "Monster_Zombie_type_Death",
+      "struck": null
+    },
+    "enemy-desert-rattlesnakes-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-sewer-rats-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-shiny-maggots-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-elite-goblins-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-elite-goblins-2": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-elite-goblins-3": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-smelly-goblins-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-pet-spiders-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-goblin-pet-bats-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-vampire-maggots-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-wet-cave-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-cave-s-bizarre-plant-1": {
+      "attack": "Monster_Plant_Attack",
+      "death": "Monster_Plant_Death",
+      "struck": null
+    },
+    "enemy-arnen-guard-captain-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-shadow-bats-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-wine-drunken-bats-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-knife-needled-mosquitoes-1": {
+      "attack": "Monster_Worm02_type_Attack",
+      "death": "Monster_Worm02_type_Death",
+      "struck": null
+    },
+    "enemy-reagents-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-summoned-elementals-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-prisoner-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-prisoner-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-prisoner-3": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-prisoner-4": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-prisoner-5": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-prisoner-6": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-prisoner-archer-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-blackhood-thieves-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-blackhood-thieves-3": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-blackhoods-chief-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-swamp-plants-1": {
+      "attack": "Monster_Plant_Attack",
+      "death": "Monster_Plant_Death",
+      "struck": null
+    },
+    "enemy-swamp-snakes-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-damp-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-oogle-2": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-oogle-queen-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-cave-mouse-2": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-oogle-guardsman-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-chasers-scout-captain-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-s-poisonous-scorpion-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-summoned-minotaur-1": {
+      "attack": "Monster_Mino_type_Attack",
+      "death": "Monster_Mino_type_Death",
+      "struck": null
+    },
+    "enemy-blue-bushspider-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-sandstorm-crew-captain-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-sandstorm-crew-member-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-trained-werewolves-1": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-steel-artillery-turtles-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-elite-white-goblin-warrior-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-white-head-goblin-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-shin-3": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-chasers-adjutant-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-tindalrose-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-chasers-elite-crew-member-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-convict-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-big-needled-mosquitoes-1": {
+      "attack": "Monster_Worm02_type_Attack",
+      "death": "Monster_Worm02_type_Death",
+      "struck": null
+    },
+    "enemy-calcareous-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-carnivore-flower-1": {
+      "attack": "Monster_Plant_Attack",
+      "death": "Monster_Plant_Death",
+      "struck": null
+    },
+    "enemy-snow-cactus-1": {
+      "attack": "Monster_Cactus_type_Attack",
+      "death": "Monster_Cactus_type_Death",
+      "struck": null
+    },
+    "enemy-iceshell-turtles-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-poisonfrost-spiders-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-chaser-s-reconnaissance-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-chaser-s-reconnaissance-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-forest-spider-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-bewitched-oogle-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-enraged-cave-rat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-blackhoods-archer-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-enchanted-ancient-book-1": {
+      "attack": "Monster_Book_type_Attack",
+      "death": "Monster_Book_type_Death",
+      "struck": null
+    },
+    "enemy-queen-spider-2": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-spider-2": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-large-wing-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-vicious-bear-1": {
+      "attack": "Monster_Big_Animal_type_Attack",
+      "death": "Monster_Big_Animal_type_Death",
+      "struck": null
+    },
+    "enemy-shrubber-2": {
+      "attack": "Monster_Plant_Attack",
+      "death": "Monster_Plant_Death",
+      "struck": null
+    },
+    "enemy-honeybee-hive-1": {
+      "attack": "Monster_Bee_Attack",
+      "death": "Monster_Bee_Death",
+      "struck": null
+    },
+    "enemy-wing-slime-2": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-forest-mosquitoes-1": {
+      "attack": "Monster_Worm02_type_Attack",
+      "death": "Monster_Worm02_type_Death",
+      "struck": null
+    },
+    "enemy-drow-s-soul-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-elite-drow-s-soul-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-invisible-wing-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-snowy-snake-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-blizzard-wasphive-1": {
+      "attack": "Monster_Bee_Attack",
+      "death": "Monster_Bee_Death",
+      "struck": null
+    },
+    "enemy-ice-elementals-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-jagged-teeth-rats-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-white-striped-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-dew-eating-maggots-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-gray-eyed-mosquito-1": {
+      "attack": "Monster_Worm02_type_Attack",
+      "death": "Monster_Worm02_type_Death",
+      "struck": null
+    },
+    "enemy-etherin-the-wing-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-spring-protector-minotaur-1": {
+      "attack": "Monster_Mino_type_Attack",
+      "death": "Monster_Mino_type_Death",
+      "struck": null
+    },
+    "enemy-chief-drow-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-tethered-oogle-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-tethered-oogle-queen-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-elves-wrath-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-elven-archer-wrath-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-guardian-golem-1": {
+      "attack": "Monster_Golem_type_Attack",
+      "death": "Monster_Golem_type_Death",
+      "struck": null
+    },
+    "enemy-chasers-soldier-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-chasers-chief-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-chasers-archer-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-snowfield-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-snowfield-snake-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-mutated-abbot-2": {
+      "attack": "Monster_Zombie_type_Attack",
+      "death": "Monster_Zombie_type_Death",
+      "struck": null
+    },
+    "enemy-lunatic-djinn-2": {
+      "attack": "Monster_Demon_type_Attack",
+      "death": "Monster_Demon_type_Death",
+      "struck": null
+    },
+    "enemy-chasers-soldier-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-greedy-chaser-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-elven-kings-soul-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-elven-kings-guard-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-senior-elf-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-sanctuary-guardian-1": {
+      "attack": "Monster_Golem_type_Attack",
+      "death": "Monster_Golem_type_Death",
+      "struck": null
+    },
+    "enemy-royal-family-s-knight-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-alexander-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-dragon-alexander-1": {
+      "attack": "Monster_Dragon_Attack",
+      "death": "Monster_Dragon_Death",
+      "struck": null
+    },
+    "enemy-dark-knight-2": {
+      "attack": "Monster_Human02_Attack",
+      "death": "Monster_Human02_Death",
+      "struck": null
+    },
+    "enemy-bigfoot-bear-1": {
+      "attack": "Monster_Big_Animal_type_Attack",
+      "death": "Monster_Big_Animal_type_Death",
+      "struck": null
+    },
+    "enemy-darius-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-portia-1": {
+      "attack": "Monster_Human03_Attack",
+      "death": "Monster_Human03_Death",
+      "struck": null
+    },
+    "enemy-doppelganger-1": {
+      "attack": "Monster_Human02_Attack",
+      "death": "Monster_Human02_Death",
+      "struck": null
+    },
+    "enemy-dark-forces-of-evil-1": {
+      "attack": "Monster_DarkGod_type_Attack",
+      "death": "Monster_DarkGod_type_Death",
+      "struck": null
+    },
+    "enemy-piolren-rat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-blue-wingslime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-chasers-soldier-3": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-alexander-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-oogle-3": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-blue-wolf-2": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-bush-scorpion-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-bush-maggots-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-drow-s-soul-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-blackhoods-boss-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-snowfield-wolf-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-ghostfire-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-elf-seal-protector-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-ivan-s-minion-1": {
+      "attack": "Monster_Mino_type_Attack",
+      "death": "Monster_Mino_type_Death",
+      "struck": null
+    },
+    "enemy-ivan-s-minion-2": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-ivan-s-minion-3": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-ivan-s-minion-4": {
+      "attack": "Monster_Zombie_type_Attack",
+      "death": "Monster_Zombie_type_Death",
+      "struck": null
+    },
+    "enemy-ivan-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-guardian-golem-2": {
+      "attack": "Monster_Golem_type_Attack",
+      "death": "Monster_Golem_type_Death",
+      "struck": null
+    },
+    "enemy-seal-protector-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-snowfield-scorpion-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-snowfield-bear-1": {
+      "attack": "Monster_Big_Animal_type_Attack",
+      "death": "Monster_Big_Animal_type_Death",
+      "struck": null
+    },
+    "enemy-prairie-wolf-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-blind-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-spirits-of-the-dead-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-flesh-of-the-dead-1": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-hallucinated-wasphive-1": {
+      "attack": "Monster_Bee_Attack",
+      "death": "Monster_Bee_Death",
+      "struck": null
+    },
+    "enemy-shadow-spirit-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-venomous-maggots-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-meadow-turtle-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-canyon-brown-bear-1": {
+      "attack": "Monster_Big_Animal_type_Attack",
+      "death": "Monster_Big_Animal_type_Death",
+      "struck": null
+    },
+    "enemy-lethal-viper-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-white-goblin-warrior-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-intrepid-white-goblin-warrior-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-black-meadow-bear-1": {
+      "attack": "Monster_Big_Animal_type_Attack",
+      "death": "Monster_Big_Animal_type_Death",
+      "struck": null
+    },
+    "enemy-aloof-werewolf-1": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-sandstorm-crew-soldier-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-sandstorm-crew-archer-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-sandstorm-crew-troop-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-ice-tailed-scorpion-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-frost-clawed-werewolf-1": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-purified-springs-watcher-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-ice-mimic-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-sealed-succubus-1": {
+      "attack": "Monster_Succubus_type_Attack",
+      "death": "Monster_Succubus_type_Death",
+      "struck": null
+    },
+    "enemy-gray-mouse-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-bush-turtle-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-snowfield-slime-2": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-snowfield-snake-2": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-white-poison-sting-mosquito-1": {
+      "attack": "Monster_Worm02_type_Attack",
+      "death": "Monster_Worm02_type_Death",
+      "struck": null
+    },
+    "enemy-virulent-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-red-oogle-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-grauple-1": {
+      "attack": "Monster_Plant_Attack",
+      "death": "Monster_Plant_Death",
+      "struck": null
+    },
+    "enemy-whitebeard-rat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-vampire-bat-2": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-seductive-succubus-1": {
+      "attack": "Monster_Succubus_type_Attack",
+      "death": "Monster_Succubus_type_Death",
+      "struck": null
+    },
+    "enemy-blackstriped-maggots-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-elven-soul-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-elven-soul-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-thorn-needled-spider-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-enchanted-journal-1": {
+      "attack": "Monster_Book_type_Attack",
+      "death": "Monster_Book_type_Death",
+      "struck": null
+    },
+    "enemy-moldy-eggs-1": {
+      "attack": "Monster_Egg_type_Attack",
+      "death": "Monster_Egg_type_Death",
+      "struck": null
+    },
+    "enemy-elven-soul-3": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-twin-minotaur-1": {
+      "attack": "Monster_Mino_type_Attack",
+      "death": "Monster_Mino_type_Death",
+      "struck": null
+    },
+    "enemy-elven-figure-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-moving-oogle-doll-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-forbidden-ancient-cursebook-1": {
+      "attack": "Monster_Book_type_Attack",
+      "death": "Monster_Book_type_Death",
+      "struck": null
+    },
+    "enemy-standard-guardian-1": {
+      "attack": "Monster_Golem_type_Attack",
+      "death": "Monster_Golem_type_Death",
+      "struck": null
+    },
+    "enemy-elven-archer-figure-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-moving-tarantula-statue-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-moving-stuffed-adult-oogle-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-elven-warrior-remains-1": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-blade-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-toxic-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-steel-guardian-1": {
+      "attack": "Monster_Golem_type_Attack",
+      "death": "Monster_Golem_type_Death",
+      "struck": null
+    },
+    "enemy-mithril-guardian-1": {
+      "attack": "Monster_Golem_type_Attack",
+      "death": "Monster_Golem_type_Death",
+      "struck": null
+    },
+    "enemy-divine-elven-figure-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-divine-elven-archer-figure-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-chasers-elite-soldier-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-chasers-elite-archer-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-yuhar-s-pet-1": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-spirit-of-the-ancient-elves-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-yuhar-s-pet-2": {
+      "attack": "Monster_Mino_type_Attack",
+      "death": "Monster_Mino_type_Death",
+      "struck": null
+    },
+    "enemy-red-eyed-wolf-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-taipan-viper-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-rose-of-death-1": {
+      "attack": "Monster_Plant_Attack",
+      "death": "Monster_Plant_Death",
+      "struck": null
+    },
+    "enemy-shadow-soldier-1": {
+      "attack": "Monster_Human02_Attack",
+      "death": "Monster_Human02_Death",
+      "struck": null
+    },
+    "enemy-shadow-elite-knight-1": {
+      "attack": "Monster_Human02_Attack",
+      "death": "Monster_Human02_Death",
+      "struck": null
+    },
+    "enemy-incomplete-flagellum-1": {
+      "attack": "Monster_Curse_type_Attack",
+      "death": "Monster_Curse_type_Death",
+      "struck": null
+    },
+    "enemy-cursed-one-1": {
+      "attack": "Monster_Zombie_type_Attack",
+      "death": "Monster_Zombie_type_Death",
+      "struck": null
+    },
+    "enemy-black-soul-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-dark-warrior-1": {
+      "attack": "Monster_Human02_Attack",
+      "death": "Monster_Human02_Death",
+      "struck": null
+    },
+    "enemy-dark-offerings-1": {
+      "attack": "Monster_Curse_type_Attack",
+      "death": "Monster_Curse_type_Death",
+      "struck": null
+    },
+    "enemy-ivan-s-minion-5": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-black-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-enraged-wing-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-red-flower-shrubber-1": {
+      "attack": "Monster_Plant_Attack",
+      "death": "Monster_Plant_Death",
+      "struck": null
+    },
+    "enemy-poisonous-forest-spider-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-wild-wolf-2": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-ice-viper-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-hell-ghostfire-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-sharptooth-ice-mimic-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-cannibal-grauple-1": {
+      "attack": "Monster_Plant_Attack",
+      "death": "Monster_Plant_Death",
+      "struck": null
+    },
+    "enemy-chief-elf-s-soul-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-enraged-journal-1": {
+      "attack": "Monster_Book_type_Attack",
+      "death": "Monster_Book_type_Death",
+      "struck": null
+    },
+    "enemy-thorn-needled-spider-2": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-wicked-creature-1": {
+      "attack": "Monster_Curse_type_Attack",
+      "death": "Monster_Curse_type_Death",
+      "struck": null
+    },
+    "enemy-dark-death-taker-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-drifting-ghost-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-enraged-wolf-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-lunatic-berkel-soldier-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-lunatic-berkel-archer-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-berserk-spider-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-berserk-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-contaminated-goblin-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-mutated-zombie-1": {
+      "attack": "Monster_Zombie_type_Attack",
+      "death": "Monster_Zombie_type_Death",
+      "struck": null
+    },
+    "enemy-lunatic-earl-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-contaminated-head-goblin-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-memory-eroding-mimic-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-wolrang-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-raging-werewolf-1": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-mutated-desert-tortoise-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-burning-cactus-1": {
+      "attack": "Monster_Cactus_type_Attack",
+      "death": "Monster_Cactus_type_Death",
+      "struck": null
+    },
+    "enemy-dark-priest-1": {
+      "attack": "Monster_Human02_Attack",
+      "death": "Monster_Human02_Death",
+      "struck": null
+    },
+    "enemy-meandering-mimic-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-spirit-of-snow-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-snow-mouse-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-snowfield-protector-1": {
+      "attack": "Monster_Golem_type_Attack",
+      "death": "Monster_Golem_type_Death",
+      "struck": null
+    },
+    "enemy-jeff-the-wanted-criminal-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-arnen-mutated-scorpion-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-meadow-savage-turtle-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-lunatic-white-goblin-warrior-1": {
+      "attack": "Monster_Goblin_type_Attack",
+      "death": "Monster_Goblin_type_Death",
+      "struck": null
+    },
+    "enemy-vicious-werewolf-1": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-frost-werewolf-1": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-iceshell-turtle-1": {
+      "attack": "Monster_Turtle_type_Attack",
+      "death": "Monster_Turtle_type_Death",
+      "struck": null
+    },
+    "enemy-purification-cave-watcher-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-enraged-arnen-soldier-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-bone-orc-warrior-ghoul-1": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-bone-orc-sorcerer-spirit-1": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-drenched-skeleton-1": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-boss-werewolf-s-lost-soul-1": {
+      "attack": "Monster_Wolf02_Attack",
+      "death": "Monster_Wolf02_Death",
+      "struck": null
+    },
+    "enemy-lunatic-chasers-captain-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-zahad-kuruhatt-s-spirit-1": {
+      "attack": "Monster_Orc_type_Attack",
+      "death": "Monster_Orc_type_Death",
+      "struck": null
+    },
+    "enemy-summoned-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-darkhoods-warrior-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-darkhoods-archer-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-sewer-rat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-enchanted-succubus-1": {
+      "attack": "Monster_Succubus_type_Attack",
+      "death": "Monster_Succubus_type_Death",
+      "struck": null
+    },
+    "enemy-mad-ghostfire-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-dark-scriptures-1": {
+      "attack": "Monster_Book_type_Attack",
+      "death": "Monster_Book_type_Death",
+      "struck": null
+    },
+    "enemy-drow-warrior-ghoul-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-drow-sorcerer-spirit-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-raging-oogle-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-darkhoods-boss-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-demon-lord-1": {
+      "attack": "Monster_Demon_type_Attack",
+      "death": "Monster_Demon_type_Death",
+      "struck": null
+    },
+    "enemy-enraged-chief-drow-s-spirit-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-vampire-bat-3": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-poisonous-sting-maggots-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-sharptooth-mimic-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-wild-bear-1": {
+      "attack": "Monster_Big_Animal_type_Attack",
+      "death": "Monster_Big_Animal_type_Death",
+      "struck": null
+    },
+    "enemy-fangsnake-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-ruffian-1": {
+      "attack": "Monster_Plant_Attack",
+      "death": "Monster_Plant_Death",
+      "struck": null
+    },
+    "enemy-elf-warrior-ghoul-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-elven-archer-wrath-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-tainted-oogle-1": {
+      "attack": "Monster_Beholder_type_Attack",
+      "death": "Monster_Beholder_type_Death",
+      "struck": null
+    },
+    "enemy-raging-minotaur-1": {
+      "attack": "Monster_Mino_type_Attack",
+      "death": "Monster_Mino_type_Death",
+      "struck": null
+    },
+    "enemy-lunatic-golem-1": {
+      "attack": "Monster_Golem_type_Attack",
+      "death": "Monster_Golem_type_Death",
+      "struck": null
+    },
+    "enemy-enraged-dragon-1": {
+      "attack": "Monster_Dragon_Attack",
+      "death": "Monster_Dragon_Death",
+      "struck": null
+    },
+    "enemy-darius-2": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-portia-2": {
+      "attack": "Monster_Human03_Attack",
+      "death": "Monster_Human03_Death",
+      "struck": null
+    },
+    "enemy-shadow-of-darkness-1": {
+      "attack": "Monster_DarkGod_type_Attack",
+      "death": "Monster_DarkGod_type_Death",
+      "struck": null
+    },
+    "enemy-barrel-of-toxic-waste-1": {
+      "attack": "Monster_Curse_type_Attack",
+      "death": "Monster_Curse_type_Death",
+      "struck": null
+    },
+    "enemy-mad-dog-in-a-haystack-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-infected-mouse-in-a-box-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-ancient-mimic-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-1000-year-old-fountain-snake-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-guardian-golem-3": {
+      "attack": "Monster_Golem_type_Attack",
+      "death": "Monster_Golem_type_Death",
+      "struck": null
+    },
+    "enemy-ancient-mutated-poison-spider-1": {
+      "attack": "Monster_Worm01_type_Attack",
+      "death": "Monster_Worm01_type_Death",
+      "struck": null
+    },
+    "enemy-dark-praising-forbidden-book-1": {
+      "attack": "Monster_Book_type_Attack",
+      "death": "Monster_Book_type_Death",
+      "struck": null
+    },
+    "enemy-rebel-remains-1": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-uncontrollable-guardian-1": {
+      "attack": "Monster_Golem_type_Attack",
+      "death": "Monster_Golem_type_Death",
+      "struck": null
+    },
+    "enemy-wicked-drow-archer-figure-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-deceased-remains-1": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-enraged-memory-egg-1": {
+      "attack": "Monster_Egg_type_Attack",
+      "death": "Monster_Egg_type_Death",
+      "struck": null
+    },
+    "enemy-creature-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-heavy-slime-1": {
+      "attack": "Monster_Slime_type_Attack",
+      "death": "Monster_Slime_type_Death",
+      "struck": null
+    },
+    "enemy-deadly-poisonous-viper-1": {
+      "attack": "Monster_Snake_type_Attack",
+      "death": "Monster_Snake_type_Death",
+      "struck": null
+    },
+    "enemy-starved-wolf-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-crimson-agouara-1": {
+      "attack": "Monster_Wolf01_Attack",
+      "death": "Monster_Wolf01_Death",
+      "struck": null
+    },
+    "enemy-brutal-deserter-1": {
+      "attack": "Monster_Human01_Attack",
+      "death": "Monster_Human01_Death",
+      "struck": null
+    },
+    "enemy-evil-bat-1": {
+      "attack": "Monster_Mouse_type_Attack",
+      "death": "Monster_Mouse_type_Death",
+      "struck": null
+    },
+    "enemy-remains-of-a-forgotten-soldier-1": {
+      "attack": "Monster_Skeleton_type_Attack",
+      "death": "Monster_Skeleton_type_Death",
+      "struck": null
+    },
+    "enemy-greedy-mimic-1": {
+      "attack": "Monster_Mimic_Attack",
+      "death": "Monster_Mimic_Death",
+      "struck": null
+    },
+    "enemy-foul-maggot-1": {
+      "attack": "Monster_Worm03_type_Attack",
+      "death": "Monster_Worm03_type_Death",
+      "struck": null
+    },
+    "enemy-lost-ghost-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    },
+    "enemy-book-of-evil-darkness-1": {
+      "attack": "Monster_Book_type_Attack",
+      "death": "Monster_Book_type_Death",
+      "struck": null
+    },
+    "enemy-evil-spirit-of-abyss-1": {
+      "attack": "Monster_Ghost_type_Attack",
+      "death": "Monster_Ghost_type_Death",
+      "struck": null
+    }
+  },
+  "combat": {
+    "weapons": {
+      "dagger": {
+        "normal": [
+          {
+            "sound": "Weapon_Dagger_Attack",
+            "weight": 8
+          },
+          {
+            "sound": "Weapon_Dagger_Attack_voice",
+            "weight": 2
+          }
+        ],
+        "critical": "Weapon_Dagger_Critical",
+        "miss": "Weapon_Dagger_Miss",
+        "blocked": "Weapon_Punch"
+      },
+      "longsword": {
+        "normal": [
+          {
+            "sound": "Weapon_Sword_Attack",
+            "weight": 8
+          },
+          {
+            "sound": "Weapon_Sword_Attack_voice",
+            "weight": 2
+          }
+        ],
+        "critical": "Weapon_Sword_Critical",
+        "miss": "Weapon_Sword_Miss",
+        "blocked": "Weapon_Punch"
+      },
+      "axe": {
+        "normal": [
+          {
+            "sound": "Weapon_Sword_Attack",
+            "weight": 8
+          },
+          {
+            "sound": "Weapon_Sword_Attack_voice",
+            "weight": 2
+          }
+        ],
+        "critical": "Weapon_Sword_Critical",
+        "miss": "Weapon_Sword_Miss",
+        "blocked": "Weapon_Punch"
+      },
+      "mace": {
+        "normal": [
+          {
+            "sound": "Weapon_Stick_Dull_Attack",
+            "weight": 8
+          },
+          {
+            "sound": "Weapon_Stick_Dull_Attack_voice",
+            "weight": 2
+          }
+        ],
+        "critical": "Weapon_TwoHand_Sword_Critical",
+        "miss": "Weapon_Stick_Dull_Miss",
+        "blocked": "Weapon_Punch"
+      },
+      "two-handed": {
+        "normal": [
+          {
+            "sound": "Weapon_TwoHand_Sword_Attack",
+            "weight": 8
+          },
+          {
+            "sound": "Weapon_TwoHand_Sword_Attack_voice",
+            "weight": 2
+          }
+        ],
+        "critical": "Weapon_TwoHand_Sword_Critical",
+        "miss": "Weapon_TwoHand_Sword_Miss",
+        "blocked": "Weapon_Punch"
+      },
+      "orb": {
+        "normal": [
+          {
+            "sound": "Weapon_Magic_Attack01",
+            "weight": 8
+          },
+          {
+            "sound": "Weapon_Magic_Attack01_voice",
+            "weight": 2
+          }
+        ],
+        "critical": "Weapon_Magic_Critical",
+        "miss": "Weapon_Magic_Miss",
+        "blocked": "Weapon_Punch"
+      },
+      "staff": {
+        "normal": [
+          {
+            "sound": "Weapon_Magic_Attack01",
+            "weight": 8
+          },
+          {
+            "sound": "Weapon_Magic_Attack01_voice",
+            "weight": 2
+          }
+        ],
+        "critical": "Weapon_Magic_Critical",
+        "miss": "Weapon_Magic_Miss",
+        "blocked": "Weapon_Punch"
+      },
+      "bow": {
+        "normal": [
+          {
+            "sound": "Weapon_Arrow_Attack",
+            "weight": 8
+          },
+          {
+            "sound": "Weapon_Arrow_Attack_voice",
+            "weight": 2
+          }
+        ],
+        "critical": "Weapon_Arrow_Critical",
+        "miss": "Weapon_Arrow_Miss",
+        "blocked": "Weapon_Punch"
+      },
+      "crossbow": {
+        "normal": [
+          {
+            "sound": "Weapon_Arrow_Attack",
+            "weight": 8
+          },
+          {
+            "sound": "Weapon_Arrow_Attack_voice",
+            "weight": 2
+          }
+        ],
+        "critical": "Weapon_Arrow_Critical",
+        "miss": "Weapon_Arrow_Miss",
+        "blocked": "Weapon_Punch"
+      },
+      "unarmed": {
+        "normal": [
+          {
+            "sound": "Weapon_Punch",
+            "weight": 1
+          }
+        ],
+        "critical": "Weapon_Punch_Critical",
+        "miss": null,
+        "blocked": "Weapon_Punch"
+      }
+    },
+    "shieldBlock": "Common_Buckler_Defense",
+    "periodicDamage": "Common_Dot_Damage"
+  },
+  "skills": {
+    "dark-strike": "Wa_Titan_Attack",
+    "phantom-clash": "Bn_Fa_Sword",
+    "curse-of-screams": "Bn_Curse_Yell",
+    "shield-bash": "Bn_Shield_Bang",
+    "firestorm": "Bn_Flame_Storm",
+    "sword-of-hell": "Bn_Hell_Sword",
+    "demon-s-shield": "A_Skill_03",
+    "guardian-of-darkness": "Wa_Storm",
+    "molten-armor": "Wa_Boom",
+    "continuous-slash": "Wa_Anger_Rush",
+    "spiritual-blade": "As_Mind_Sword",
+    "poison-touch": "A_Skill_03",
+    "assassin-s-sword": "As_Assassination_Sword",
+    "dark-attack": "As_Dark_Raid",
+    "freeze-extreme": "As_Sword_Dance",
+    "whist": "A_Skill_05",
+    "blade-deflection": "As_Take_Sword",
+    "energy-bodhi": "A_Skill_04",
+    "touch-of-agony": "Wr_Pain_Hand",
+    "blood-curse": "Wr_Blood_Curse",
+    "fire-offering": "Wr_Fire_Offerings",
+    "pain-overture": "A_Skill_01",
+    "summon-hellfire": "Wr_Fire_Hell",
+    "spell-redemption": "Wa_Storm",
+    "hell-s-pawn": "Ra_wild_Friend",
+    "summon-bard": "A_Skill_03",
+    "monster-s-scream": "A_Skill_05",
+    "prayer-of-recovery": "A_Skill_02",
+    "apostles-of-light": "A_Skill_04",
+    "light-command": "A_Skill_04",
+    "celestial-armor": "A_Skill_03",
+    "blinding-flash": "Pr_Flash",
+    "holy-sacrifice": "Wa_Storm",
+    "divine-strike": "A_Skill_05",
+    "hammer-of-wrath": "Pr_Hammer",
+    "celestial-lightning": "Pr_Lightning",
+    "multiple-shot": "Ra_Multiple_Shot",
+    "aimed-shot": "Ra_Aim",
+    "ambush": "A_Skill_05",
+    "net-shackles": "Ra_Net",
+    "spiritual-arrow": "Ra_Energy_Shot",
+    "rampage": "Ra_Random_Shot",
+    "beast-companion": "Ra_wild_Friend",
+    "spirit-of-nature": "A_Skill_03",
+    "survival-instinct": "A_Skill_02",
+    "rush-of-anger": "Wa_Anger_Rush",
+    "shouts-of-threat": "A_Skill_05",
+    "armor-penetration": "A_Skill_02",
+    "giant-blow": "Wa_Titan_Attack",
+    "weapon-hitback": "Wa_Defense",
+    "swirling-storm": "Wa_Wheel_Wind",
+    "blood-thirst": "A_Skill_04",
+    "storm-of-frenzy": "Wa_Storm",
+    "enrage": "Wa_Boom"
+  },
+  "ui": {
+    "open": "UI_Menu_Op",
+    "move": "UI_Menu_move",
+    "select": "UI_Menu_select",
+    "questStart": "UI_Quest_01",
+    "questComplete": "UI_Quest_02",
+    "heal": "UI_Health",
+    "loot": "UI_Item_Looting",
+    "itemMove": "UI_Item_move",
+    "chestOpen": "Object_Treasure_Open",
+    "enchant": "UI_Enchant",
+    "craft": "UI_Craft"
+  },
+  "unbound": [
+    "A_Skill_Attack01",
+    "Ambience_Death_Forest",
+    "Common_GameOver",
+    "Common_LevelUp",
+    "Object_Box",
+    "Object_Door",
+    "Object_Grass",
+    "Object_Jar",
+    "Object_Trigger1",
+    "Object_Trigger2",
+    "Object_Well",
+    "Object_Well_no_effect",
+    "UI_Bag_open",
+    "UI_Ground_sword",
+    "UI_Item_Bag",
+    "UI_Item_Iron_Weapon",
+    "UI_Item_Weapon",
+    "UI_Item_Wood_Weapon",
+    "UI_Skill",
+    "UI_Whistle",
+    "Weapon_Magic_Attack02",
+    "Weapon_Stick_Dull_Critical"
+  ]
+}

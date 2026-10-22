@@ -1,0 +1,321 @@
+import type { ItemCatalog, ItemInstance } from './items.ts';
+import type { ChestKind } from './content.ts';
+import type { CharacterStatsCatalog, EquipmentGradeSeed } from './character-stats.ts';
+import { rollGrade, staticGrade, type GradeProfile } from './equipment-grade.ts';
+
+type DropCategory = 'consumable' | 'upgrade' | 'crafting' | 'misc';
+type DropChance = 'money' | 'equipment' | DropCategory | 'unique' | 'fixed';
+/** Absolute additions to the native 1..9999 roll, after level scaling. */
+export type DropModifiers = Partial<Record<'equipment-drop'|'scroll-drop'|'material-drop'|'chest-quality',number>>;
+type BreakableKind = 'bush'|'jar'|'box';
+interface DropChoice { weight:number; item?:string|null; tiers?:{item:string|null;level:number}[] }
+export interface EnemyDropRule {
+  level:number;
+  pool:string;
+  rolls:number;
+  /** 体验版来源分层：普通/精英/Boss；推导稀有度 profile 与首杀保底。 */
+  threat?:'normal'|'elite'|'boss';
+  /** 原版 MONDATABASE.u16@0x1b bit4：死亡时不走 CHARSYSTEM_DropItem，任务掉落仍保留。 */
+  noNormalDrops?:boolean;
+  chances:Record<DropChance,number>;
+  fixed:{item:string;weight:number}[];
+}
+export interface ChapterBand {
+  id:string;
+  minLevel:number;
+  maxLevel:number;
+  maxItemLevel:number;
+  rarityScale:number[];
+  luck:number;
+  profiles:Record<'normal'|'elite'|'boss',string>;
+}
+export interface PityConfig {
+  equipment:{stepPermille:number;capPermille:number};
+  rare:{stepPermille:number;capPermille:number};
+  levelWindow:number;
+  bossGuarantee:{equipment:boolean;minRarity:number};
+}
+export interface QuestItemDropRule { item:string; threshold:number }
+export interface QuestDropRequirement { item:string; quantity:number; owned:number }
+export interface DropCatalog {
+  version:2|3;
+  questItems:Record<string,QuestItemDropRule[]>;
+  chests:Record<'ordinary'|'improved',ChestDropRule>&{boss?:ChestDropRule};
+  breakables?:Record<BreakableKind|'fortunate-box',ChestDropRule>;
+  enemies:Record<string,EnemyDropRule>;
+  pools:Record<string,Partial<Record<DropCategory,DropChoice[]>>>;
+  equipment:Record<'weapon'|'armor'|'special'|'unique'|'epic',{item:string;dropLevel:number}[]>;
+  rarityProfiles?:Record<string,number[]>;
+  chapterBands?:ChapterBand[];
+  pity?:PityConfig;
+}
+interface ChestDropRule extends Omit<EnemyDropRule,'level'|'threat'|'noNormalDrops'> {
+  uniqueChance: {numerator:number;levelOffset:number};
+  spawn?: {enemyId:string;chance:number};
+  rarityProfile?:string;
+  minRarity?:number;
+  personal?:boolean;
+}
+export interface ChestOpenResult { rewards:DropReward[]; enemies:string[] }
+export interface DropRoll extends EquipmentGradeSeed { rarity:number; sockets:boolean }
+export type DropReward =
+  | {kind:'item';item:string;quantity:1;instance?:ItemInstance;roll?:DropRoll}
+  | {kind:'money';amount:number};
+const chanceKinds:readonly DropChance[]=['money','equipment','consumable','upgrade','crafting','misc','unique','fixed'];
+const poolKinds:readonly DropCategory[]=['consumable','upgrade','crafting','misc'];
+
+/** The source files are parsed offline; the game only sees named enemies and items. */
+export function parseDrops(value:unknown,items:ItemCatalog,enemyIds:readonly string[]):DropCatalog {
+  if(!value||typeof value!=='object')throw new Error('掉落目录无效');
+  const catalog=value as DropCatalog;
+  if((catalog.version!==2&&catalog.version!==3)||!catalog.enemies||!catalog.pools||!catalog.equipment||!catalog.chests||!catalog.questItems)throw new Error('掉落目录版本或结构无效');
+  const itemExists=(item:string|null|undefined)=>item===null||!!item&&!!items.items[item];
+  for(const [enemyId,rules] of Object.entries(catalog.questItems)){
+    if(!enemyIds.includes(enemyId)||!Array.isArray(rules)||rules.some(rule=>!rule||!items.items[rule.item]||
+      !Number.isSafeInteger(rule.threshold)||rule.threshold<1||rule.threshold>100)||
+      new Set(rules.map(rule=>rule.item)).size!==rules.length)throw new Error(`任务掉落无效：${enemyId}`);
+  }
+  for(const kind of ['weapon','armor','special','unique','epic'] as const){
+    if(kind==='epic'&&catalog.version===2)continue;
+    if(!Array.isArray(catalog.equipment[kind])||catalog.equipment[kind].some(choice=>
+      !choice||typeof choice.item!=='string'||!items.items[choice.item]||
+      (kind!=='special'&&items.items[choice.item].category!=='equipment')||
+      !Number.isSafeInteger(choice.dropLevel)||choice.dropLevel<1))
+      throw new Error(`装备掉落池无效：${kind}`);
+  }
+  for(const enemyId of enemyIds.filter(id=>!['enemy-bush-1','enemy-jar-1','enemy-box-1'].includes(id))) {
+    const rule=catalog.enemies[enemyId];
+    if(!rule||!Number.isSafeInteger(rule.level)||rule.level<1||!catalog.pools[rule.pool]||!Number.isSafeInteger(rule.rolls)||rule.rolls<1||rule.rolls>3)throw new Error(`敌人掉落规则缺失：${enemyId}`);
+    for(const kind of chanceKinds)if(!Number.isSafeInteger(rule.chances[kind])||rule.chances[kind]<0)throw new Error(`敌人掉率无效：${enemyId}.${kind}`);
+    if(!Array.isArray(rule.fixed)||rule.fixed.some(choice=>!itemExists(choice.item)||!Number.isSafeInteger(choice.weight)||choice.weight<1))throw new Error(`固定掉落无效：${enemyId}`);
+    if(rule.fixed.length&&rule.fixed.reduce((sum,entry)=>sum+entry.weight,0)!==1000)throw new Error(`固定掉落权重无效：${enemyId}`);
+    if(rule.noNormalDrops!==undefined&&typeof rule.noNormalDrops!=='boolean')throw new Error(`敌人无掉落标志无效：${enemyId}`);
+  }
+  for(const kind of ['ordinary','improved','boss'] as const){
+    const rule=catalog.chests[kind];
+    if(kind==='boss'&&!rule)continue;
+    if(!rule||!catalog.pools[rule.pool]||rule.rolls!==(kind==='ordinary'?1:3)||!rule.chances||
+      chanceKinds.some(slot=>!Number.isSafeInteger(rule.chances[slot])||rule.chances[slot]<0)||
+      !Array.isArray(rule.fixed)||rule.fixed.length||!rule.uniqueChance||
+      !Number.isSafeInteger(rule.uniqueChance.numerator)||rule.uniqueChance.numerator<0||
+      !Number.isSafeInteger(rule.uniqueChance.levelOffset)||rule.uniqueChance.levelOffset<1||
+      (rule.spawn&&(!enemyIds.includes(rule.spawn.enemyId)||!Number.isSafeInteger(rule.spawn.chance)||rule.spawn.chance<0)))
+      throw new Error(`宝箱掉落规则无效：${kind}`);
+  }
+  for(const [kind,rule] of Object.entries(catalog.breakables??{})){
+    if(!['bush','jar','box','fortunate-box'].includes(kind)||!rule||!catalog.pools[rule.pool]||rule.rolls!==1||
+      !rule.chances||chanceKinds.some(slot=>!Number.isSafeInteger(rule.chances[slot])||rule.chances[slot]<0)||
+      !rule.uniqueChance||!Number.isSafeInteger(rule.uniqueChance.numerator)||rule.uniqueChance.numerator<0||
+      !Number.isSafeInteger(rule.uniqueChance.levelOffset)||rule.uniqueChance.levelOffset<1||
+      (rule.spawn&&(!enemyIds.includes(rule.spawn.enemyId)||!Number.isSafeInteger(rule.spawn.chance)||rule.spawn.chance<0)))
+      throw new Error(`景物掉落规则无效：${kind}`);
+  }
+  for(const [name,pool] of Object.entries(catalog.pools))for(const kind of poolKinds)for(const choice of pool[kind]??[]) {
+    if(!Number.isSafeInteger(choice.weight)||choice.weight<1||choice.weight>10000||
+       (!!choice.tiers===!!Object.hasOwn(choice,'item'))||
+       (choice.tiers ? !choice.tiers.length||choice.tiers.some(tier=>!itemExists(tier.item)||!Number.isSafeInteger(tier.level)||tier.level<0) : !itemExists(choice.item)))
+      throw new Error(`随机掉落池无效：${name}.${kind}`);
+  }
+  for(const [name,pool] of Object.entries(catalog.pools))for(const kind of poolKinds){
+    if((pool[kind]??[]).reduce((sum,choice)=>sum+choice.weight,0)>10000)throw new Error(`随机掉落权重无效：${name}.${kind}`);
+  }
+  if(catalog.version===3){
+    if(!catalog.rarityProfiles||!catalog.chapterBands?.length||!catalog.pity)throw new Error('掉落目录缺少 v3 配置');
+    for(const [name,weights] of Object.entries(catalog.rarityProfiles))
+      if(!Array.isArray(weights)||weights.length!==5||weights.some(value=>!Number.isSafeInteger(value)||value<0))
+        throw new Error(`稀有度权重无效：${name}`);
+    let nextLevel=1;
+    for(const band of catalog.chapterBands){
+      if(band.minLevel!==nextLevel||band.maxLevel<band.minLevel||band.maxItemLevel<1||
+        band.rarityScale.length!==5||band.rarityScale.some(value=>!Number.isSafeInteger(value)||value<0)||
+        !Number.isSafeInteger(band.luck)||band.luck<0)
+        throw new Error(`章节带无效：${band.id}`);
+      for(const profile of Object.values(band.profiles))if(!catalog.rarityProfiles[profile])throw new Error(`章节带引用未知稀有度：${profile}`);
+      nextLevel=band.maxLevel+1;
+    }
+    for(const [owner,rule] of Object.entries(catalog.chests))
+      if((rule.rarityProfile&&!catalog.rarityProfiles[rule.rarityProfile])||
+        (rule.minRarity!==undefined&&(!Number.isSafeInteger(rule.minRarity)||rule.minRarity<0||rule.minRarity>4)))
+        throw new Error(`宝箱稀有度无效：${owner}`);
+  }
+  return catalog;
+}
+
+function draw(random:()=>number,max:number):number {
+  const value=random();
+  if(!Number.isFinite(value)||value<0||value>=1)throw new Error('掉落随机值无效');
+  return Math.floor(value*max);
+}
+
+function success(base:number,monsterLevel:number,playerLevel:number,random:()=>number,bonus=0,itemChance=0):boolean {
+  // 普通加成不能开启基础为 0 的槽位；保底/首杀的 10000 加值是明确的必中。
+  if(!base&&bonus<10000)return false;
+  const rate=Math.floor(Math.floor(2*base*monsterLevel/(monsterLevel+playerLevel))*(1000+itemChance)/1000);
+  if(rate+bonus>=10000)return true;
+  return rate>0&&draw(random,9999)+1<rate+bonus;
+}
+
+function pickPool(choices:readonly DropChoice[],level:number,random:()=>number):string|null|undefined {
+  const roll=draw(random,10000);
+  let weight=0;
+  for(const choice of choices){
+    weight+=choice.weight;
+    if(roll>=weight)continue;
+    if(!choice.tiers)return choice.item;
+    return choice.tiers.find(tier=>tier.level<=level)?.item??choice.tiers.at(-1)?.item;
+  }
+  return undefined;
+}
+
+function pickEquipment(catalog:DropCatalog,level:number,random:()=>number,maxItemLevel?:number):string|undefined {
+  const lowest=level<10?1:Math.max(1,Math.floor(level*3/10));
+  const first=lowest+draw(random,level-lowest+1);
+  const second=lowest+draw(random,level-lowest+1);
+  const cap=maxItemLevel??level;
+  const top=Math.min(Math.floor((first+second)/2)+2,cap);
+  const bottom=Math.max(1,Math.max(top,6)-5);
+  const classRoll=draw(random,100);
+  const kind=classRoll<20?'weapon':classRoll<70?'armor':'special';
+  const inWindow=(choice:{dropLevel:number})=>choice.dropLevel>=bottom&&choice.dropLevel<=top;
+  let options=catalog.equipment[kind].filter(inWindow);
+  // 某个类别在这个等级窗口没有候选（武器池有断档）时，换到任意装备类别；
+  // 仍然没有就取最接近窗口上限的一件，不能因为类别掷点让成功的槽位掉空。
+  if(!options.length)options=(['weapon','armor','special'] as const).flatMap(name=>catalog.equipment[name].filter(inWindow));
+  if(!options.length){
+    const nearest=[...catalog.equipment.weapon,...catalog.equipment.armor,...catalog.equipment.special]
+      .filter(choice=>choice.dropLevel<=cap).sort((left,right)=>Math.abs(left.dropLevel-top)-Math.abs(right.dropLevel-top));
+    if(!nearest.length)return;
+    return nearest[0]!.item;
+  }
+  return options[draw(random,options.length)]?.item;
+}
+
+function pickUnique(catalog:DropCatalog,level:number,random:()=>number,maxItemLevel?:number):string|undefined {
+  const options=catalog.equipment.unique.filter(choice=>choice.dropLevel<=Math.min(level,maxItemLevel??level));
+  if(!options.length)return;
+  return options[draw(random,options.length)]?.item;
+}
+
+/** One call per defeated map enemy. A returned item can be empty after a successful pool roll. */
+export function rollEnemyDrops(catalog:DropCatalog,enemyId:string,playerLevel:number,random:()=>number=Math.random,modifiers:DropModifiers={}):DropReward[] {
+  const rule=catalog.enemies[enemyId];if(!rule||rule.noNormalDrops)return [];
+  return rollDropRule(catalog,rule,playerLevel,random,undefined,modifiers).rewards;
+}
+
+/** One task item at most, using the native inclusive 1..99 roll and strict threshold. */
+export function rollQuestDrops(catalog:DropCatalog,enemyId:string,quests:readonly (readonly QuestDropRequirement[])[],random:()=>number=Math.random):DropReward[] {
+  const rules=catalog.questItems[enemyId]??[];
+  for(const goals of quests)for(const goal of goals){
+    const rule=rules.find(rule=>rule.item===goal.item);
+    if(!rule||rule.threshold<1)continue;
+    if(goal.owned<goal.quantity&&draw(random,99)+1<rule.threshold)return [{kind:'item',item:goal.item,quantity:1}];
+    break;
+  }
+  return [];
+}
+
+export function rollChestDrops(catalog:DropCatalog,kind:ChestKind,level:number,playerLevel:number,random:()=>number=Math.random,modifiers:DropModifiers={}):ChestOpenResult {
+  if(!Number.isSafeInteger(level)||level<0||level>255)throw new Error('宝箱掉落等级无效');
+  const rule=catalog.chests[kind];
+  if(!rule)throw new Error(`宝箱掉落规则缺失：${kind}`);
+  return rollDropRule(catalog,{...rule,level,chances:{...rule.chances,
+    unique:Math.floor(rule.uniqueChance.numerator/(level+rule.uniqueChance.levelOffset))}},playerLevel,random,rule.spawn,modifiers);
+}
+
+/** The native treasure talent applies to breakable boxes, distinct from interactive NPC chests. */
+export function rollBreakableDrops(catalog:DropCatalog,kind:BreakableKind,level:number,playerLevel:number,random:()=>number=Math.random,modifiers:DropModifiers={}):ChestOpenResult {
+  if(!Number.isSafeInteger(level)||level<0||level>255)throw new Error('景物掉落等级无效');
+  const selected=kind==='box'&&modifiers['chest-quality']&&draw(random,999)+1<=49?'fortunate-box':kind;
+  const rule=catalog.breakables?.[selected];
+  if(!rule)throw new Error('景物掉落规则缺失');
+  return rollDropRule(catalog,{...rule,level,chances:{...rule.chances,
+    unique:Math.floor(rule.uniqueChance.numerator/(level+rule.uniqueChance.levelOffset))}},playerLevel,random,rule.spawn,modifiers);
+}
+
+interface LootContext {
+  stats: CharacterStatsCatalog;
+  profile: GradeProfile;
+  maxItemLevel?: number;
+  equipmentBonus?: number;
+  uniqueBonus?: number;
+  /** 队伍物品掉率乘数（千分比），只放大槽位命中率。 */
+  itemChance?: number;
+}
+
+const equipmentOf=(context:LootContext|undefined,item:string|undefined)=>item?context?.stats?.equipment?.[item]:undefined;
+
+/** 装备实例的品级快照：随机装备按稀有度抽，固定/unique 用静态品级。 */
+function gradeFor(context:LootContext|undefined,item:string|undefined,random:()=>number,sockets:boolean,staticOnly=false):DropRoll|undefined {
+  const equipment=equipmentOf(context,item);
+  if(!context?.stats||!equipment?.gradeVariants)return undefined;
+  const rolled=staticOnly?staticGrade(context.stats,equipment):rollGrade(context.stats,equipment,context.profile,random);
+  return rolled?{...rolled,sockets}:undefined;
+}
+
+function rollDropRule(catalog:DropCatalog,rule:EnemyDropRule,playerLevel:number,random:()=>number,spawn?:ChestDropRule['spawn'],modifiers:DropModifiers={},loot?:LootContext):ChestOpenResult {
+  const result:ChestOpenResult={rewards:[],enemies:[]};
+  const add=(item:string|null|undefined,sockets=true,staticOnly=false)=>{
+    if(!item)return;
+    const roll=gradeFor(loot,item,random,sockets,staticOnly);
+    result.rewards.push({kind:'item',item,quantity:1,...(roll?{roll}:{})});
+  };
+  const level=rule.level,pool=catalog.pools[rule.pool];
+  for(let repeat=0;repeat<rule.rolls;repeat++)for(const kind of chanceKinds){
+    // 宝箱怪位于材料槽之后、稀有装备槽之前，保留原表随机抽取次序。
+    if(kind==='unique'&&spawn&&success(spawn.chance,level,playerLevel,random))result.enemies.push(spawn.enemyId);
+    const baseBonus=kind==='equipment'?modifiers['equipment-drop']:kind==='upgrade'?modifiers['scroll-drop']:kind==='crafting'?modifiers['material-drop']:0;
+    const bonus=(baseBonus??0)+(kind==='equipment'?loot?.equipmentBonus??0:kind==='unique'?loot?.uniqueBonus??0:0);
+    if(!success(rule.chances[kind],level,playerLevel,random,bonus??0,loot?.itemChance??0))continue;
+    if(kind==='money'){
+      const percent=50+draw(random,51);
+      result.rewards.push({kind:'money',amount:Math.max(1,3+Math.floor(4*level*percent/500))});
+    }else if(kind==='equipment')add(pickEquipment(catalog,level,random,loot?.maxItemLevel),true,false);
+    else if(kind==='unique')add(pickUnique(catalog,level,random,loot?.maxItemLevel),false,true);
+    else if(kind==='fixed'){
+      const roll=draw(random,1000);let sum=0;
+      for(const choice of rule.fixed){sum+=choice.weight;if(roll<sum){add(choice.item,false,true);break;}}
+    }else add(pickPool(pool[kind]??[],level,random));
+  }
+  return result;
+}
+
+/** 章节带：按物品等级找到稀有度缩放与装备等级上限。 */
+export function chapterBand(catalog:DropCatalog,level:number):ChapterBand|undefined {
+  return catalog.chapterBands?.find(band=>level>=band.minLevel&&level<=band.maxLevel);
+}
+
+function profileFor(catalog:DropCatalog,band:ChapterBand|undefined,threat:'normal'|'elite'|'boss',minRarity?:number,explicit?:string):GradeProfile {
+  const name=explicit??band?.profiles[threat]??'original';
+  const weights=catalog.rarityProfiles?.[name]??catalog.rarityProfiles?.original??[1000,0,0,0,0];
+  return {weights,rarityScale:band?.rarityScale,minRarity,maxGrade:9,luck:band?.luck};
+}
+
+/** 怪物掉落：基础槽位判定与原版一致，槽位成功后按稀有度/章节/品级生成实例快照。 */
+export interface EnemyLootOptions {
+  /** 温和保底：装备槽的绝对加值（万分比）。 */
+  equipmentBonus?: number;
+  /** 温和保底：稀有+槽（unique）的绝对加值。 */
+  uniqueBonus?: number;
+  /** Boss 首杀/宝箱品质下限。 */
+  minRarity?: number;
+  /** 队伍物品掉率乘数（千分比），0 表示与基础掉率一致。 */
+  itemChance?: number;
+}
+export function rollEnemyLoot(catalog:DropCatalog,stats:CharacterStatsCatalog,enemyId:string,playerLevel:number,chapterLevel:number,random:()=>number=Math.random,modifiers:DropModifiers={},options:EnemyLootOptions={}):ChestOpenResult {
+  const rule=catalog.enemies[enemyId];if(!rule||rule.noNormalDrops)return {rewards:[],enemies:[]};
+  const band=chapterBand(catalog,chapterLevel);
+  return rollDropRule(catalog,rule,playerLevel,random,undefined,modifiers,
+    {stats,profile:profileFor(catalog,band,rule.threat??'normal',options.minRarity),maxItemLevel:band?.maxItemLevel,
+      equipmentBonus:options.equipmentBonus,uniqueBonus:options.uniqueBonus,itemChance:options.itemChance});
+}
+
+/** 宝箱掉落：有效等级由地图导出时补齐，品质下限只影响装备槽成功后的品级。 */
+export function rollChestLoot(catalog:DropCatalog,stats:CharacterStatsCatalog,kind:ChestKind,level:number,playerLevel:number,random:()=>number=Math.random,modifiers:DropModifiers={},options:{equipmentBonus?:number}={}):ChestOpenResult {
+  if(!Number.isSafeInteger(level)||level<1||level>255)throw new Error('宝箱掉落等级无效');
+  const rule=catalog.chests[kind];if(!rule)throw new Error(`宝箱掉落规则缺失：${kind}`);
+  const band=chapterBand(catalog,level);
+  return rollDropRule(catalog,{...rule,level,chances:{...rule.chances,
+    unique:Math.floor(rule.uniqueChance.numerator/(level+rule.uniqueChance.levelOffset))}},playerLevel,random,rule.spawn,modifiers,
+    {stats,profile:profileFor(catalog,band,'normal',rule.minRarity,rule.rarityProfile),maxItemLevel:band?.maxItemLevel,
+      equipmentBonus:options.equipmentBonus});
+}

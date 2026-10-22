@@ -1,0 +1,16 @@
+dist/
+test-results/
+__pycache__/
+node_modules/
+.serena/
+
+.releases/
+.build-*/
+.diagnostics/
+
+apk-out/
+android/.gradle/
+android/local.properties
+android/keystore.properties
+android/build/
+android/app/build/

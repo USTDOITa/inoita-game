@@ -1,0 +1,231 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { EventEmitter } from 'node:events';
+import { setImmediate } from 'node:timers/promises';
+import { readFileSync } from 'node:fs';
+import type Phaser from 'phaser';
+import { GameAudio, type AudioCatalog } from '../src/application/game-audio.ts';
+
+const catalog = JSON.parse(readFileSync(new URL('../public/content/audio.json', import.meta.url), 'utf8')) as AudioCatalog;
+
+function harness(options: { suspended?: () => boolean } = {}) {
+  const cache = new Set<string>();
+  const queued: string[] = [];
+  /** 每次 loader.start() 处理掉的文件数，用来确认预加载分了批。 */
+  const batches: number[] = [];
+  /** 一次性音效的播放记录；循环音频走 sound.add()，不进这里。 */
+  const played: string[] = [];
+  const sounds: { key: string; isPlaying: boolean; destroyed: boolean }[] = [];
+  let sinceStart = 0;
+  const loader = Object.assign(new EventEmitter(), {
+    audio(key: string) { queued.push(key); sinceStart++; },
+    start() { batches.push(sinceStart); sinceStart = 0; },
+  });
+  const scene = {
+    load: loader,
+    cache: { audio: { exists: (key: string) => cache.has(key), remove: (key: string) => cache.delete(key) } },
+    sound: {
+      stopAll(){for(const sound of sounds)sound.isPlaying=false;},
+      add(key: string) {
+        assert.ok(cache.has(key));
+        const sound = {
+          key, isPlaying: false, destroyed: false,
+          play() { this.isPlaying = true; },
+          pause() { this.isPlaying = false; },
+          stop() { this.isPlaying = false; },
+          destroy() { this.destroyed = true; },
+        };
+        sounds.push(sound);
+        return sound;
+      },
+      play(key: string) {
+        assert.ok(cache.has(key), `音效未加载就播放：${key}`);
+        played.push(key);
+      },
+    },
+  };
+  const finish = async () => {
+    for (const key of queued.splice(0)) cache.add(key);
+    loader.emit('complete');
+    await setImmediate();
+  };
+  return {
+    audio: new GameAudio(scene as unknown as Phaser.Scene, catalog, options.suspended ?? (() => false)),
+    sounds,
+    batches,
+    played,
+    cachedKeys: () => new Set(cache),
+    playing: () => sounds.filter(sound => sound.isPlaying).map(sound => sound.key),
+    async finishLoading() {
+      await setImmediate();
+      await finish();
+    },
+    /** 反复推进 loader，直到没有排队中的文件；分批预加载要调用多次。 */
+    async drain() {
+      await setImmediate();
+      for (let guard = 0; queued.length && guard < 200; guard++) await finish();
+    },
+  };
+}
+
+test('native stop-all clears loops and cancels late sound playback',async()=>{
+  const f=harness();f.audio.enterMenu();await f.drain();
+  assert(f.playing().length);
+  f.audio.effect(catalog.ui.questStart);
+  f.audio.stopStoryAudio();await f.drain();
+  assert.deepEqual(f.playing(),[]);
+  assert.deepEqual(f.played,[]);
+  assert.deepEqual(f.audio.captureStoryAudio(),{music:null,ambience:null});
+});
+
+test('story audio restores actual loop choices and abandons late cinematic music loads', async () => {
+  const f = harness();
+  const [mapId, map] = Object.entries(catalog.maps).find(([, entry]) => entry.music)!;
+  f.audio.enterMap(mapId); await f.drain();
+  const saved = f.audio.captureStoryAudio();
+  assert.deepEqual(saved, { music: map.music, ambience: map.ambience });
+  // This map keeps the current music; guessing from its map entry loses the actual track.
+  f.audio.enterMap('shadow-camp'); await f.drain();
+  assert.equal(f.audio.captureStoryAudio().music, saved.music);
+  const other = Object.keys(catalog.music).find(id => id !== saved.music)!;
+  f.audio.setStoryMusic(other);
+  f.audio.restoreStoryAudio(saved);
+  await f.drain();
+  assert.deepEqual(f.playing().filter(key => key.startsWith('bgm:')), [`bgm:${saved.music}`]);
+  assert.deepEqual(f.audio.captureStoryAudio(), saved);
+  assert.throws(() => f.audio.restoreStoryAudio({ music: null, ambience: 'unknown' }), /环境音不存在/);
+  assert.deepEqual(f.audio.captureStoryAudio(), saved, 'invalid restore does not partially stop the live music');
+  saved.music = null;
+  assert.equal(f.audio.captureStoryAudio().music, map.music, 'snapshots cannot mutate live loop state');
+  f.audio.setStoryMusic(null); assert.deepEqual(f.playing().filter(key => key.startsWith('bgm:')), []);
+});
+
+test('story entry stops menu music; maps retain only story music and returning to menu restores its theme', async () => {
+  const f = harness();
+  f.audio.enterMenu(); await f.finishLoading();
+  const theme = f.sounds[0];
+  assert.deepEqual(f.playing(), [`bgm:${catalog.menuMusic}`]);
+  f.audio.enterMenu(); await f.finishLoading();
+  assert.equal(f.sounds.length, 1);
+
+  f.audio.enterStory();
+  assert.equal(theme.destroyed, true);
+  assert.deepEqual(f.playing(), []);
+  f.audio.enterMap('shadow-camp'); await f.finishLoading();
+  assert.deepEqual(f.playing(), [`se:${catalog.maps['shadow-camp'].ambience}`]);
+
+  const [mapId, map] = Object.entries(catalog.maps).find(([, entry]) => entry.music)!;
+  f.audio.enterMap(mapId); await f.finishLoading();
+  assert.ok(f.playing().includes(`bgm:${map.music}`));
+  f.audio.enterMap('shadow-camp'); await f.finishLoading();
+  assert.ok(f.playing().includes(`bgm:${map.music}`));
+
+  f.audio.enterMenu(); await f.finishLoading();
+  assert.deepEqual(f.playing(), [`bgm:${catalog.menuMusic}`]);
+});
+
+test('a menu track that finishes loading after story entry cannot start during the opening', async () => {
+  const f = harness();
+  f.audio.enterMenu();
+  await setImmediate();
+  f.audio.enterStory();
+  f.audio.enterMap('shadow-camp');
+  await f.finishLoading();
+  await f.finishLoading();
+  assert.deepEqual(f.playing(), [`se:${catalog.maps['shadow-camp'].ambience}`]);
+  assert.ok(f.sounds.every(sound => !sound.key.startsWith('bgm:')));
+
+  f.audio.enterMenu(); await f.finishLoading();
+  assert.deepEqual(f.playing(), [`bgm:${catalog.menuMusic}`]);
+});
+
+const effectName = 'UI_Menu_select';
+
+test('第一次触发的音效在加载完成后补播，而不是被丢掉', async () => {
+  const f = harness();
+  f.audio.effect(effectName);
+  assert.deepEqual(f.played, [], '加载完成前不播放');
+  await f.drain();
+  assert.deepEqual(f.played, [`se:${effectName}`]);
+});
+
+test('同一次加载期间重复触发只补播一次', async () => {
+  const f = harness();
+  f.audio.effect(effectName); f.audio.effect(effectName); f.audio.effect(effectName);
+  await f.drain();
+  assert.deepEqual(f.played, [`se:${effectName}`]);
+  assert.deepEqual(f.batches, [1], '同名音效只排一次加载');
+});
+
+test('已加载的音效立即播放，且不再重新加载', async () => {
+  const f = harness();
+  f.audio.effect(effectName); await f.drain();
+  const batches = f.batches.length;
+  f.audio.effect(effectName);
+  assert.deepEqual(f.played, [`se:${effectName}`, `se:${effectName}`], '缓存命中当帧播放');
+  assert.equal(f.batches.length, batches, '缓存命中不重新加载');
+});
+
+test('换图或进入剧情后，此前的冷音效不再补播', async () => {
+  const mapChange = harness();
+  mapChange.audio.effect(effectName);
+  mapChange.audio.enterMap('shadow-camp');
+  await mapChange.drain();
+  assert.deepEqual(mapChange.played, []);
+
+  const storyEntry = harness();
+  storyEntry.audio.effect(effectName);
+  storyEntry.audio.enterStory();
+  await storyEntry.drain();
+  assert.deepEqual(storyEntry.played, []);
+});
+
+test('加载完成时音效开关已关或已挂起，都不补播', async () => {
+  const muted = harness();
+  muted.audio.effect(effectName);
+  muted.audio.settings.effects = false;
+  await muted.drain();
+  assert.deepEqual(muted.played, []);
+
+  const suspended = harness({ suspended: () => true });
+  suspended.audio.effect(effectName);
+  await suspended.drain();
+  assert.deepEqual(suspended.played, []);
+});
+
+test('预加载按批排队，冷音效最多只等一批', async () => {
+  const f = harness();
+  const pending = f.audio.prepareCombat(Object.keys(catalog.skills), Object.values(catalog.skills));
+  await f.drain();
+  await pending;
+  assert.ok(f.batches.length > 1, '预加载分了批');
+  assert.ok(f.batches.every(count => count > 0 && count <= 6), `每批不超过 6 个：${f.batches.join(',')}`);
+  assert.deepEqual(f.played, [], '预加载不发声');
+});
+
+test('战斗音效预加载覆盖运行时能触发的每一条音效', async () => {
+  const battle = JSON.parse(readFileSync(new URL('../public/content/battle.json', import.meta.url), 'utf8'));
+  const sounds = new Set<string>();
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) { for (const item of value) walk(item); return; }
+    if (!value || typeof value !== 'object') return;
+    for (const [key, item] of Object.entries(value)) {
+      if (key === 'sound' && typeof item === 'string') sounds.add(item);
+      else walk(item);
+    }
+  };
+  walk(battle);
+  // 这条音效只在动作定义里出现，不在音频目录的技能索引里，是预加载最容易漏掉的一类。
+  assert.ok(sounds.has('A_Skill_Attack01'));
+
+  const f = harness();
+  const pending = f.audio.prepareCombat(Object.keys(catalog.skills), sounds);
+  await f.drain();
+  await pending;
+  const cached = f.cachedKeys();
+  assert.deepEqual([...sounds].filter(name => catalog.effects[name] && !cached.has(`se:${name}`)), []);
+
+  const weaponSounds = Object.values(catalog.combat.weapons)
+    .flatMap(entry => [entry.critical, entry.blocked, ...entry.normal.map(cue => cue.sound), ...(entry.miss ? [entry.miss] : [])]);
+  assert.deepEqual(weaponSounds.filter(name => name && !cached.has(`se:${name}`)), []);
+});

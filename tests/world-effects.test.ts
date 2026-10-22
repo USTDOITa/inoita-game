@@ -1,0 +1,136 @@
+import {dispatchFrame,playCombat} from './support/combat-driver.ts';
+import assert from 'node:assert/strict';
+import {EventEmitter} from 'node:events';
+import {readFileSync} from 'node:fs';
+import {registerHooks} from 'node:module';
+import test from 'node:test';
+import type Phaser from 'phaser';
+import type {BattleCatalog} from '../src/domain/battle.ts';
+import type {ActorDefinition,AnimationClip} from '../src/domain/content.ts';
+import {CombatController,type ActionPlayback,type Combatant,type CombatPort} from '../src/domain/combat.ts';
+import {CombatCooldownStore} from '../src/domain/combat-cooldowns.ts';
+import {CombatConditions} from '../src/domain/combat-conditions.ts';
+import type {CharacterVisual} from '../src/rendering/characters.ts';
+import {loadSceneAssets,type PendingAsset} from '../src/rendering/scene-assets.ts';
+const hook=registerHooks({resolve(specifier,context,next){return specifier==='phaser'
+  ?{url:'data:text/javascript,export default {BlendModes:{NORMAL:0,SCREEN:1,ADD:2,MULTIPLY:3},Scene:class{},Physics:{Arcade:{Body:class{}}}}',shortCircuit:true}:next(specifier,context);}});
+const {CombatPresenter}=await import('../src/rendering/combat-presenter.ts');
+const {CombatEffects}=await import('../src/rendering/combat-effects.ts');
+const {WorldCombat}=await import('../src/scenes/world-combat.ts');
+const {effectAssets}=await import('../src/rendering/effects.ts');hook.deregister();
+const catalog=JSON.parse(readFileSync(new URL('../public/content/battle.json',import.meta.url),'utf8')) as BattleCatalog;
+
+interface Animation {key:string;frames:unknown[];frameRate:number;repeat?:number}
+class Display extends EventEmitter {
+  active=true;visible=true;alpha=1;name='';x=0;y=0;depth=0;age=0;playing=false;
+  list:Display[]=[];parent?:Display;animation?:Animation;
+  anims={accumulator:0,timeScale:1,stop:()=>{this.playing=false;}};
+  get length(){return this.list.length;}
+  setName(value:string){this.name=value;return this;}
+  setDepth(value:number){this.depth=value;return this;}
+  setVisible(value:boolean){this.visible=value;return this;}
+  setAlpha(value:number){this.alpha=value;return this;}
+  setOrigin(){return this;}setScale(){return this;}setBlendMode(){return this;}
+  add(value:Display){value.parent?.remove(value);this.list.push(value);value.parent=this;return this;}
+  addAt(value:Display){return this.add(value);}
+  remove(value:Display){this.list=this.list.filter(child=>child!==value);value.parent=undefined;}
+  removeAll(destroy=false){for(const child of [...this.list]){this.remove(child);if(destroy)child.destroy();}}
+  destroy(){if(!this.active)return;this.active=false;this.parent?.remove(this);this.emit('destroy');this.removeAll(true);this.removeAllListeners();}
+}
+
+function setup(){
+  const nodes:Display[]=[],animations=new Map<string,Animation>(),textures=new Map<string,Set<number>>(),removed:string[]=[],queued:PendingAsset[]=[];
+  const make=(x=0,y=0)=>{const value=new Display();value.x=x;value.y=y;nodes.push(value);return value;};
+  const load=Object.assign(new EventEmitter(),{
+    spritesheet:(key:string,file:string,config:Phaser.Types.Loader.FileTypes.ImageFrameConfig)=>queued.push({kind:'spritesheet',key,file,config}),
+    image:(key:string,file:string)=>queued.push({kind:'image',key,file}),
+    start:()=>queueMicrotask(()=>{for(const asset of queued.splice(0))textures.set(asset.key,new Set(Array.from({length:asset.kind==='spritesheet'?Number(asset.config.endFrame)+1:1},(_,i)=>i)));load.emit('complete');}),
+  });
+  const scene={events:new EventEmitter(),load,
+    textures:{exists:(key:string)=>textures.has(key),get:(key:string)=>({has:(frame:string)=>textures.get(key)!.has(Number(frame))}),remove:(key:string)=>{removed.push(key);textures.delete(key);}},
+    anims:{exists:(key:string)=>animations.has(key),create:(value:Animation)=>{animations.set(value.key,value);return value;},
+      generateFrameNumbers:(_key:string,{start,end}:{start:number;end:number})=>Array.from({length:end-start+1},(_,i)=>i+start),
+      remove:(key:string)=>animations.delete(key)},
+    add:{container:make,layer:()=>make(),sprite:()=>Object.assign(make(),{
+      play(this:Display,config:{key:string}){this.animation=animations.get(config.key);this.age=0;this.playing=true;return this;},
+    })},
+    tweens:{killTweensOf:()=>{},add:()=>({remove:()=>{}})},time:{delayedCall:()=>({remove:()=>{}})},facing:'east',
+  } as unknown as Phaser.Scene;
+  const advance=(count:number)=>{for(let tick=0;tick<count;tick++)for(const node of [...nodes]){
+    if(!node.active||!node.playing||!node.animation)continue;
+    if(++node.age>=node.animation.frames.length){node.playing=false;node.emit('animationcomplete');}
+    else node.emit('animationupdate',node.animation,{index:node.age+1});
+  }};
+  const character=(id:string)=>({entity:{id,actor:id,x:0,y:0},actor:{id,effectAnchor:{x:0,y:-8},clips:{}},container:make(),layers:[],clipName:null}) as unknown as CharacterVisual;
+  const actor=(id:string):Combatant=>({id,team:'party',position:{x:0,y:0},bounds:{x:-4,y:-4,width:8,height:8}});
+  const effects=(name:string)=>nodes.filter(node=>node.name===name&&node.active);
+  return {scene,nodes,animations,textures,removed,character,actor,effects,advance};
+}
+
+test('shared world visuals survive real member death and controller clears while attached and transition visuals are cancelled',()=>{
+  const f=setup(),world=new CombatEffects(f.scene),ids=['player','ally','enemy'];
+  const visuals=new Map(ids.map(id=>[id,f.character(id)])),actors=ids.map(f.actor);
+  const presenters=new Map(ids.map(id=>[id,new CombatPresenter(f.scene,catalog,key=>visuals.get(key),()=>actors,world)]));
+  const controllers=new Map(ids.map(id=>{
+    const presenter=presenters.get(id)!;
+    const port={cooldowns:new CombatCooldownStore(()=>0).forActor(id),actor:()=>actors.find(value=>value.id===id),candidates:()=>actors,
+      facing:()=> 'east',moveToward:()=>{},stop:()=>{},canStand:()=>true,relocate:()=>{},clearEffects:()=>presenter.clear(),play:()=>()=>{},frame:()=>{}} as CombatPort;
+    return [id,new CombatController(id,null,port)];
+  }));
+  for(const id of ids){
+    const presenter=presenters.get(id)!,caster=f.actor(id);
+    dispatchFrame(presenter,{caster,facing:'east',basicAttack:null,skill:{id:'swirling-storm',action:catalog.skills['swirling-storm'].action!,level:1}},0);
+    dispatchFrame(presenter,{caster,facing:'east',basicAttack:null,skill:{id:'weapon-hitback',action:catalog.skills['weapon-hitback'].action!,level:1}},2);
+    presenter.showEffects(id,[{effect:'life-drain',recipient:'caster',placement:'attached'}]);
+    // In-flight visuals remain owned by the presenter, unlike already-created field effects.
+    Reflect.get(CombatPresenter.prototype,'effect').call(presenter,'hitback-wave','default',{x:0,y:0},true);
+  }
+  assert.equal(f.effects('swirl-ring').length,3);assert.equal(f.effects('hitback-wave').length,9);
+  const member={player:{health:0},clearCombatResourceLimits:()=>{}};
+  const host=Object.setPrototypeOf({fallen:new Set<string>(),activeParty:ids,visualOf:(id:string)=>visuals.get(id),
+    memberOf:()=>member,partyControllers:controllers,conditions:new CombatConditions(),hero:member,
+    app:{session:{party:{onDefeat:()=>false}}},syncControlled:()=>{},
+    allies:[{id:'ally',visual:visuals.get('ally')!,facing:'east',ai:{disable:()=>{}}}],arena:[],deathTweens:new Map(),scene:f.scene,
+    movement:{position:()=>({x:0,y:0}),stop:()=>{},setEnabled:()=>{}},
+  },WorldCombat.prototype);
+  Reflect.get(WorldCombat.prototype,'memberDefeated').call(host,'player');
+  Reflect.get(WorldCombat.prototype,'memberDefeated').call(host,'ally');
+  controllers.get('enemy')!.cancel(true);visuals.get('enemy')!.container.destroy();
+  assert.equal(f.effects('life-drain').length,0);
+  assert.equal(f.effects('hitback-wave').length,6);assert.equal(f.effects('swirl-ring').length,3);
+  f.advance(5);assert.equal(f.effects('hitback-wave').length,0);assert.equal(f.effects('swirl-ring').length,3);
+  world.clear();world.clear();assert.equal(f.effects('swirl-ring').length,0);
+});
+
+test('the 24-frame actor playback completes while its independent 26-frame world ring keeps playing',()=>{
+  const f=setup(),world=new CombatEffects(f.scene),visual=f.character('player'),caster=f.actor('player');
+  const clip={frameWidth:8,frameHeight:8,frames:24,frameRate:1000/60,originX:.5,originY:1,layers:[{key:'actor-spin',file:'actor.png',blend:'normal'}]} as AnimationClip;
+  visual.actor={...visual.actor,clips:{'skill-swirling-storm-east':clip}} as ActorDefinition;
+  const presenter=new CombatPresenter(f.scene,catalog,()=>visual,()=>[caster],world);
+  const playback:ActionPlayback={caster,facing:'east',basicAttack:null,skill:{id:'swirling-storm',action:catalog.skills['swirling-storm'].action!,level:1}};
+  const frames:number[]=[],complete: number[]=[];
+  playCombat(presenter,playback,index=>frames.push(index),()=>complete.push(24));dispatchFrame(presenter,playback,0);
+  f.advance(23);assert.deepEqual(complete,[]);assert.equal(f.effects('swirl-ring').length,1);
+  f.advance(1);assert.deepEqual(complete,[24]);assert.equal(frames.at(-1),23);assert.equal(f.effects('swirl-ring').length,1);
+  presenter.clear();assert.equal(f.effects('swirl-ring').length,1);
+  f.advance(1);assert.equal(f.effects('swirl-ring').length,1);
+  f.advance(1);assert.equal(f.effects('swirl-ring').length,0);world.clear();
+});
+
+test('world effects retain actual scene asset leases until their own animation finishes or the world is cleared',async()=>{
+  const f=setup(),world=new CombatEffects(f.scene),visual=f.character('player'),caster=f.actor('player');
+  const assets=effectAssets({'swirl-ring':catalog.attackEffects['swirl-ring'],'hitback-wave':catalog.attackEffects['hitback-wave']});
+  const actorLease=await loadSceneAssets(f.scene,assets,()=>{});
+  const presenter=new CombatPresenter(f.scene,catalog,()=>visual,()=>[caster],world);
+  dispatchFrame(presenter,{caster,facing:'east',basicAttack:null,skill:{id:'swirling-storm',action:catalog.skills['swirling-storm'].action!,level:1}},0);
+  dispatchFrame(presenter,{caster,facing:'east',basicAttack:null,skill:{id:'weapon-hitback',action:catalog.skills['weapon-hitback'].action!,level:1}},2);
+  const ringKeys=catalog.attackEffects['swirl-ring'].clips.default.layers.map(layer=>layer.key);
+  const waveKeys=[...new Set(['east','default'].flatMap(variant=>catalog.attackEffects['hitback-wave'].clips[variant].layers.map(layer=>layer.key)))];
+  presenter.clear();actorLease.release();
+  for(const key of [...ringKeys,...waveKeys]){assert.equal(f.textures.has(key),true,key);assert.equal(f.animations.has(key),true,key);}
+  f.advance(5);
+  for(const key of waveKeys){assert.equal(f.textures.has(key),false,key);assert.equal(f.animations.has(key),false,key);}
+  for(const key of ringKeys)assert.equal(f.textures.has(key),true,key);
+  world.clear();for(const key of ringKeys){assert.equal(f.textures.has(key),false,key);assert.equal(f.animations.has(key),false,key);}
+  assert.equal(new Set(f.removed).size,f.removed.length,'leases release each texture exactly once');
+});
