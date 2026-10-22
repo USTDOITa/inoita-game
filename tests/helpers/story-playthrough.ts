@@ -11,6 +11,7 @@ import { newStorySession } from '../../src/domain/story-class.ts';
 import { StoryDirector, type StoryUI } from '../../src/domain/story-director.ts';
 import { resolveStoryStage, storyStageWorldCast, type PerformanceAction, type StoryPresentationPort, type StoryStage } from '../../src/domain/story-performance.ts';
 import { WorldEnemyRoster } from '../../src/domain/world-enemies.ts';
+import { QuestEnemyWatch } from '../../src/domain/quest-enemies.ts';
 import { parseDrops, rollQuestDrops } from '../../src/domain/drops.ts';
 import { groundLootFor } from '../../src/domain/ground-loot.ts';
 import type { SessionState } from '../../src/domain/session.ts';
@@ -36,6 +37,7 @@ const tick=()=>new Promise<void>(resolve=>setImmediate(resolve));
 export function playthrough(saved?:SessionState){
   const session=newStorySession(campaign,world.actors[campaign.start.actor],classes.classes[0],items,stats,battle,companions);
   if(saved)session.restoreState(saved);
+  const questEnemies=new QuestEnemyWatch(session,drops.questItems);
   let stage:StoryStage|undefined,choiceQueue:string[]=['option-3'],worldNeedsLanding=false;
   const lines:string[]=[],popups:string[]=[],actions:PerformanceAction[]=[],errors:unknown[]=[];
   const entities=():EntityPlacement[]=>{
@@ -469,7 +471,7 @@ export function playthrough(saved?:SessionState){
   };
   const defeat=async(enemyId:string)=>{
     const map=maps.get(session.storyWorld.currentLocation!.map)!;
-    const roster=new WorldEnemyRoster(session,map,[],session.hero!.level);
+    const roster=new WorldEnemyRoster(session,map,[],session.hero!.level,questEnemies);
     const spawn=roster.spawns.find(spawn=>spawn.enemyId===enemyId&&session.canSpawnEnemy(spawn));assert.ok(spawn,'当前地图敌人 '+enemyId);
     const hero=session.hero!,killer=session.party?.controlledId??'player';
     const member=killer==='player'?hero:session.party?.get(killer);
@@ -523,7 +525,7 @@ export function playthrough(saved?:SessionState){
   const damage=async(enemyId:string,remainingRatio:number)=>{
     assert.ok(remainingRatio>=0&&remainingRatio<=1);
     const map=maps.get(session.storyWorld.currentLocation!.map)!;
-    const roster=new WorldEnemyRoster(session,map,[],session.hero!.level),definition=battle.enemies.find(enemy=>enemy.id===enemyId)!;
+    const roster=new WorldEnemyRoster(session,map,[],session.hero!.level,questEnemies),definition=battle.enemies.find(enemy=>enemy.id===enemyId)!;
     const placed=roster.enemies.find(enemy=>enemy.enemyId===enemyId);
     assert.ok(placed,`当前地图受伤敌人 ${enemyId}（现在在 ${map.id}，本图 ${roster.enemies.length} 只：${[...new Set(roster.enemies.map(enemy=>enemy.enemyId))].slice(0,8).join(',')}）`);
     const snapshot=roster.enemySnapshot(placed.key,definition,session.hero!.level)!;
@@ -535,7 +537,7 @@ export function playthrough(saved?:SessionState){
       采集类目标交互后会被移除，必须有下一只才有得采；等价于玩家自己把这只打死。 */
   const clearEnemy=(enemyId:string):boolean=>{
     const map=maps.get(session.storyWorld.currentLocation!.map)!;
-    const roster=new WorldEnemyRoster(session,map,[],session.hero!.level);
+    const roster=new WorldEnemyRoster(session,map,[],session.hero!.level,questEnemies);
     const placed=roster.enemies.find(enemy=>enemy.enemyId===enemyId);
     if(!placed)return false;
     const spawn=roster.source(placed.key);

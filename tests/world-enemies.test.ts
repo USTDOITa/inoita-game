@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { Session, DEFAULT_ENEMY_RESPAWN_MS } from '../src/domain/session.ts';
-import { WorldEnemyRoster, encounterSpawnId } from '../src/domain/world-enemies.ts';
+import { WorldEnemyRoster, encounterSpawnId, selectMapSpawns } from '../src/domain/world-enemies.ts';
 import type { WorldMap } from '../src/domain/content.ts';
 import type { Campaign } from '../src/domain/campaign.ts';
 
@@ -27,14 +27,94 @@ test('map enemy dies, remains absent across map visits, then respawns after game
   assert.deepEqual(session.enemyVitals(spawn.id),{});
 });
 
-test('mixed-level source map activates only the tier closest to the hero',()=>{
+test('mixed-level source map activates the last tier reached by the hero',()=>{
   const map=content('maps/shadow-training-dungeon1-5e8c19b4.json') as WorldMap;
   const session=new Session(campaign);
-  for(const [level,expected] of [[1,3],[45,41],[90,103]]){
+  for(const [level,expected] of [[1,3],[40,3],[41,41],[90,41],[103,103],[105,103]]){
     const roster=new WorldEnemyRoster(session,map,[],level);
     assert.ok(roster.spawns.some(spawn=>spawn.tierLevel===expected));
     assert.ok(roster.spawns.every(spawn=>spawn.tierLevel===undefined||spawn.tierLevel===expected));
   }
+});
+
+test('tier bands switch only after reaching the next representative level',()=>{
+  const map={id:'band-map',enemySpawns:[
+    {id:'low',enemyId:'enemy-low',x:0,y:0,tierLevel:10},
+    {id:'mid',enemyId:'enemy-mid',x:0,y:0,tierLevel:50},
+    {id:'high',enemyId:'enemy-high',x:0,y:0,tierLevel:90},
+    {id:'free',enemyId:'enemy-free',x:0,y:0},
+  ]} as unknown as WorldMap;
+  const ids=(level:number)=>selectMapSpawns(map,[],level).map(spawn=>spawn.id);
+  assert.deepEqual(ids(1),['low','free']);
+  assert.deepEqual(ids(49),['low','free']);
+  assert.deepEqual(ids(50),['mid','free']);
+  assert.deepEqual(ids(89),['mid','free']);
+  assert.deepEqual(ids(90),['high','free']);
+});
+
+test('active quest enemies stay when their tier is not selected',()=>{
+  const map={id:'quest-map',enemySpawns:[
+    {id:'low',enemyId:'enemy-low',x:0,y:0,tierLevel:10},
+    {id:'high',enemyId:'enemy-high',x:0,y:0,tierLevel:90},
+    {id:'free',enemyId:'enemy-free',x:0,y:0},
+  ]} as unknown as WorldMap;
+  const ids=selectMapSpawns(map,[],10,{questEnemies:new Set(['enemy-high'])}).map(spawn=>spawn.id);
+  assert.deepEqual(ids,['low','high','free']);
+});
+
+test('an unavailable selected band falls back to the nearest lower available tier only',()=>{
+  const map={id:'fallback-map',enemySpawns:[
+    {id:'low',enemyId:'enemy-low',x:0,y:0,tierLevel:10},
+    {id:'mid',enemyId:'enemy-mid',x:0,y:0,tierLevel:50},
+    {id:'high',enemyId:'enemy-high',x:0,y:0,tierLevel:90},
+  ]} as unknown as WorldMap;
+  const lower=selectMapSpawns(map,[],50,{spawnable:spawn=>spawn.enemyId!=='enemy-mid'}).map(spawn=>spawn.id);
+  assert.deepEqual(lower,['low'],'选中档不可用时补最近低档');
+  const noLower=selectMapSpawns(map,[],50,{spawnable:spawn=>spawn.enemyId==='enemy-high'}).map(spawn=>spawn.id);
+  assert.deepEqual(noLower,['mid'],'没有可用低档时不向高档回退');
+});
+
+test('story-hidden selected band falls back to a lower tier and an all-hidden map records a diagnostic',()=>{
+  const map=content('maps/shadow-training-dungeon1-5e8c19b4.json') as WorldMap;
+  const tiers=[...new Set(map.enemySpawns!.flatMap(spawn=>spawn.tierLevel===undefined?[]:[spawn.tierLevel]))];
+  const hide=(session:Session,tier:number)=>session.applyStoryCommands(map.enemySpawns!
+    .filter(spawn=>spawn.tierLevel===tier).map(spawn=>({type:'world' as const,
+      command:{kind:'enemy-availability' as const,map:map.id,enemyId:spawn.enemyId,available:false}})));
+
+  const partial=new Session(campaign);hide(partial,41);
+  const fallback=new WorldEnemyRoster(partial,map,[],41);
+  assert.ok(fallback.spawns.some(spawn=>spawn.tierLevel===3));
+  assert.ok(fallback.spawns.every(spawn=>spawn.tierLevel!==41));
+
+  const hidden=new Session(campaign);for(const tier of tiers)hide(hidden,tier);
+  const records:{kind:string;detail:unknown}[]=[];
+  const previous=globalThis.storyDiagnostics;
+  globalThis.storyDiagnostics={record:(kind:string,detail:unknown)=>records.push({kind,detail})} as unknown as typeof globalThis.storyDiagnostics;
+  try{
+    new WorldEnemyRoster(hidden,map,[],41);
+    assert.equal(records.filter(record=>record.kind==='map-enemies-empty').length,1);
+  }finally{globalThis.storyDiagnostics=previous;}
+});
+
+test('quest enemies added after entry are merged without swapping the selected tier',()=>{
+  const session=new Session(campaign);
+  const map=content('maps/shadow-training-dungeon1-5e8c19b4.json') as WorldMap;
+  const highSpawn=map.enemySpawns!.find(spawn=>spawn.tierLevel===103)!;
+  let ids:ReadonlySet<string>=new Set();
+  const provider={snapshot:()=>({revision:1,ids})};
+  const roster=new WorldEnemyRoster(session,map,[],10,provider);
+  assert.equal(roster.spawns.some(spawn=>spawn.enemyId===highSpawn.enemyId),false);
+
+  ids=new Set([highSpawn.enemyId]);
+  assert.ok(roster.refresh().added.some(enemy=>enemy.enemyId===highSpawn.enemyId));
+  assert.ok(roster.spawns.every(spawn=>spawn.tierLevel===undefined||spawn.tierLevel===3||spawn.enemyId===highSpawn.enemyId),
+    '只补任务怪，不切到高档');
+
+  ids=new Set();
+  roster.refresh();
+  assert.ok(roster.spawns.some(spawn=>spawn.enemyId===highSpawn.enemyId),'本次进图内任务怪保留到离图');
+  const next=new WorldEnemyRoster(session,map,[],10,provider);
+  assert.equal(next.spawns.some(spawn=>spawn.enemyId===highSpawn.enemyId),false,'重建名册后恢复档位过滤');
 });
 
 test('native quest spirits use ordinary map spawns and deaths alone do not grant material',()=>{

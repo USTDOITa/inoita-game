@@ -1,0 +1,78 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import test from 'node:test';
+import type { BattleCatalog } from '../src/domain/battle.ts';
+import type { Campaign } from '../src/domain/campaign.ts';
+import type { WorldMap } from '../src/domain/content.ts';
+import { parseDrops } from '../src/domain/drops.ts';
+import type { ItemCatalog } from '../src/domain/items.ts';
+import { QuestEnemyWatch } from '../src/domain/quest-enemies.ts';
+import { Session } from '../src/domain/session.ts';
+import { WorldEnemyRoster } from '../src/domain/world-enemies.ts';
+
+const read=(name:string)=>JSON.parse(fs.readFileSync(new URL(`../public/content/${name}.json`,import.meta.url),'utf8'));
+const campaign=read('campaign') as Campaign,items=read('items') as ItemCatalog,battle=read('battle') as BattleCatalog;
+const drops=parseDrops(read('drops'),items,battle.enemies.map(enemy=>enemy.id));
+const map=(name:string)=>read(`maps/${name}`) as WorldMap;
+
+function sessionFor(questId:string,accept:boolean):Session{
+  const quest={...campaign.quests.find(value=>value.id===questId)!,availableWhen:{type:'always' as const,value:true}};
+  const session=new Session({...campaign,quests:[quest],questGroups:[],events:[]});
+  if(accept)assert.equal(session.accept(questId),true);
+  return session;
+}
+
+test('item quest keeps its drop source when its tier is discarded',()=>{
+  const session=sessionFor('quest-171',true);
+  const roster=new WorldEnemyRoster(session,map('closed-dungeon-2-563efc16'),[],105,new QuestEnemyWatch(session,drops.questItems));
+  assert.ok(roster.spawns.some(spawn=>spawn.enemyId==='enemy-enraged-magic-book-1'));
+  const definition=battle.enemies.find(enemy=>enemy.id==='enemy-enraged-magic-book-1')!;
+  const placed=roster.enemies.find(enemy=>enemy.enemyId===definition.id)!;
+  assert.equal(roster.enemySnapshot(placed.key,definition,105)?.level,definition.level,'任务怪不按玩家等级缩放');
+});
+
+test('defeat quest keeps a low-tier target at endgame level',()=>{
+  const session=sessionFor('quest-181',true);
+  const roster=new WorldEnemyRoster(session,map('shadow-training-dungeon-2-a6b8293b'),[],105,new QuestEnemyWatch(session,drops.questItems));
+  assert.ok(roster.spawns.some(spawn=>spawn.enemyId==='enemy-knife-needled-mosquitoes-1'));
+});
+
+test('targetChanges enemy is protected across tiers',()=>{
+  const session=sessionFor('quest-18',true);
+  const roster=new WorldEnemyRoster(session,map('training-dungeon-two'),[],105,new QuestEnemyWatch(session,drops.questItems));
+  assert.ok(roster.spawns.some(spawn=>spawn.enemyId==='enemy-shaggy-grayfang-1'));
+});
+
+test('inactive quests do not protect their enemies',()=>{
+  const session=sessionFor('quest-181',false);
+  const watch=new QuestEnemyWatch(session,drops.questItems);
+  assert.equal(watch.snapshot().ids.has('enemy-knife-needled-mosquitoes-1'),false);
+});
+
+test('accepting a quest after entry adds its enemy without swapping the selected tier',()=>{
+  const session=sessionFor('quest-181',false);
+  const roster=new WorldEnemyRoster(session,map('shadow-training-dungeon-2-a6b8293b'),[],105,new QuestEnemyWatch(session,drops.questItems));
+  const target='enemy-knife-needled-mosquitoes-1';
+  assert.equal(roster.spawns.some(spawn=>spawn.enemyId===target),false);
+  assert.equal(session.accept('quest-181'),true);
+  assert.ok(roster.refresh().added.some(enemy=>enemy.enemyId===target));
+});
+
+test('item goals include every enemy source for the required item',()=>{
+  const session=sessionFor('quest-171',true);
+  const watch=new QuestEnemyWatch(session,{
+    'enemy-a':[{item:'raging-magic-bookcores',threshold:50}],
+    'enemy-b':[{item:'raging-magic-bookcores',threshold:50}],
+    'enemy-c':[{item:'unrelated-item',threshold:50}],
+  });
+  assert.deepEqual([...watch.snapshot().ids].sort(),['enemy-a','enemy-b']);
+});
+
+test('quest enemy snapshot is cached by quest-book version',()=>{
+  const session=sessionFor('quest-181',true);
+  const watch=new QuestEnemyWatch(session,drops.questItems);
+  const first=watch.snapshot();
+  const second=watch.snapshot();
+  assert.equal(second.ids,first.ids,'版本未变时复用同一个 Set');
+  assert.ok(first.ids.has('enemy-knife-needled-mosquitoes-1'));
+});

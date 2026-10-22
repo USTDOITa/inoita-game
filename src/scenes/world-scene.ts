@@ -19,6 +19,7 @@ import { createEffect } from '../rendering/effects.ts';
 import type { StoryContext } from '../application/ports.ts';
 import { WorldEnemyRoster } from '../domain/world-enemies.ts';
 import { WorldCombat, type WorldCombatState } from './world-combat.ts';
+import { QuestEnemyWatch } from '../domain/quest-enemies.ts';
 import { parseDrops, rollChestLoot, type DropCatalog, type DropReward } from '../domain/drops.ts';
 import { canReachChest, CHEST_OPEN_MS, facesTarget, nearInteractable, nearInteractive, rollPlacement } from '../domain/chests.ts';
 import { parseSprings, rollSpring, rollSpringEffect, type SpringCatalog } from '../domain/springs.ts';
@@ -352,8 +353,11 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player.container, true, 1, 1);
     const hero=this.app.session.hero;
     if(!hero)throw new Error('正式游戏缺少主角战斗数值');
-    const roster=new WorldEnemyRoster(this.app.session,map,(campaign.enemyPlacements??[]).filter(enemy=>enemy.map===map.id),hero.level);
-    this.combat=new WorldCombat(this,this.app,roster,hero,this.dropCatalog);
+    const drops=this.dropCatalog;
+    if(!drops)throw new Error('掉落目录尚未就绪');
+    const roster=new WorldEnemyRoster(this.app.session,map,(campaign.enemyPlacements??[]).filter(enemy=>enemy.map===map.id),hero.level,
+      new QuestEnemyWatch(this.app.session,drops.questItems));
+    this.combat=new WorldCombat(this,this.app,roster,hero,drops);
     await this.combat.start();
     signal.throwIfAborted();
     if(options.checkpoint)await this.combat.restoreState(options.checkpoint,signal);
