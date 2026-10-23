@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import type Phaser from 'phaser';
-import { loadSceneAssets } from '../src/rendering/scene-assets.ts';
+import { loadSceneAssets, missingSceneAssets } from '../src/rendering/scene-assets.ts';
 import type { PendingAsset } from '../src/rendering/scene-assets.ts';
 
 const asset: PendingAsset = { kind: 'spritesheet', key: 'skill-effect', file: 'assets/effect.png', config: { frameWidth: 8, frameHeight: 8, endFrame: 2 } };
@@ -56,9 +56,33 @@ test('missing middle frames reject both fresh and cached sprite sheets', async (
     const run = setup(); run.outcome('missing-frame');
     if (cached) run.frames.set(asset.key, new Set([0, 2]));
     await assert.rejects(loadSceneAssets(run.scene, [asset], () => {}), diagnostic(/skill-effect.*帧 1/));
+    assert.equal(run.starts(), 1, '预检判缺时必须真的进入 loader');
     assert.equal(run.frames.size, 0);
     assert.equal(run.events.listenerCount('shutdown'), 0);
   }
+});
+
+test('cached sprite sheet with missing frames is rebuilt instead of skipped', async () => {
+  const run = setup();
+  run.frames.set(asset.key, new Set([0, 2]));
+  assert.equal(missingSceneAssets(run.scene, [asset]).length, 1, '预检按帧判断');
+  const lease = await loadSceneAssets(run.scene, [asset], () => {});
+  assert.equal(run.starts(), 1, '残帧缓存必须重新加载');
+  assert.deepEqual([...run.frames.get(asset.key)!], [0, 1, 2]);
+  assert.equal(missingSceneAssets(run.scene, [asset]).length, 0);
+  lease.release();
+  assert.deepEqual(run.removed, [asset.key, asset.key], '重建时删旧纹理，租约释放时删新纹理');
+});
+
+test('a residual texture held by another lease is not rebuilt', async () => {
+  const run = setup();
+  const held = await loadSceneAssets(run.scene, [asset], () => {}, true);
+  run.frames.set(asset.key, new Set([0, 2]));
+  await assert.rejects(loadSceneAssets(run.scene, [asset], () => {}), /仍被其他租约持有/);
+  assert.deepEqual([...run.frames.get(asset.key)!], [0, 2], '共享纹理不能删');
+  assert.equal(run.removed.includes(asset.key), false);
+  held.release();
+  assert.deepEqual(run.removed, [asset.key]);
 });
 
 test('valid cached assets stay alive until the last lease is released', async () => {

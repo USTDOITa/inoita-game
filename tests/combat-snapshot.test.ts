@@ -24,7 +24,7 @@ function enemyState():ReturnType<EnemyController['captureState']> {
 function friendlyState():FriendlySummonState {
   return {ownerId:'player',role:'beast',state:'returning',targetId:'enemy',returning:true,
     clock:9000,accumulator:30,nextDecisionAt:9180,nextSearchAt:9180,nextRecallAt:10020,nextFollowSearchAt:9900,targetSince:8400,
-    path:[{x:24,y:20}],pathTargetId:'player',pathDestination:{x:1,y:2},pathRange:16,followActive:true,
+    path:[{x:24,y:20}],pathTargetId:'player',pathDestination:{x:1,y:2},followActive:true,
     failedTargets:[{id:'enemy',until:9900,position:{x:10,y:20}}],checkedTargets:[{id:'enemy',until:9600,position:{x:10,y:20}}],
     fallbackTargets:[{id:'enemy',until:9900,position:{x:10,y:20}}],
     farElapsed:5040,stuckElapsed:5040,progressOrigin:{x:30,y:20},followDestination:{x:1,y:2},followUnreachable:true,followSlot:3,

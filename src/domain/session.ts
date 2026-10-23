@@ -99,7 +99,10 @@ export class Session {
     if(location.x>=1&&location.y>=1&&location.x<boundary.width&&location.y<boundary.height)return;
     // 原版随机取一条出口记录；这里固定取第一条，保证验收可复现（偏离记在 findings 175）。
     const exit=(boundary.exits??[])[0];
-    const fixed=exit?{x:exit.x+8,y:exit.y+8}:{x:Math.floor(boundary.width/2),y:Math.floor(boundary.height/2)};
+    // 出口记录给的是格子左上角，角色的脚点应落在格子中心（tileSize 16 的一半）。
+    const exitTileCenterOffsetPx=8;
+    const fixed=exit?{x:exit.x+exitTileCenterOffsetPx,y:exit.y+exitTileCenterOffsetPx}
+      :{x:Math.floor(boundary.width/2),y:Math.floor(boundary.height/2)};
     this.storyWorld.apply({kind:'travel',destination:{...location,...fixed}});
   }
   readonly recovery = new RecoveryItems();
@@ -509,12 +512,6 @@ export class Session {
   }
   definition(id:string):CampaignQuest|undefined{return this.campaign.quests.find(quest=>quest.id===id);}
   status(id:string):QuestStatus{return this.questBook?.status(id)??'locked';}
-  accepted(id:string):boolean{return this.questBook.accepted(id);}
-  rewardFor(id:string):QuestRewardReceipt {
-    const reward=this.definition(id)?.rewards,classId=this.hero?.classId??this.character?.classId;
-    return {experience:reward?.experience??0,money:reward?.money??0,items:(reward?.items??[])
-      .filter(item=>!item.classIds||!!classId&&item.classIds.includes(classId)).map(({item,quantity})=>({item,quantity}))};
-  }
   rewardReceiptFor(id:string,cycle?:number):QuestRewardReceipt|undefined {
     const receipt=cycle===undefined?[...this.receipts.values()].filter(value=>value.quest===id).at(-1):this.receipts.get(JSON.stringify([id,cycle]));
     return receipt?structuredClone(receipt.reward):undefined;

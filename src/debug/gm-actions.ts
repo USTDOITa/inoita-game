@@ -261,7 +261,6 @@ export function createGmActions(ports: GmPorts): GmActions {
     const location = session.storyWorld.currentLocation;
     const party = session.party;
     // 主角不在队伍名册里（`owned` 只放佣兵），它的数值要单独从 `session.hero` 取。
-    const memberOf = (id: string) => id === 'player' ? session.hero : party?.get(id);
     return {
       at: new Date().toISOString(),
       runtime: ports.status?.() ?? {},
@@ -314,6 +313,10 @@ export function createGmActions(ports: GmPorts): GmActions {
     if (typeof fetch !== 'function') return false;
     try {
       const response = await fetch(reportEndpoint(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      // 离线壳没有注入远程地址时，同源端点只是 asset loader 的 204 占位，不能当成已上报。
+      if (response.ok && typeof location !== 'undefined'
+        && location.hostname === 'appassets.androidplatform.net'
+        && reportEndpoint() === DEFAULT_REPORT_ENDPOINT) return false;
       return response.ok;
     } catch { return false; }
   };

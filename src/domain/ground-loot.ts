@@ -1,6 +1,11 @@
 import type { DropReward } from './drops.ts';
 import type { Session } from './session.ts';
 
+/** 每张地图保留的地面掉落上限；超出时先清最早生成的。 */
+const MAX_GROUND_DROPS_PER_MAP = 64;
+/** 拾取判定以脚点为中心的半格范围。 */
+const GROUND_PICKUP_RADIUS_PX = 12;
+
 export interface GroundDrop {
   id:string;
   map:string;
@@ -36,9 +41,9 @@ export class GroundLootStore {
   /** 队伍掉落共用一张背包，但地面总量仍要封顶：每图最多 64 件，超出淘汰最旧的。 */
   private prune(map:string):void {
     const onMap=[...this.drops.values()].filter(drop=>drop.map===map);
-    if(onMap.length<=64)return;
+    if(onMap.length<=MAX_GROUND_DROPS_PER_MAP)return;
     onMap.sort((left,right)=>(left.createdAtMs??Infinity)-(right.createdAtMs??Infinity));
-    for(const drop of onMap.slice(0,onMap.length-64))this.drops.delete(drop.id);
+    for(const drop of onMap.slice(0,onMap.length-MAX_GROUND_DROPS_PER_MAP))this.drops.delete(drop.id);
   }
   addFlying(map:string,origin:{x:number;y:number},landing:{x:number;y:number;direction:number},item:string,durationMs:number):void {
     const [drop]=this.add(map,landing.x,landing.y,[{kind:'item',item,quantity:1}]);
@@ -55,7 +60,7 @@ export class GroundLootStore {
   /** 附近 12px 内的落地掉落：只有一张共享背包，谁走过来都能拾取。 */
   collectNearby(map:string,x:number,y:number,collect:(reward:DropReward)=>unknown):GroundDrop[] {
     const nearby=[...this.drops.values()].filter(drop=>!drop.flight&&drop.map===map
-      &&Math.abs(drop.x-x)<=12&&Math.abs(drop.y-y)<=12);
+      &&Math.abs(drop.x-x)<=GROUND_PICKUP_RADIUS_PX&&Math.abs(drop.y-y)<=GROUND_PICKUP_RADIUS_PX);
     const taken:GroundDrop[]=[];
     for(const drop of nearby){
       if(collect(structuredClone(drop.reward))===false)continue;

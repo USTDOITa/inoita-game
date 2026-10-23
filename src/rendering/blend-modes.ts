@@ -5,7 +5,7 @@ import type { BlendName } from '../domain/content.ts';
  * 混合模式名到 Phaser 混合模式的公共映射，人物、场景物件和特效共用。
  *
  * Phaser 对这几个名字都有原生混合模式，映射本身是常量；`color-dodge` 没有，
- * 它走各自的合成路径（场景物件见 `scenes/world-scene.ts`，特效见 `effects.ts`），
+ * 它走各自的合成路径（场景物件见 `rendering/map-layers.ts`，特效见 `effects.ts`），
  * 所以在这里标成 `unsupported`，取用时直接报错，而不是悄悄画成普通混合。
  *
  * 写成 `Record<BlendName, …>` 而不是 `Partial`：新增一个混合方式时必须在这里明确表态——

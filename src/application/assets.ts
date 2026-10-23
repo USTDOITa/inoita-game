@@ -4,6 +4,8 @@ export class AssetPool {
   private users = new Map<string, number>();
   private readonly dispose: (key: string) => void;
   constructor(dispose: (key: string) => void) { this.dispose = dispose; }
+  /** 当前仍持有该纹理的租约数；用于判断能否安全重建残帧纹理。 */
+  holders(key: string): number { return this.users.get(key) ?? 0; }
   acquire(keys: Iterable<string>): AssetLease {
     const owned = new Set(keys);
     for (const key of owned) this.users.set(key, (this.users.get(key) ?? 0) + 1);

@@ -6,6 +6,9 @@ import type { StoryItem } from './story-interface.ts';
 import { EQUIPMENT_SLOTS, USE_LABELS, USE_HANDLING, USE_INTERFACE_ONLY, USE_NOT_IMPLEMENTED, unimplementedItemUse, type Equipment, type EquipmentSlot, type ItemCatalog, type ItemInstance, type ItemResult } from './items.ts';
 
 const emptyCatalog: ItemCatalog = { items: {}, startingEquipment: {}, startingInventory: [], startingShortcut: '', dualWieldClasses: [], merchantItems: [], classSkills: {}, recipes: {} };
+/** 混沌合成写入的比例上限；等级偏移沿用原版有符号字节的存储范围。 */
+const CHAOS_VALUE_PERCENT_MAX = 200;
+const CHAOS_LEVEL_OFFSET_LIMIT = 127;
 const copy = (entry: ItemInstance): ItemInstance => structuredClone(entry);
 export interface BagRules {
   initialize(entry:ItemInstance,drop?:{grade?:import('./character-stats.ts').EquipmentGradeSeed;sockets?:boolean}):void;
@@ -403,7 +406,7 @@ export class Bag {
   applyChaos(id:string,chaos:EquipmentChaos,expectedRevision:number):void {
     const entry=this.instances.get(id),item=entry?this.catalog.items[entry.item]:undefined;
     if(this.revision!==expectedRevision||!entry?.numbers||this.cellOf(id)<0||!item?.equipment||!['weapon','armor'].includes(item.priceKind??''))throw new Error('合成装备已变化');
-    if(!['chaos','epic-chaos'].includes(chaos.tier)||!Number.isInteger(chaos.valuePercent)||chaos.valuePercent<0||chaos.valuePercent>200||!Number.isInteger(chaos.levelOffset)||Math.abs(chaos.levelOffset)>127)throw new Error('混沌数值无效');
+    if(!['chaos','epic-chaos'].includes(chaos.tier)||!Number.isInteger(chaos.valuePercent)||chaos.valuePercent<0||chaos.valuePercent>CHAOS_VALUE_PERCENT_MAX||!Number.isInteger(chaos.levelOffset)||Math.abs(chaos.levelOffset)>CHAOS_LEVEL_OFFSET_LIMIT)throw new Error('混沌数值无效');
     entry.numbers.chaos={...chaos};this.notify();
   }
   use(id: string, target?: string, skill?: string, random: () => number = Math.random): ItemResult {
@@ -457,10 +460,6 @@ export class Bag {
       case 'recover-health': case 'regenerate': case 'recruit': case 'revive': throw new Error(USE_INTERFACE_ONLY);
       case 'dungeon': throw new Error(USE_NOT_IMPLEMENTED);
       default: {const missing:never=use.kind;throw new Error(`未处理的物品用途：${missing}`);}
-    }
-    if(result.rewards.length){
-      const preview=new Bag(()=>{},this.catalog,this.classId);preview.restoreState(this.snapshot());preview.consume(id);
-      for(const reward of result.rewards)preview.add(reward.item,reward.quantity,use.kind==='unseal'?result.skill:undefined);
     }
     this.consume(id);
     for(const reward of result.rewards)this.add(reward.item,reward.quantity,use.kind==='unseal'?result.skill:undefined);

@@ -2,10 +2,17 @@
 (() => {
   if (window.storyDiagnostics) return;
   const storageKey = 'inotia4.diagnostics.pending.v1';
-  // 离线 APK 在 document-start 注入绝对地址；网页版没有这个变量，继续用同源端点。
-  const endpoint = typeof globalThis.__inoitaDiagnosticsEndpoint === 'string' && globalThis.__inoitaDiagnosticsEndpoint
+  const localEndpoint = new URL('./__diagnostics/report', document.currentScript.src).href;
+  // 离线 APK 优先走原生桥：旧 WebView 不保证支持 document-start 注入，
+  // 同源地址又会被 WebViewAssetLoader 用 204 占位，fetch 会误以为已经上报。
+  const nativeBridge = (() => {
+    try { return !!(window.InotiaNative && typeof window.InotiaNative.report === 'function'); }
+    catch { return false; }
+  })();
+  const offlineShell = location.hostname === 'appassets.androidplatform.net';
+  const endpoint = () => typeof globalThis.__inoitaDiagnosticsEndpoint === 'string' && globalThis.__inoitaDiagnosticsEndpoint
     ? globalThis.__inoitaDiagnosticsEndpoint
-    : new URL('./__diagnostics/report', document.currentScript.src).href;
+    : localEndpoint;
   const session = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
   let sequence = 0, sending = false, snapshot = () => null;
   let pending = [], recent = [], capturing = false;
@@ -42,23 +49,46 @@
       && JSON.stringify(item).length <= 12000).slice(-32);
   } catch { /* 损坏的诊断缓存不影响游戏启动。 */ }
 
+  const nativeCallbacks = new Map();
+  window.__inoitaNativeReportResult = function (id, ok) {
+    const callback = nativeCallbacks.get(id);
+    if (callback) { nativeCallbacks.delete(id); callback(!!ok); }
+  };
+  function sendNative(body, id) {
+    return new Promise(resolve => {
+      const timer = setTimeout(() => { nativeCallbacks.delete(id); resolve(false); }, 20000);
+      nativeCallbacks.set(id, ok => { clearTimeout(timer); resolve(ok); });
+      try { window.InotiaNative.report(body, id); }
+      catch { clearTimeout(timer); nativeCallbacks.delete(id); resolve(false); }
+    });
+  }
   async function flush() {
     if (sending || !pending.length) return;
     sending = true;
     // 单条最多约 36 KB，包含中文时仍低于 keepalive 的 64 KB 限制。
     const batch = pending.slice(0, 1);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    const body = JSON.stringify({ version: 1, entries: batch });
     try {
-      const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ version: 1, entries: batch }), keepalive: true, signal: controller.signal });
-      if (response.ok) {
+      let ok = false;
+      if (nativeBridge) ok = await sendNative(body, batch[0].id);
+      else {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+        try {
+          const response = await fetch(endpoint(), { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body, keepalive: true, signal: controller.signal });
+          ok = response.ok;
+          // 离线壳的原生桥不可用时，同源地址只是 asset loader 的占位响应。
+          if (ok && offlineShell && endpoint() === localEndpoint) ok = false;
+        } finally { clearTimeout(timeout); }
+      }
+      if (ok) {
         const ids = new Set(batch.map(item => item.id));
         pending = pending.filter(item => !ids.has(item.id));
         persist();
       }
     } catch { /* 发送失败保留待发记录，避免诊断错误递归。 */ }
-    finally { clearTimeout(timeout); sending = false; }
+    finally { sending = false; }
   }
   function record(kind, details) {
     if (capturing) return;

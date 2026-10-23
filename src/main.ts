@@ -292,7 +292,7 @@ async function resumeSlot(slot:SaveSlotRef,signal?:AbortSignal):Promise<void> {
         modeRequest=lifetime;const {session,world}=candidate,location=world.location;
         app.mode='game';ui.setMode('game');ui.loading('正在读取存档…');
         installSession(session);
-        // 自动槽不是「玩家选中的存档槽」：评论邀请只写手动槽，所以这里留空。
+        // 自动槽不是玩家手动选择的槽，所以这里留空。
         app.saveSlot=slot===AUTO_SAVE_SLOT?undefined:slot;
         game.scene.start(SCENE_KEYS.world,{map:location.map,x:location.x,y:location.y,facing:location.facing,
           initialEntry:true,suppressEntry:true,resumeStory:true,signal:lifetime.signal,checkpoint:world.world,generatedEntities:world.generatedEntities,

@@ -54,7 +54,6 @@ export interface FriendlySummonState {
   path:Point[];
   pathTargetId?:string;
   pathDestination?:Point;
-  pathRange?:number;
   followActive:boolean;
   failedTargets:RememberedTarget[];
   checkedTargets:RememberedTarget[];
@@ -115,7 +114,6 @@ export class FriendlySummonController {
   private path:Point[]=[];
   private pathTargetId?:string;
   private pathDestination?:Point;
-  private pathRange?:number;
   private followActive=false;
   private readonly failedTargets=new Map<string,RememberedTarget>();
   private readonly checkedTargets=new Map<string,RememberedTarget>();
@@ -150,7 +148,7 @@ export class FriendlySummonController {
   captureState():FriendlySummonState {
     return structuredClone({ownerId:this.ownerId,role:this.role,state:this.state,targetId:this.targetId,returning:this.returning,
       clock:this.clock,accumulator:this.accumulator,nextDecisionAt:this.nextDecisionAt,nextSearchAt:this.nextSearchAt,nextRecallAt:this.nextRecallAt,nextFollowSearchAt:this.nextFollowSearchAt,
-      targetSince:this.targetSince,path:this.path,pathTargetId:this.pathTargetId,pathDestination:this.pathDestination,pathRange:this.pathRange,
+      targetSince:this.targetSince,path:this.path,pathTargetId:this.pathTargetId,pathDestination:this.pathDestination,
       followActive:this.followActive,failedTargets:[...this.failedTargets.values()],checkedTargets:[...this.checkedTargets.values()],fallbackTargets:[...this.fallbackTargets.values()],
       farElapsed:this.farElapsed,stuckElapsed:this.stuckElapsed,progressOrigin:this.progressOrigin,followDestination:this.followDestination,
       followUnreachable:this.followUnreachable,followSlot:this.followSlot,combat:this.combatController.snapshot()});
@@ -162,7 +160,7 @@ export class FriendlySummonController {
     this.state=state.state;this.targetId=state.targetId;this.returning=state.returning;this.clock=state.clock;this.accumulator=state.accumulator;
     this.nextDecisionAt=Math.min(state.nextDecisionAt,state.clock);this.nextSearchAt=Math.min(state.nextSearchAt,state.clock);this.nextRecallAt=state.nextRecallAt;
     this.nextFollowSearchAt=state.nextFollowSearchAt;
-    this.targetSince=state.targetSince;this.path=state.path;this.pathTargetId=state.pathTargetId;this.pathDestination=state.pathDestination;this.pathRange=state.pathRange;
+    this.targetSince=state.targetSince;this.path=state.path;this.pathTargetId=state.pathTargetId;this.pathDestination=state.pathDestination;
     this.followActive=state.followActive;for(const entry of state.failedTargets)this.failedTargets.set(entry.id,entry);
     for(const entry of state.checkedTargets)this.checkedTargets.set(entry.id,entry);
     for(const entry of state.fallbackTargets)this.fallbackTargets.set(entry.id,entry);
@@ -378,7 +376,7 @@ export class FriendlySummonController {
     if(!joined){this.nextDecisionAt=this.clock;return;}
     if(work.kind==='follow'){
       if(this.targetId&&!this.returning)return;
-      this.path=joined;this.pathTargetId=owner.id;this.pathDestination={...work.destination};this.pathRange=work.range;
+      this.path=joined;this.pathTargetId=owner.id;this.pathDestination={...work.destination};
       if(this.followUnreachable){this.stuckElapsed=0;this.progressOrigin={...actor.position};}
       this.followUnreachable=false;
       return;
@@ -411,7 +409,7 @@ export class FriendlySummonController {
       }
     }
     if(this.targetId!==candidate.actor.id){this.targetId=candidate.actor.id;this.targetSince=this.clock;this.combatController.clearSelection();}
-    this.path=joined;this.pathTargetId=candidate.actor.id;this.pathDestination={...choice.destination};this.pathRange=choice.range;
+    this.path=joined;this.pathTargetId=candidate.actor.id;this.pathDestination={...choice.destination};
     this.followActive=false;this.resetStuck();
   }
   private act(actor:Combatant,owner:Combatant):void {
@@ -450,7 +448,10 @@ export class FriendlySummonController {
     const ownerDistance=distance(actor.position,owner.position);
     this.farElapsed=ownerDistance>FRIENDLY_SUMMON_AI.farRecallPx?this.farElapsed+LOGIC_FRAME_MS:0;
     const following=this.returning||(!this.targetId&&this.followActive);
-    if(!following||ownerDistance<=FRIENDLY_SUMMON_AI.returnStopPx||this.combatController.snapshot().state!=='idle'){this.resetStuck();return;}
+    // 贴身的正常待机不该反复清零计时；但主人就在 64px 内、召唤物却被地形隔开时，
+    // 它同样需要走一次召回，否则会一直停在墙的另一侧。
+    const blockedPath=this.followUnreachable||(this.pathTargetId===owner.id&&this.path.length>0);
+    if(!following||this.combatController.snapshot().state!=='idle'||(ownerDistance<=FRIENDLY_SUMMON_AI.returnStopPx&&!blockedPath)){this.resetStuck();return;}
     if(!this.progressOrigin)this.progressOrigin={...actor.position};
     if(this.followDestination&&distance(this.followDestination,owner.position)>=FRIENDLY_SUMMON_AI.destinationChangePx){
       this.resetStuck();this.followDestination={...owner.position};this.nextFollowSearchAt=this.clock;
@@ -473,6 +474,6 @@ export class FriendlySummonController {
     if(this.combatController.snapshot().state==='approaching')this.combatController.cancel(false);
     else this.combatController.clearSelection();
   }
-  private clearPath():void {this.path=[];this.pathTargetId=undefined;this.pathDestination=undefined;this.pathRange=undefined;this.port.stop();}
+  private clearPath():void {this.path=[];this.pathTargetId=undefined;this.pathDestination=undefined;this.port.stop();}
   private clearSearch():void {this.search=undefined;this.readyChoice=undefined;}
 }

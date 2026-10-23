@@ -98,6 +98,11 @@ try {
   // dexopt/ 是 Android Gradle 插件自动生成的 baseline profile，不属于游戏资源。
   const apkAssets = entries.filter(name => name.startsWith('assets/')).map(name => name.slice('assets/'.length))
     .filter(name => !name.startsWith('dexopt/'));
+  const diagnosticsInApk = run('unzip', ['-p', apk, 'assets/diagnostics.js']).stdout;
+  check('诊断脚本与 dist 一致', diagnosticsInApk === fs.readFileSync(path.join(dist, 'diagnostics.js'), 'utf8'));
+  const dexText = entries.filter(name => /^classes\d*\.dex$/.test(name))
+    .map(name => run('unzip', ['-p', apk, name]).stdout).join('\n');
+  check('包含原生诊断桥', dexText.includes('InotiaNative'));
   check('APK 内没有 native 库', !entries.some(name => name.startsWith('lib/')));
   check('未打包 .build-meta.json', !apkAssets.includes('.build-meta.json'));
 

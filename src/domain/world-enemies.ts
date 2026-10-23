@@ -3,6 +3,7 @@ import { EnemyRoster } from './enemy-roster.ts';
 import type { CampaignEnemyPlacement, EnemySpawn, WorldMap } from './content.ts';
 import type { Session } from './session.ts';
 import type { StoryEncounter } from './story-world.ts';
+import { BREAKABLE_ENEMY_IDS } from './drops.ts';
 
 export type WorldSpawn = EnemySpawn | CampaignEnemyPlacement;
 
@@ -32,11 +33,15 @@ export interface MapSpawnSelectionOptions {
  *
  * 不触碰 Session；`spawnable` 只用于判断剧情资格，临时死亡和刷新计时不参与。
  */
+function tierLevels(spawns:readonly WorldSpawn[]):number[]{
+  return [...new Set(spawns.flatMap(spawn=>spawn.tierLevel===undefined?[]:[spawn.tierLevel]))]
+    .sort((a,b)=>a-b);
+}
+
 export function selectMapSpawns(map:WorldMap,questSpawns:readonly CampaignEnemyPlacement[],heroLevel:number,
   options:MapSpawnSelectionOptions={}):WorldSpawn[]{
   const raw=map.enemySpawns??[];
-  const tiers=[...new Set(raw.flatMap(spawn=>spawn.tierLevel===undefined?[]:[spawn.tierLevel]))]
-    .sort((a,b)=>a-b);
+  const tiers=tierLevels(raw);
   if(!tiers.length)return [...raw,...questSpawns];
 
   let selected=tiers[0]!;
@@ -74,6 +79,11 @@ export class WorldEnemyRoster extends EnemyRoster {
   private readonly mapSpawnIds:ReadonlySet<string>;
   private readonly heroLevel:number;
   private readonly questEnemies?:QuestEnemyProvider;
+  private readonly breakableSpawn?:'bush'|'jar';
+  /** 生产场景传 Math.random；测试和离线验证默认不替换，结果稳定可复现。 */
+  private readonly random:()=>number;
+  /** 本次进图每个静态生成槽的替换结果；死亡/刷新后清掉，重新掷。 */
+  private readonly breakableRolls=new Map<string,string>();
   /** 本次进图累计的任务关键敌人；只增不减，避免任务完成时撤掉正在交战的怪。 */
   private readonly questSpawnIds=new Set<string>();
   private emptyReported=false;
@@ -82,8 +92,10 @@ export class WorldEnemyRoster extends EnemyRoster {
     const extras=this.questSpawnIds.size
       ? this.rawMapSpawns.filter(spawn=>this.questSpawnIds.has(spawn.enemyId)&&!this.mapSpawnIds.has(spawn.id))
       : [];
-    return [...this.bandSpawns.filter(spawn=>this.session.storyWorld.enemyAvailable(this.mapId,spawn.enemyId)),
-      ...extras.filter(spawn=>this.session.storyWorld.enemyAvailable(this.mapId,spawn.enemyId)),
+    return [...this.bandSpawns.filter(spawn=>this.session.storyWorld.enemyAvailable(this.mapId,spawn.enemyId))
+      .map(spawn=>this.breakableSpawnFor(spawn)),
+      ...extras.filter(spawn=>this.session.storyWorld.enemyAvailable(this.mapId,spawn.enemyId))
+        .map(spawn=>this.breakableSpawnFor(spawn)),
       ...this.session.storyWorld.enemySpawns(this.mapId),...this.session.chests.spawns,...this.session.storyWorld.activeEncounters
       .filter(encounter=>encounter.map===this.mapId).flatMap(encounter=>encounter.spawns.map(spawn=>({
         ...spawn,id:encounterSpawnId(encounter.id,spawn.id),respawn:false as const
@@ -91,12 +103,14 @@ export class WorldEnemyRoster extends EnemyRoster {
   }
   private readonly sources = new Map<string,WorldSpawn>();
   constructor(session:Session,map:WorldMap,questSpawns:readonly CampaignEnemyPlacement[],heroLevel:number,
-    questEnemies?:QuestEnemyProvider){
+    questEnemies?:QuestEnemyProvider,random:()=>number=()=>1){
     super();
     this.session=session;
     this.mapId=map.id;
     this.heroLevel=heroLevel;
     this.questEnemies=questEnemies;
+    this.breakableSpawn=map.breakableSpawn;
+    this.random=random;
     this.rawMapSpawns=map.enemySpawns??[];
     session.enterMap(map.id,map.questItemSpawns??[],map);
     this.setPartySize(session.party?.activeSize??1,[]);
@@ -125,9 +139,12 @@ export class WorldEnemyRoster extends EnemyRoster {
   refresh():{added:PlacedEnemy[];removed:string[]}{
     const added:PlacedEnemy[]=[],removed:string[]=[];
     const spawns=this.spawns,active=new Set(spawns.map(spawn=>spawn.id));
+    const current=new Map(spawns.map(spawn=>[spawn.id,spawn]));
     for(const placed of [...this.enemies]){
-      const spawn=this.sources.get(placed.key);
-      if(spawn&&(!active.has(spawn.id)||!this.session.canSpawnEnemy(spawn))){super.removeEnemy(placed.key);removed.push(placed.key);}
+      const spawn=current.get(placed.key)??this.sources.get(placed.key);
+      if(spawn&&(!active.has(spawn.id)||!this.session.canSpawnEnemy(spawn)||placed.enemyId!==spawn.enemyId)){
+        super.removeEnemy(placed.key);removed.push(placed.key);this.breakableRolls.delete(placed.key);
+      }
     }
     for(const spawn of spawns){
       this.sources.set(spawn.id,spawn);
@@ -149,6 +166,28 @@ export class WorldEnemyRoster extends EnemyRoster {
     const snapshot=this.enemySnapshot(key,definition,this.session.hero?.level??1);
     if(snapshot)this.session.setEnemyVitals(key,snapshot.health,snapshot.mana);
   }
+  private breakableSpawnFor(spawn:WorldSpawn):WorldSpawn{
+    if(!('breakableEligible' in spawn)||!spawn.breakableEligible)return spawn;
+    // 任务关键敌人优先：任务目标出现时恢复原怪，并让 refresh 替换掉已生成的景物。
+    if(this.questSpawnIds.has(spawn.enemyId)){this.breakableRolls.delete(spawn.id);return spawn;}
+    let enemyId=this.breakableRolls.get(spawn.id);
+    if(enemyId===undefined){
+      enemyId=this.rollBreakableEnemy(spawn.enemyId);
+      this.breakableRolls.set(spawn.id,enemyId);
+    }
+    return enemyId===spawn.enemyId?spawn:{...spawn,enemyId};
+  }
+  private rollBreakableEnemy(original:string):string{
+    const roll=Math.floor(this.random()*100);
+    if(this.breakableSpawn==='bush'){
+      if(roll<5)return BREAKABLE_ENEMY_IDS.bush;
+      if(roll<7)return BREAKABLE_ENEMY_IDS.box;
+    }else if(this.breakableSpawn==='jar'){
+      if(roll<5)return BREAKABLE_ENEMY_IDS.jar;
+      if(roll<7)return BREAKABLE_ENEMY_IDS.box;
+    }else if(roll<5)return BREAKABLE_ENEMY_IDS.box;
+    return original;
+  }
   private collectQuestSpawns():void{
     const snapshot=this.questEnemies?.snapshot();
     if(snapshot)for(const id of snapshot.ids)this.questSpawnIds.add(id);
@@ -169,8 +208,7 @@ export class WorldEnemyRoster extends EnemyRoster {
     });
   }
   private tiers():number[]{
-    return [...new Set(this.rawMapSpawns.flatMap(spawn=>spawn.tierLevel===undefined?[]:[spawn.tierLevel]))]
-      .sort((a,b)=>a-b);
+    return tierLevels(this.rawMapSpawns);
   }
 }
 

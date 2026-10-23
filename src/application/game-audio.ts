@@ -53,7 +53,6 @@ export class GameAudio {
   /** 每次切换菜单、故事或地图都递增；未加载完的音效据此放弃补播。 */
   private contextRevision = 0;
   private readonly failedUntil = new Map<string, number>();
-  onSettingsChange?: () => void;
 
   constructor(scene: Phaser.Scene, catalog: AudioCatalog, isSuspended: () => boolean) {
     this.scene = scene;
@@ -68,8 +67,6 @@ export class GameAudio {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.settings)); } catch { /* private browsing */ }
     if (channel === 'music') this.applyLoop('music');
     else this.applyLoop('ambience');
-    this.onSettingsChange?.();
-    window.dispatchEvent(new Event('game-audio-settings'));
   }
 
   enterMenu(): void {
@@ -88,9 +85,11 @@ export class GameAudio {
     const entry = this.catalog.maps[mapId];
     if (!entry) return;
     this.contextRevision++;
-    // The original engine ignores music ID 255, retaining the current track.
+    // 原版地图记录里两个字节都用 255 表示「不更换」：BGM 是越界编号被
+    // `SOUNDSYSTEM_PlayBGM_IPHONE` 拒绝，环境音是 `Play_BGM_AMBIENT_CURRENT`
+    // 整段跳过。导出时 255 变成 null，所以 null 只能表示保留，不能表示停止。
     if (entry.music) this.setLoop('music', entry.music);
-    this.setLoop('ambience', entry.ambience);
+    if (entry.ambience) this.setLoop('ambience', entry.ambience);
   }
 
   captureStoryAudio(): StoryAudioState { return { music: this.musicId, ambience: this.ambienceId }; }

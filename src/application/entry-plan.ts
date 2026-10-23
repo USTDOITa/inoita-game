@@ -7,7 +7,6 @@ import type { PendingAsset } from '../rendering/scene-assets.ts';
 export interface MapEntryPlan {
   map: WorldMap;
   visuals: MapVisualPlan;
-  combat: PendingAsset[];
   /** 进入这张地图要加载的全部场景资源（不含 shared）。 */
   assets: PendingAsset[];
 }
@@ -57,7 +56,7 @@ function mapPlan(map: WorldMap, input: EntryPlanInput, scripts: readonly string[
     ...(input.currentEntities ? { entities: input.currentEntities } : {}),
     ...(input.checkpoint ? { checkpointEnemies: input.checkpoint.roster.enemies.map(enemy => enemy.enemyId) } : {})
   });
-  return { map, visuals, combat, assets: [...visuals.assets, ...combat] };
+  return { map, visuals, assets: [...visuals.assets, ...combat] };
 }
 
 export function buildEntryPlan(input: EntryPlanInput): EntryPlan {

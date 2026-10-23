@@ -8,7 +8,7 @@ import type { Campaign } from '../src/domain/campaign.ts';
 import type { ItemCatalog } from '../src/domain/items.ts';
 import { Session } from '../src/domain/session.ts';
 import { Storefront, saleValue, type ShopCatalog } from '../src/domain/shop.ts';
-import { rollEnemyDrops, rollBreakableDrops, type DropCatalog, type DropModifiers } from '../src/domain/drops.ts';
+import { rollEnemyDrops, rollBreakableLoot, type DropCatalog, type DropModifiers } from '../src/domain/drops.ts';
 
 const read=<T>(name:string):T=>JSON.parse(readFileSync(new URL(`../public/content/${name}.json`,import.meta.url),'utf8')) as T;
 const campaign=read<Campaign>('campaign'),items=read<ItemCatalog>('items'),stats=read<CharacterStatsCatalog>('character-stats');
@@ -74,7 +74,7 @@ test('the treasure talent selects the better breakable-box table on the original
   for(const rule of [base,fortunate]){rule.spawn=undefined;rule.chances={money:0,equipment:0,consumable:0,upgrade:0,crafting:0,misc:0,unique:0,fixed:0};rule.uniqueChance.numerator=0;}
   fortunate.chances.money=10000;
   const random=(first:number)=>{let n=0;return()=>n++===0?first:0;};
-  assert.equal(rollBreakableDrops(data,'box',1,1,random(48/999),{'chest-quality':1}).rewards.length,1);
-  assert.equal(rollBreakableDrops(data,'box',1,1,random(49/999),{'chest-quality':1}).rewards.length,0);
-  assert.equal(rollBreakableDrops(data,'box',1,1,()=>0).rewards.length,0);
+  assert.equal(rollBreakableLoot(data,stats,'box',1,1,random(48/999),{'chest-quality':1}).rewards.length,1);
+  assert.equal(rollBreakableLoot(data,stats,'box',1,1,random(49/999),{'chest-quality':1}).rewards.length,0);
+  assert.equal(rollBreakableLoot(data,stats,'box',1,1,()=>0).rewards.length,0);
 });

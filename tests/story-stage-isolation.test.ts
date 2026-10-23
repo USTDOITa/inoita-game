@@ -48,13 +48,14 @@ test('the initial curtain is drawn during create before readiness and survives m
 test('the stage backdrop turns opaque only after a map is drawn and transparent on release', async () => {
   const colors: string[] = [];
   const map = { id: 'small', name: 'Small', width: 256, height: 448, columns: 16, rows: 28,
-    tileSize: 16, blocked: [], ground: 'ground.png', canopy: 'canopy.png', features: [] } as unknown as WorldMap;
+    tileSize: 16, blocked: [], ground: 'ground.png', canopy: 'canopy.png', features: [], entities: [] } as unknown as WorldMap;
   const app = {
     world: { maps: [{ id: 'small', file: 'small.json' }], props: [], actors: { hero: appearance }, storyEffects: {} },
     content: { map: async () => map },
     wardrobe: { textures: [] },
-    session: {},
-    campaign: { start: { actor: 'hero' } }
+    session: { evaluateCondition: () => true, storyWorld: { visit: 0, currentLocation: { map: 'small' }, visible: () => true,
+      actorAppearance: (actor: string) => actor, projectEntities: (_map: string, base: unknown[]) => base } },
+    campaign: { start: { actor: 'hero' }, placements: [] }
   } as unknown as StoryContext;
   const scene = new StoryStageScene(app);
   const image = () => {
@@ -115,6 +116,48 @@ test('the stage backdrop turns opaque only after a map is drawn and transparent 
     MovementWorld.prototype.setEnabled = saved.setEnabled;
     MovementWorld.prototype.destroy = saved.destroy;
   }
+});
+
+test('a stage map draws static map entities and removes them with the map', async () => {
+  const { drawStoryMap } = await import('../src/rendering/story-map-view.ts');
+  const containers: { x: number; y: number; depth: number; scene?: unknown; setDepth(value: number): unknown; destroy(): void }[] = [];
+  const scene = {
+    add: {
+      image() {
+        const value: { scene?: unknown; setOrigin(): unknown; setDepth(): unknown; setFlipX(): unknown; setBlendMode(): unknown; destroy(): void } = {
+          scene: {}, setOrigin() { return value; }, setDepth() { return value; }, setFlipX() { return value; },
+          setBlendMode() { return value; }, destroy() { value.scene = undefined; }
+        };
+        return value;
+      },
+      container(x: number, y: number) {
+        const value: { x: number; y: number; depth: number; scene?: unknown; setDepth(next: number): unknown; destroy(): void } = {
+          x, y, depth: 0, scene: {},
+          setDepth(next) { this.depth = next; return this; },
+          destroy() { this.scene = undefined; }
+        };
+        containers.push(value); return value;
+      }
+    },
+    textures: { exists: () => false, remove() {} }
+  };
+  const map = { id: 'small', features: [], entities: [
+    { id: 'exit', actor: 'map-exit-x', x: 24, y: 48 },
+    { id: 'steel', actor: 'steel-door-x', x: 30, y: 64 },
+    { id: 'torch', actor: 'torch-x', x: 12, y: 20 },
+    { id: 'chest', actor: 'treasure-box-x', x: 8, y: 16 },
+    { id: 'spring', actor: 'clear-springs-x', x: 4, y: 8, spring: true }
+  ] } as unknown as WorldMap;
+  const characters = map.entities
+    .filter(entity => !entity.actor.startsWith('treasure-box') && !entity.actor.startsWith('clear-springs'))
+    .map(entity => ({ entity, actor: { id: entity.actor, clips: {} } as ActorDefinition }));
+  const cleanup = drawStoryMap(scene as unknown as Parameters<typeof drawStoryMap>[0], map, characters);
+  assert.equal(containers.length, 3, '门、钢门和火把等地图实体都画，宝箱与泉水不画');
+  assert.deepEqual({ x: containers[0]!.x, y: containers[0]!.y, depth: containers[0]!.depth }, { x: 24, y: 48, depth: 48.5 });
+  assert.deepEqual({ x: containers[1]!.x, y: containers[1]!.y, depth: containers[1]!.depth }, { x: 30, y: 64, depth: 64.5 });
+  assert.deepEqual({ x: containers[2]!.x, y: containers[2]!.y, depth: containers[2]!.depth }, { x: 12, y: 20, depth: 20.5 });
+  cleanup();
+  assert(containers.every(container => container.scene === undefined), '清理演出地图时一并销毁门');
 });
 
 function harness() {
@@ -184,6 +227,20 @@ test('cinematic travel retains formal world and only explicit bindings become wo
   await run.presenter.release(); assert.equal(run.released(), 1);
 });
 
+test('交还操作权时重新应用正式世界的地图音乐，回菜单后不再应用', async () => {
+  const applied: string[] = [];
+  const world = { map: { id: 'shadow-camp' } } as unknown as WorldScene;
+  const stage = { sys: { isActive: () => false, isPaused: () => false } } as unknown as StageSceneType;
+  const presenter = (mode: string) => new StoryPresenter(
+    { audio: { enterMap: (id: string) => applied.push(id) }, ui: { mode } } as unknown as StoryContext,
+    () => world, () => stage);
+
+  await presenter('game').release();
+  assert.deepEqual(applied, ['shadow-camp']);
+  await presenter('menu').release();
+  assert.deepEqual(applied, ['shadow-camp'], '回菜单后不能再把地图音乐盖到菜单主题上');
+});
+
 test('deferred first stage inherits the world actor instead of resolving against its own declaration', async () => {
   const run = harness(), signal = new AbortController().signal;
   // 正式世界已经在洞穴入口，圣女是事件 3 登记在藏身处的世界实体。
@@ -249,7 +306,11 @@ test('cancelled or superseded resource loading releases the late lease without r
     const load = Object.assign(new EventEmitter(), { image: (key: string) => pending.push(key), spritesheet() {}, start() {} });
     let mapEntries = 0;
     const app = { world: { maps: [{ id: 'map', file: 'map.json' }], props: [], actors: {} }, wardrobe: { textures: [] },
-      session: { enterMap() { mapEntries++; } }, content: { map: async () => ({ id: 'map', ground: 'ground.png', canopy: 'canopy.png', features: [] } as unknown as WorldMap) }
+      session: { enterMap() { mapEntries++; }, evaluateCondition: () => true,
+        storyWorld: { visit: 0, currentLocation: { map: 'map' }, visible: () => true,
+          actorAppearance: (actor: string) => actor, projectEntities: (_map: string, base: unknown[]) => base } },
+      campaign: { start: { actor: 'hero' }, placements: [] },
+      content: { map: async () => ({ id: 'map', ground: 'ground.png', canopy: 'canopy.png', features: [], entities: [] } as unknown as WorldMap) }
     } as unknown as StoryContext;
     const scene = new StoryStageScene(app);
     Object.assign(scene, { events, load, sys: { isActive: () => true },

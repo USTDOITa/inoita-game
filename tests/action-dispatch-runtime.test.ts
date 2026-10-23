@@ -250,7 +250,8 @@ test('a companion uses its own Dark Sense rank and a monster never borrows the c
   assert.deepEqual(run.buffApplications,[{id:'companion',sourceId:'companion',strength:1006,health:30}]);
   assert.equal(run.conditions.hasBuff('player','dark-sense'),false);
   assert.equal(run.conditions.hasBuff('enemy','dark-sense'),false);
-  assert.equal(run.order.some(value=>value.startsWith('sound:')),false);
+  // 佣兵与主角同属玩家阵营，派发音效只响佣兵这一次；怪物仍然静音。
+  assert.equal(run.order.filter(value=>value==='sound:dispatch-sound').length,1);
 });
 
 test('stealth expiration and external removal do not grant Dark Sense without an action dispatch',()=>{

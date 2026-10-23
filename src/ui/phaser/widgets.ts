@@ -17,7 +17,6 @@ export async function loadUiImages(scene: Phaser.Scene, files: string[], progres
 }
 
 import { wrapText } from '../text-layout.ts';
-export { wrapText } from '../text-layout.ts';
 
 export class UiSurface {
   readonly scene:Phaser.Scene; readonly width:number; readonly height:number; readonly depth:number;
@@ -180,6 +179,9 @@ export function buttonParts(button:Phaser.GameObjects.Container):{
   return {face:button.getData('face'),highlight:button.getData('highlight'),text:button.getData('labelText')};
 }
 
+const scrollAreas = new WeakMap<Phaser.Scene, Set<ScrollArea>>();
+let scrollOrder = 0;
+
 /** 裁剪只影响绘制；命中区另行检查视口，滚动时不会点击被裁掉的行。 */
 export class ScrollArea {
   readonly surface:UiSurface; readonly x:number; readonly y:number; readonly width:number; readonly height:number;
@@ -194,6 +196,7 @@ export class ScrollArea {
   private virtual?:{count:number;rowHeight:number;render:(first:number,last:number)=>void;range?:[number,number]};
   onScroll?:()=>void;
   private press?:{id:number;y:number;offset:number};
+  private readonly order=++scrollOrder;
   moved=false;
   constructor(surface:UiSurface,x:number,y:number,width:number,height:number,bleed=0){
     this.surface=surface;this.x=x;this.y=y;this.width=width;this.height=height;this.bleed=bleed;
@@ -202,8 +205,11 @@ export class ScrollArea {
     if(scene.game.renderer.type===Phaser.WEBGL){this.layer.enableFilters();this.layer.filters!.external.addMask(this.mask,false,scene.cameras.main,'world');}
     else this.layer.setMask(this.mask.createGeometryMask());
     this.zone=scene.add.zone(0,0,1,1).setOrigin(0).setDepth(surface.depth+.5).setInteractive();
-    this.zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(this.contains(p))this.begin(p);});
+    this.zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(this.onTop(p))this.begin(p);});
     scene.input.on('pointerdown',this.down,this);scene.input.on('pointermove',this.move,this);scene.input.on('pointerup',this.up,this);scene.input.on('wheel',this.wheel,this);
+    let areas=scrollAreas.get(scene);
+    if(!areas){areas=new Set();scrollAreas.set(scene,areas);}
+    areas.add(this);
     this.layout();
   }
   reveal(button:Phaser.GameObjects.Container):void{const height=button.input?.hitArea.height??0;if(button.y<this.offset)this.scrollTop=button.y;else if(button.y+height>this.offset+this.height)this.scrollTop=button.y+height-this.height;}
@@ -234,12 +240,23 @@ export class ScrollArea {
     virtual.render(first,last);
   }
   contains(pointer:Phaser.Input.Pointer):boolean{return this.surface.enabled()&&this.surface.root.visible&&this.layer.visible&&this.mask.getBounds().contains(pointer.x,pointer.y);}
+  /** 多个滚动区叠在一起时，只让最上层接手拖动和滚轮；否则说明面板滑动会带着底下背包一起走。 */
+  private onTop(pointer:Phaser.Input.Pointer):boolean{
+    if(!this.contains(pointer))return false;
+    const areas=scrollAreas.get(this.surface.scene);
+    if(!areas)return true;
+    for(const other of areas){
+      if(other===this||!other.contains(pointer))continue;
+      if(other.layer.depth>this.layer.depth||(other.layer.depth===this.layer.depth&&other.order>this.order))return false;
+    }
+    return true;
+  }
   guard = ():boolean => !this.moved && this.contains(this.surface.scene.input.activePointer);
   private begin(pointer:Phaser.Input.Pointer):void{if(this.press&&this.press.id!==pointer.id)return;this.press={id:pointer.id,y:pointer.y,offset:this.offset};this.moved=false;}
-  private down(pointer:Phaser.Input.Pointer):void{if(this.contains(pointer))this.begin(pointer);}
+  private down(pointer:Phaser.Input.Pointer):void{if(this.onTop(pointer))this.begin(pointer);}
   private move(pointer:Phaser.Input.Pointer):void{if(this.press?.id!==pointer.id||!pointer.isDown)return;if(!this.surface.enabled()||!this.surface.root.visible){this.cancelGesture();return;}const distance=(pointer.y-this.press.y)/this.surface.root.getWorldTransformMatrix().scaleY;if(Math.abs(distance)>8)this.moved=true;if(this.moved){this.scrollTop=this.press.offset-distance;this.onScroll?.();}}
   private up(pointer:Phaser.Input.Pointer):void{if(this.press?.id===pointer.id)this.press=undefined;}
-  private wheel(pointer:Phaser.Input.Pointer,_objects:Phaser.GameObjects.GameObject[],_dx:number,dy:number):void{if(this.contains(pointer)){const before=this.offset;this.scrollTop=this.offset+dy/this.surface.root.getWorldTransformMatrix().scaleY;if(this.offset!==before)this.onScroll?.();}}
+  private wheel(pointer:Phaser.Input.Pointer,_objects:Phaser.GameObjects.GameObject[],_dx:number,dy:number):void{if(this.onTop(pointer)){const before=this.offset;this.scrollTop=this.offset+dy/this.surface.root.getWorldTransformMatrix().scaleY;if(this.offset!==before)this.onScroll?.();}}
   layout():void{const matrix=this.surface.root.getWorldTransformMatrix(),position=matrix.transformPoint(this.x,this.y),bleedX=this.bleed*matrix.scaleX,bleedY=this.bleed*matrix.scaleY;this.content.setPosition(position.x,position.y-this.offset*matrix.scaleY).setScale(matrix.scaleX,matrix.scaleY);this.mask.setPosition(position.x-bleedX,position.y-bleedY).setSize((this.width+this.bleed*2)*matrix.scaleX,(this.height+this.bleed*2)*matrix.scaleY);this.zone.setPosition(this.mask.x,this.mask.y).setSize(this.mask.width,this.mask.height);if(this.zone.input)this.zone.input.hitArea.setSize(this.zone.width,this.zone.height);this.renderVirtual();}
-  destroy():void{const scene=this.surface.scene;scene.input.off('pointerdown',this.down,this);scene.input.off('pointermove',this.move,this);scene.input.off('pointerup',this.up,this);scene.input.off('wheel',this.wheel,this);this.zone.destroy();this.layer.destroy(true);this.mask.destroy();}
+  destroy():void{const scene=this.surface.scene;scrollAreas.get(scene)?.delete(this);scene.input.off('pointerdown',this.down,this);scene.input.off('pointermove',this.move,this);scene.input.off('pointerup',this.up,this);scene.input.off('wheel',this.wheel,this);this.zone.destroy();this.layer.destroy(true);this.mask.destroy();}
 }

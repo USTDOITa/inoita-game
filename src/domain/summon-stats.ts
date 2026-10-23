@@ -1,4 +1,4 @@
-import type {BattleBuffEffect,SummonOwnerDerivation} from './battle.ts';
+import {LOGIC_FRAME_MS,type BattleBuffEffect,type SummonOwnerDerivation} from './battle.ts';
 import type {PrimaryAttributes} from './character-stats.ts';
 
 /** 召唤物按主人等级派生的属性；未列出的属性沿用召唤物自身的数据。 */
@@ -51,5 +51,5 @@ export function scaledBuffEffect(effect:BattleBuffEffect,ownerRate:number):Battl
 
 /** 把寿命上限改写成给定帧数，时长跟着换算，其余字段照抄。 */
 export function withLifetimeFrames(effect:BattleBuffEffect,frames:number):BattleBuffEffect {
-  return {...effect,durationMs:(frames+1)*60,simulationFrames:{...effect.simulationFrames!,lastActiveFrame:frames}};
+  return {...effect,durationMs:(frames+1)*LOGIC_FRAME_MS,simulationFrames:{...effect.simulationFrames!,lastActiveFrame:frames}};
 }

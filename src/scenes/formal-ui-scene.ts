@@ -24,7 +24,7 @@ export class FormalUiScene extends Phaser.Scene implements GameUiView {
   private questPopup!:QuestPopup;
   private signature='';
   /** 对白正文按色段拆成多个 Text：原版控制码不显示，字色随 `$X` 变化。 */
-  private dialogueRuns:{label:Phaser.GameObjects.Text;text:string}[]=[];
+  private dialogueRuns:Phaser.GameObjects.Text[]=[];
   private dialogueLayout?:DialogueTextLayout;
   private progressBar?:Phaser.GameObjects.Rectangle;
   private baseLease?:AssetLease;
@@ -79,15 +79,11 @@ export class FormalUiScene extends Phaser.Scene implements GameUiView {
     const point=instantMessagePoint(this.scale.width,this.scale.height);
     text.setText(message).setFontSize(24*(this.surface.root.scaleX||1)).setPosition(point.x,point.y).setAlpha(ui.instant.alpha);
   }
-  async preloadFiles(files:string[],signal:AbortSignal,progress:(value:number)=>void):Promise<void>{
-    await this.uiAssets.preloadFiles(files,signal,progress);
-  }
   async preloadPortraits(files:string[],signal:AbortSignal,progress:(value:number)=>void):Promise<void>{
     const missing=[...new Set(files)].filter(file=>!this.textures.exists(uiTexture(file)));
     if(!missing.length){progress(1);return;}
     await this.uiAssets.preloadFiles(missing,signal,progress);
   }
-  releaseContent():void{this.uiAssets.releaseContent();this.signature='';}
   async portrait(file:string,signal?:AbortSignal):Promise<void>{
     signal?.throwIfAborted();if(this.textures.exists(uiTexture(file)))return;const lease=await loadUiImages(this,[file]);if(signal?.aborted){lease.release();signal.throwIfAborted();}this.uiAssets.retain(lease);
   }
@@ -126,7 +122,7 @@ export class FormalUiScene extends Phaser.Scene implements GameUiView {
     // 排版按整页算好，揭示只是把每个色段的文字截短——位置全程不动，不会随揭示重排。
     let index=0;
     for(const line of revealedRuns(layout,ui.revealed))
-      for(const run of line.runs){const target=this.dialogueRuns[index++];if(target)target.label.setText(run.text);}
+      for(const run of line.runs){const target=this.dialogueRuns[index++];if(target)target.setText(run.text);}
   }
   sync(ui:GameUI):void{
     if(!this.surface)return;
@@ -201,8 +197,8 @@ export class FormalUiScene extends Phaser.Scene implements GameUiView {
         const top=screen?320-layout.lines.length*lineHeight/2:box.y;
         layout.lines.forEach((line,index)=>{
           const offset=screen?(box.width-line.width)/2:0;
-          for(const run of line.runs)this.dialogueRuns.push({text:run.text,
-            label:v.text(run.text,box.x+offset+run.x,top+index*lineHeight,0,box.size,run.key)});
+          for(const run of line.runs)this.dialogueRuns.push(
+            v.text(run.text,box.x+offset+run.x,top+index*lineHeight,0,box.size,run.key));
         });
       });
       this.renderText(ui);

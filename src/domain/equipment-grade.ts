@@ -1,4 +1,4 @@
-import type { CharacterStatsCatalog, EquipmentGradeSeed, EquipmentNumbers } from './character-stats.ts';
+import { DEFAULT_EQUIPMENT_GRADE, type CharacterStatsCatalog, type EquipmentGradeSeed, type EquipmentNumbers } from './character-stats.ts';
 
 /**
  * 稀有度档位与品级抽样。原版地面随机装备走 `GenerateGrade(0)`：先按稀有度权重选档，
@@ -100,7 +100,7 @@ export function staticGrade(
   stats: Pick<CharacterStatsCatalog, 'grades'>,
   equipment: Pick<EquipmentNumbers, 'gradeVariants' | 'defaultGrade'>,
 ): RolledGrade | undefined {
-  const index = equipment.defaultGrade ?? 2;
+  const index = equipment.defaultGrade ?? DEFAULT_EQUIPMENT_GRADE;
   const variant = equipment.gradeVariants?.[index];
   if (!variant) return undefined;
   const rarity = stats.grades?.find(grade => grade.index === index)?.rarity ?? variant.rarity;
@@ -113,8 +113,4 @@ export function staticGrade(
     optionCount: variant.optionCount,
     socketLimit: variant.socketLimit,
   };
-}
-
-export function gradeVariant(equipment: Pick<EquipmentNumbers, 'gradeVariants'>, grade: number) {
-  return equipment.gradeVariants?.[grade];
 }

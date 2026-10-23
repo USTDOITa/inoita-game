@@ -18,7 +18,7 @@ export class MovementWorld {
   private readonly registrations = new Map<CharacterVisual, Registration>();
   private readonly bodyRegistrations = new WeakMap<object,Registration>();
   private readonly interpolation = new MovementInterpolation();
-  /** 最近被整盒校验改正的可控角色落位；诊断用，正常流程应为空。 */
+  /** 最近被整盒校验改正的队伍单位落位；诊断用，正常流程应为空。 */
   private readonly corrections: { id: string; from: Point; to: Point }[] = [];
   get terrainCorrections(): readonly { id: string; from: Point; to: Point }[] { return this.corrections; }
   constructor(scene: Phaser.Scene, navigation: NavigationWorld) {
@@ -56,7 +56,7 @@ export class MovementWorld {
       enabled: () => body.enable && visual.container.active && visual.container.visible,
       faction: faction ? () => faction : undefined,
       ghost: () => ghost.value,
-      // 只有主角/佣兵在落位时要求整盒合法；内容实体保持可信的内容坐标。
+      // 主角、佣兵与友方召唤物在落位时要求整盒合法；内容实体保持可信的内容坐标。
       strictTerrain: () => body.recoversTerrain
     };
     body.initialize(this.navigation, actor, movable, terrainRecovery);
@@ -126,7 +126,7 @@ export class MovementWorld {
       settled = [...merged.values()];
     }
     let queries = settled.map(p => ({ actor: this.actor(p.visual), position: p.position, enabled: p.enabled }));
-    // 可控角色的目标位置必须整盒成立；内容给出的非法坐标在这里就近改正，而不是等角色
+    // 队伍单位的目标位置必须整盒成立；内容给出的非法坐标在这里就近改正，而不是等角色
     // 显形后永久卡在墙里。内容实体（非 strict）完全不受影响。
     const corrected = settled.map((p, index) => {
       const actor = queries[index]!.actor, strict = actor.strictTerrain?.() === true;
@@ -137,7 +137,7 @@ export class MovementWorld {
         ? this.navigation.terrainFree(p.position) && this.navigation.canPlaceBody(actor.shape(), p.position, actor, queries)
         : this.navigation.canPlace(actor.shape(), p.position, actor, queries);
       if (valid) return p;
-      // 可控角色要同时满足整盒与脚点；内容实体按窄足底就近找可站点，避免整段演出因一个走位落点中断。
+      // 队伍单位要同时满足整盒与脚点；内容实体按窄足底就近找可站点，避免整段演出因一个走位落点中断。
       const landing = strict
         ? this.navigation.nearestSettledBody(actor.shape(), p.position, actor, queries)
         : this.navigation.nearest(actor.shape(), p.position, actor, queries);

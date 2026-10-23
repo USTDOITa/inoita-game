@@ -10,6 +10,8 @@ import { characterAssets, createCharacter, setCharacterClip, type CharacterVisua
 import { effectAssets } from '../rendering/effects.ts';
 import { loadSceneAssets, type PendingAsset } from '../rendering/scene-assets.ts';
 import { drawStoryMap } from '../rendering/story-map-view.ts';
+import { stageBackground } from '../rendering/story-background.ts';
+import { mapSurfaceAssets } from '../rendering/map-layers.ts';
 import { worldZoom } from '../ui/viewport.ts';
 import { Wardrobe } from '../rendering/wardrobe.ts';
 
@@ -93,16 +95,16 @@ export class StoryStageScene extends Phaser.Scene {
     const map = this.map?.id === stage.map ? this.map : await this.app.content.map(reference.file, signal);
     signal.throwIfAborted();
     const needed: PendingAsset[] = [
-      { kind: 'image', key: map.id + '-ground', file: map.ground },
-      { kind: 'image', key: map.id + '-canopy', file: map.canopy },
+      ...mapSurfaceAssets(map, this.app.world.props),
       ...characterAssets(appearance).filter(asset => asset.file),
       ...effectAssets(this.app.world.storyEffects ?? {})
     ];
     needed.push(...this.app.wardrobe.textures.map(texture => ({ kind: 'image' as const, ...texture })));
-    for (const feature of map.features) {
-      const prop = this.app.world.props.find(prop => prop.key === feature.texture);
-      if (!prop) throw new Error('场景物件缺少资源');
-      needed.push({ kind: 'image', key: prop.key, file: prop.file });
+    const background = stageBackground(map, stage, this.app.campaign, this.app.world.actors, this.app.session.storyWorld,
+      condition => this.app.session.evaluateCondition(condition));
+    for (const actorId of background.actorIds) {
+      const actor = this.app.world.actors[actorId];
+      if (actor) needed.push(...characterAssets(actor).filter(asset => asset.file));
     }
     for (const member of stage.cast) {
       const actor = this.app.world.actors[member.actor];
@@ -114,28 +116,49 @@ export class StoryStageScene extends Phaser.Scene {
       lease.release(); signal.throwIfAborted(); throw new DOMException('演出舞台已更新', 'AbortError');
     }
     const character = this.app.session.character;
+    let outfit: Awaited<ReturnType<Wardrobe['prepare']>> | undefined;
     if (character) {
       this.wardrobe ??= new Wardrobe(this, this.app.wardrobe, this.app.items);
       try {
-        const outfit = await cancellable(this.wardrobe.prepare(character.appearance, this.app.session.bag.equipmentItems(), character.classId), signal);
+        outfit = await cancellable(this.wardrobe.prepare(character.appearance, this.app.session.bag.equipmentItems(), character.classId), signal);
         signal.throwIfAborted();
         if (revision !== this.revision) throw new DOMException('演出舞台已更新', 'AbortError');
-        this.wardrobe.activate(outfit); appearance = outfit.actor;
+        appearance = outfit.actor;
       } catch (error) { lease.release(); throw error; }
     }
-    this.releaseStage(true); this.lease = lease; this.map = map;
-    this.clearMap = drawStoryMap(this, map);
-    this.movement = new MovementWorld(this, new NavigationWorld(map));
-    this.player = createCharacter(this, appearance, { id: 'player', actor: this.app.campaign.start.actor, x: stage.x, y: stage.y });
-    this.movement.register(this.player, true, true, 'party');
-    this.facing = stage.facing;
-    setCharacterClip(this, this.player, `idle-${stage.facing}`);
-    this.player.container.setVisible(stage.playerVisible);
-    this.movement.setEnabled(this.player, stage.playerVisible);
-    this.resizeView(); this.cameras.main.centerOn(stage.x, stage.y);
-    // 到这里地图已经成功画好，再盖上不透明底色；加载失败/取消时不会提前遮住世界。
-    this.setWorldCovered(true);
-    this.app.audio?.enterMap(stage.map);
+    // 先把新地图完整构造出来，成功后再替换旧舞台；失败时旧舞台原样保留。
+    let nextLayers: (() => void) | undefined;
+    let nextMovement: MovementWorld | undefined;
+    let nextPlayer: CharacterVisual | undefined;
+    try {
+      nextLayers = drawStoryMap(this, map, background.characters);
+      nextMovement = new MovementWorld(this, new NavigationWorld(map));
+      nextPlayer = createCharacter(this, appearance, { id: 'player', actor: this.app.campaign.start.actor, x: stage.x, y: stage.y });
+      nextMovement.register(nextPlayer, true, true, 'party');
+      setCharacterClip(this, nextPlayer, `idle-${stage.facing}`);
+      nextPlayer.container.setVisible(stage.playerVisible);
+      nextMovement.setEnabled(nextPlayer, stage.playerVisible);
+    } catch (error) {
+      if (nextPlayer?.container.scene) nextPlayer.container.destroy();
+      nextMovement?.destroy();
+      nextLayers?.();
+      lease.release();
+      throw error;
+    }
+    if (!nextLayers || !nextMovement || !nextPlayer) throw new Error('演出舞台构造失败');
+    this.releaseStage(true);
+    this.lease = lease; this.map = map; this.clearMap = nextLayers;
+    this.movement = nextMovement; this.player = nextPlayer; this.facing = stage.facing;
+    try {
+      if (outfit) this.wardrobe?.activate(outfit);
+      this.resizeView(); this.cameras.main.centerOn(stage.x, stage.y);
+      // 到这里地图已经成功画好，再盖上不透明底色；加载失败/取消时不会提前遮住世界。
+      this.setWorldCovered(true);
+      this.app.audio?.enterMap(stage.map);
+    } catch (error) {
+      this.releaseStage(true);
+      throw error;
+    }
   }
   resizeView(): void {
     if (!this.map) return;

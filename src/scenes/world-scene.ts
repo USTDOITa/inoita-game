@@ -9,7 +9,7 @@ import { claimNearTrigger } from '../domain/story-trigger-occupancy.ts';
 import { NavigationWorld, collisionAt } from '../domain/navigation-world.ts';
 import { MovementWorld } from '../rendering/movement-world.ts';
 import { isBodyWalking } from '../rendering/arcade-movement.ts';
-import type { ClipName, EntityPlacement, ExitFacing, Facing, MapExit, MapFeature, WorldMap } from '../domain/content.ts';
+import type { ClipName, EntityPlacement, ExitFacing, Facing, MapExit, WorldMap } from '../domain/content.ts';
 import type { AssetLease } from '../application/assets.ts';
 import { Wardrobe } from '../rendering/wardrobe.ts';
 import type { EquipmentSlot } from '../domain/items.ts';
@@ -37,7 +37,7 @@ import type { TravelDestination } from '../domain/content.ts';
 import type {StoryAudioState} from '../application/game-audio.ts';
 
 import { PLAYER_MOVE_SPEED, characterAssets, createCharacter, setCharacterClip } from '../rendering/characters.ts';
-import { blendModeOf } from '../rendering/blend-modes.ts';
+import { drawMapLayers, type MapLayerHandles } from '../rendering/map-layers.ts';
 import type { CharacterVisual } from '../rendering/characters.ts';
 import { loadSceneAssets, missingSceneAssets, retainLoadedSceneAssets } from '../rendering/scene-assets.ts';
 import { Hud } from '../rendering/hud.ts';
@@ -51,7 +51,6 @@ import { FONT } from '../ui/text-style.ts';
 import type { Cooldown } from '../domain/combat.ts';
 import { MoveStick } from '../ui/phaser/move-stick.ts';
 import type { PendingAsset } from '../rendering/scene-assets.ts';
-export { PLAYER_MOVE_SPEED } from '../rendering/characters.ts';
 
 /** 进图参数：去哪张地图、落在哪里、朝哪边。 */
 export interface SceneOptions {
@@ -138,10 +137,8 @@ export class WorldScene extends Phaser.Scene {
   facing: Facing = 'south';
   movement?: MovementWorld;
   private lastPlayerPosition?: { x: number; y: number };
-  /** 进图时合成的 color-dodge 贴图，离开时释放。 */
-  private dodgedTextures: string[] = [];
-  /** 场景一生内递增，保证每次进图的合成贴图键不重名。 */
-  private compositeCount = 0;
+  /** 当前地图的静态层；离开或重建时连图带合成纹理一起释放。 */
+  private mapLayers?: MapLayerHandles;
   private unsubscribe?: () => void;
   private combat?: WorldCombat;
   private dropCatalog?:DropCatalog;
@@ -159,6 +156,7 @@ export class WorldScene extends Phaser.Scene {
     this.projectedMemberEquipment.clear();this.projectedPlayerEquipment='';
     this.wardrobe=undefined;this.equippedActor=undefined;this.equipmentPreview=undefined;this.outfitRequest++;
     this.request.abort(); this.request = new AbortController();
+    this.mapLayers?.destroy(); this.mapLayers = undefined;
     this.performing = false; this.player = undefined; this.map = undefined;
     this.options = options; this.characters = []; this.near = null; this.loadingWorld = true; this.destroyed = false;
     this.movement = undefined; this.lastPlayerPosition = undefined;this.combat=undefined;this.checkpointPending=!options.checkpoint;
@@ -188,8 +186,7 @@ export class WorldScene extends Phaser.Scene {
       this.groundLootView?.destroy();this.groundLootView=undefined;
       this.pickupMessages?.destroy();this.pickupMessages=undefined;this.pickupRecipients.clear();
       this.movement?.destroy(); this.movement = undefined;
-      for (const key of this.dodgedTextures) if (this.textures.exists(key)) this.textures.remove(key);
-      this.dodgedTextures = [];
+      this.mapLayers?.destroy(); this.mapLayers = undefined;
       this.stick?.destroy(); this.stick = undefined;
       this.controls?.destroy(); this.controls = undefined;
       this.nameBanner?.destroy(); this.nameBanner = undefined;
@@ -312,17 +309,7 @@ export class WorldScene extends Phaser.Scene {
     this.refreshLoadout();
     this.nameBanner = new NameBanner(this, this.hud!, map.name);
     this.layoutHud();
-    this.add.image(0, 0, map.id + '-ground').setOrigin(0).setDepth(-10000);
-    for (const feature of map.features) {
-      const dodged = feature.blend === 'color-dodge';
-      const image = this.add.image(feature.x, feature.y, dodged ? this.compositeDodge(feature, map) : feature.texture).setOrigin(0).setDepth(feature.y);
-      image.x = feature.x - (feature.flip ? feature.width - feature.offsetX : feature.offsetX);
-      image.y = feature.y - feature.offsetY;
-      // 合成好的贴图已经按最终朝向画好，不再翻转。
-      image.setFlipX(!dodged && feature.flip);
-      if (!dodged) image.setBlendMode(blendModeOf(feature.blend));
-    }
-    this.add.image(0, 0, map.id + '-canopy').setOrigin(0).setDepth(10000);
+    this.mapLayers = drawMapLayers(this, map, { keyPrefix: `${map.id}-dodge` });
     this.groundLootView=new GroundLootView(this,this.app.items,(clip,x,y)=>createEffect(this,clip,x,y,true));
     this.groundLootView.sync(groundLootFor(this.app.session).forMap(map.id));
     this.pickupMessages=new PickupMessages(this,this.app.items,{anchor:id=>{
@@ -356,7 +343,7 @@ export class WorldScene extends Phaser.Scene {
     const drops=this.dropCatalog;
     if(!drops)throw new Error('掉落目录尚未就绪');
     const roster=new WorldEnemyRoster(this.app.session,map,(campaign.enemyPlacements??[]).filter(enemy=>enemy.map===map.id),hero.level,
-      new QuestEnemyWatch(this.app.session,drops.questItems));
+      new QuestEnemyWatch(this.app.session,drops.questItems),Math.random);
     this.combat=new WorldCombat(this,this.app,roster,hero,drops);
     await this.combat.start();
     signal.throwIfAborted();
@@ -435,41 +422,6 @@ export class WorldScene extends Phaser.Scene {
   private openingPending(): boolean {
     const completed=this.app.session.runtimeState.completedEvents;
     return this.app.campaign.events.some(event=>event.source==='start'&&!completed.includes(event.id));
-  }
-  /**
-   * color-dodge 物件提亮背景。进入地图时按颜色通道合成，生成可直接绘制的贴图。
-   * 合成只包含静态背景，人物经过物件背后时保持自身颜色。
-   */
-  compositeDodge(feature: MapFeature, map: WorldMap): string {
-    const ground = this.textures.get(map.id + '-ground').getSourceImage() as HTMLImageElement;
-    const prop = this.textures.get(feature.texture).getSourceImage() as HTMLImageElement;
-    const width = feature.width, height = prop.height;
-    const left = feature.x - (feature.flip ? width - feature.offsetX : feature.offsetX);
-    const top = feature.y - feature.offsetY;
-    const texture = this.textures.createCanvas(`${map.id}-dodge-${this.compositeCount++}`, width, height)!;
-    const context = texture.context;
-    context.drawImage(ground, left, top, width, height, 0, 0, width, height);
-    const backdrop = context.getImageData(0, 0, width, height);
-    // 物件那层单独画一次，翻转按最终朝向镜像。
-    const scratch = document.createElement('canvas');
-    scratch.width = width; scratch.height = height;
-    const scratchContext = scratch.getContext('2d')!;
-    if (feature.flip) { scratchContext.translate(width, 0); scratchContext.scale(-1, 1); }
-    scratchContext.drawImage(prop, 0, 0);
-    const source = scratchContext.getImageData(0, 0, width, height).data;
-    // 颜色减淡：背景为零时保留零；前景为满值时饱和；其余按两者比例提亮。
-    const pixels = backdrop.data;
-    for (let i = 0; i < pixels.length; i += 4) {
-      if (!source[i + 3]) continue;   // 物件透明处保留背景
-      for (let channel = 0; channel < 3; channel++) {
-        const s = source[i + channel], d = pixels[i + channel];
-        pixels[i + channel] = d === 0 ? 0 : s === 255 ? 255 : Math.min(255, Math.floor(d * 255 / (255 - s)));
-      }
-    }
-    context.putImageData(backdrop, 0, 0);
-    texture.refresh();
-    this.dodgedTextures.push(texture.key);
-    return texture.key;
   }
   /** @param silent 演出中的世界重建：不显示加载进度，舞台画面保持可见。 */
   loadAssets(needed: PendingAsset[], label: string, initialEntry=false, silent=false): Promise<AssetLease> {

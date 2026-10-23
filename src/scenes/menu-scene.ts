@@ -85,7 +85,7 @@ export class MenuScene extends Phaser.Scene {
       if(this.page==='slots'){
         view.text('存档槽',600,20,760,49).setOrigin(.5,0);
         const assets={frame:art('slot'),empty:art('slot-empty')};
-        const origin=saveBoardOrigin(view.width,view.height);
+        const origin=saveBoardOrigin(view.width);
         // 自动存档固定一行置顶；它没有改名与删除。
         const auto=this.app.saves.inspect(AUTO_SAVE_SLOT),autoTitle=saveRowTitle(AUTO_SAVE_SLOT,auto);
         drawSaveBoardRow<StoryWorldViewSnapshot>(view,assets,origin,SAVE_BOARD_LAYOUT.autoTop,

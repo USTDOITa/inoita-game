@@ -14,7 +14,7 @@ const {WorldCombat}=await import('../src/scenes/world-combat.ts');
 const {CombatFeedback}=await import('../src/rendering/combat-feedback.ts');hook.deregister();
 const catalog=JSON.parse(readFileSync(new URL('../public/content/battle.json',import.meta.url),'utf8')) as BattleCatalog;
 
-test('the real party frame port leaves explicit sound to the ordered feedback event after units',()=>{
+test('the real party frame port plays explicit sound for the hero and mercenaries after units',()=>{
   const order:string[]=[],event:SkillFeedbackEvent={kind:'feedback',frame:10,shake:true,vibrationMs:300,sound:'Bn_Hell_Sword'};
   const action:ActionPlayback={caster:{id:'player',team:'party',position:{x:0,y:0},bounds:{x:0,y:0,width:8,height:8}},
     facing:'south',basicAttack:null,skill:{id:'sword-of-hell',action:{...catalog.skills['sword-of-hell'].action!,
@@ -22,6 +22,7 @@ test('the real party frame port leaves explicit sound to the ordered feedback ev
   const host=Object.setPrototypeOf({presentActionFrame:(presenter:object,...args:Parameters<typeof dispatchFrame> extends [object,...infer Rest]?Rest:never)=>dispatchFrame(presenter,...args),scene:{refreshCombatTarget:()=>{},refreshSkillCooldowns:()=>{}},
     app:{session:{cooldowns:new CombatCooldownStore(()=>0)},audio:{playerSkill:()=>order.push('automatic-sound'),effect:(name:string)=>order.push(name)}},
     feedback:{startShake:()=>order.push('shake'),vibrate:(ms:number)=>order.push(`vibrate:${ms}`)},partyControllers:new Map(),soundedSkills:new WeakSet(),
+    memberOf:(id:string)=>id==='player'||id==='companion'?{id}:undefined,
   },WorldCombat.prototype);
   const presenter={pose:()=>{}};
   const {port}=Reflect.get(WorldCombat.prototype,'createPartyController').call(host,'player',{},presenter,null);
@@ -29,7 +30,24 @@ test('the real party frame port leaves explicit sound to the ordered feedback ev
   assert.deepEqual(order,['units','shake','vibrate:300','Bn_Hell_Sword']);
   assert.deepEqual(skillEffectNames(action.skill!.action),[]);
   order.length=0;action.caster.id='companion';port.frame(action,10,()=>{},()=>{order.push('units');return [];});
-  assert.deepEqual(order,['units','shake','vibrate:300']);
+  assert.deepEqual(order,['units','shake','vibrate:300','Bn_Hell_Sword']);
+});
+
+test('mercenary basic attacks use their own weapon sound instead of staying silent',()=>{
+  const calls:string[][]=[];
+  const host=Object.setPrototypeOf({
+    controlledId:'player',arena:[{key:'enemy-x',definition:{id:'enemy-x'}}],
+    memberOf:(id:string)=>id==='player'||id==='companion'?{id}:undefined,
+    hero:{bag:{equipmentFor:(owner:string)=>owner==='companion'?{'main-hand':'companion-weapon'}:{},
+      equipmentItems:()=>({'main-hand':'companion-weapon'})}},
+    app:{items:{items:{'companion-weapon':{kind:'sword'}}},battleCatalog:catalog,
+      audio:{playerHit:(...args:string[])=>calls.push(args),monsterAttack:()=>calls.push(['monster'])}},
+    visualOf:()=>({container:{active:true}}),feedback:{show:()=>{}},statusColors:{flash:()=>{}},
+    scene:{events:{emit:()=>{}}},
+  },WorldCombat.prototype);
+  Reflect.get(WorldCombat.prototype,'showHit').call(host,
+    {casterId:'companion',targetId:'enemy-x'},{kind:'hit',damage:1},{sound:true});
+  assert.deepEqual(calls,[['sword','hit','enemy-x']]);
 });
 
 test('skill camera feedback reuses all six native world-pixel offsets and resets cleanly on restart',()=>{

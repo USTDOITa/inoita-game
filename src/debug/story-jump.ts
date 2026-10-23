@@ -131,7 +131,7 @@ function prepareFromStartTable(source: Session, session: Session, task: StoryDeb
     flags: [...flags],
     location: {
       map: rawWorld.location.map, x: rawWorld.location.x, y: rawWorld.location.y,
-      facing: rawWorld.location.facing ?? 'south',
+      facing: rawWorld.location.facing,
     },
   };
 

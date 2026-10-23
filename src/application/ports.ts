@@ -29,7 +29,7 @@ export interface StoryClassContext {
   syncLifecycle?: () => void;
 }
 
-type SceneUI = Pick<GameUI,'ready'|'locked'|'loading'|'loaded'|'error'|'location'|'toast'|'showInstant'|'resetInput'|'setMode'|'showDefeat'|'closeDefeat'|'controlLayoutEditing'|'preloadPortraits'>;
+type SceneUI = Pick<GameUI,'ready'|'locked'|'mode'|'loading'|'loaded'|'error'|'location'|'toast'|'showInstant'|'resetInput'|'setMode'|'showDefeat'|'closeDefeat'|'controlLayoutEditing'|'preloadPortraits'>;
 export interface StoryContext {
   readonly controlLayout:ControlLayoutPreferences;
   readonly checkpoint:import('../domain/session-checkpoint.ts').SessionCheckpoint<import('../scenes/world-scene.ts').StoryWorldViewSnapshot>;

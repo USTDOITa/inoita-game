@@ -7,7 +7,18 @@ type DropCategory = 'consumable' | 'upgrade' | 'crafting' | 'misc';
 type DropChance = 'money' | 'equipment' | DropCategory | 'unique' | 'fixed';
 /** Absolute additions to the native 1..9999 roll, after level scaling. */
 export type DropModifiers = Partial<Record<'equipment-drop'|'scroll-drop'|'material-drop'|'chest-quality',number>>;
-type BreakableKind = 'bush'|'jar'|'box';
+export const BREAKABLE_ENEMY_IDS = {
+  bush: 'enemy-bush-1',
+  jar: 'enemy-jar-1',
+  box: 'enemy-box-1'
+} as const;
+export type BreakableKind = keyof typeof BREAKABLE_ENEMY_IDS;
+const BREAKABLE_KIND_BY_ENEMY = new Map<string, BreakableKind>(
+  Object.entries(BREAKABLE_ENEMY_IDS).map(([kind, enemyId]) => [enemyId, kind as BreakableKind])
+);
+export function breakableKindOf(enemyId: string): BreakableKind | undefined {
+  return BREAKABLE_KIND_BY_ENEMY.get(enemyId);
+}
 interface DropChoice { weight:number; item?:string|null; tiers?:{item:string|null;level:number}[] }
 export interface EnemyDropRule {
   level:number;
@@ -54,7 +65,6 @@ interface ChestDropRule extends Omit<EnemyDropRule,'level'|'threat'|'noNormalDro
   spawn?: {enemyId:string;chance:number};
   rarityProfile?:string;
   minRarity?:number;
-  personal?:boolean;
 }
 export interface ChestOpenResult { rewards:DropReward[]; enemies:string[] }
 export interface DropRoll extends EquipmentGradeSeed { rarity:number; sockets:boolean }
@@ -121,6 +131,13 @@ export function parseDrops(value:unknown,items:ItemCatalog,enemyIds:readonly str
   }
   if(catalog.version===3){
     if(!catalog.rarityProfiles||!catalog.chapterBands?.length||!catalog.pity)throw new Error('掉落目录缺少 v3 配置');
+    const rate=(pair:{stepPermille:number;capPermille:number})=>Number.isSafeInteger(pair.stepPermille)
+      &&pair.stepPermille>=0&&pair.stepPermille<=10000&&Number.isSafeInteger(pair.capPermille)
+      &&pair.capPermille>=0&&pair.capPermille<=10000&&pair.stepPermille<=pair.capPermille;
+    const pity=catalog.pity;
+    if(!rate(pity.equipment)||!rate(pity.rare)||!Number.isSafeInteger(pity.levelWindow)||pity.levelWindow<0||
+      typeof pity.bossGuarantee?.equipment!=='boolean'||!Number.isSafeInteger(pity.bossGuarantee.minRarity)||
+      pity.bossGuarantee.minRarity<0||pity.bossGuarantee.minRarity>4)throw new Error('保底配置无效');
     for(const [name,weights] of Object.entries(catalog.rarityProfiles))
       if(!Array.isArray(weights)||weights.length!==5||weights.some(value=>!Number.isSafeInteger(value)||value<0))
         throw new Error(`稀有度权重无效：${name}`);
@@ -214,22 +231,24 @@ export function rollQuestDrops(catalog:DropCatalog,enemyId:string,quests:readonl
   return [];
 }
 
-export function rollChestDrops(catalog:DropCatalog,kind:ChestKind,level:number,playerLevel:number,random:()=>number=Math.random,modifiers:DropModifiers={}):ChestOpenResult {
-  if(!Number.isSafeInteger(level)||level<0||level>255)throw new Error('宝箱掉落等级无效');
-  const rule=catalog.chests[kind];
-  if(!rule)throw new Error(`宝箱掉落规则缺失：${kind}`);
-  return rollDropRule(catalog,{...rule,level,chances:{...rule.chances,
-    unique:Math.floor(rule.uniqueChance.numerator/(level+rule.uniqueChance.levelOffset))}},playerLevel,random,rule.spawn,modifiers);
-}
-
-/** The native treasure talent applies to breakable boxes, distinct from interactive NPC chests. */
-export function rollBreakableDrops(catalog:DropCatalog,kind:BreakableKind,level:number,playerLevel:number,random:()=>number=Math.random,modifiers:DropModifiers={}):ChestOpenResult {
+/** 景物掉落和宝箱共用属性目录：装备奖励要写入品级快照，不能只按纯规则返回值。 */
+export function rollBreakableLoot(catalog:DropCatalog,stats:CharacterStatsCatalog,kind:BreakableKind,level:number,
+  playerLevel:number,random:()=>number=Math.random,modifiers:DropModifiers={},options:{equipmentBonus?:number}={}):ChestOpenResult {
   if(!Number.isSafeInteger(level)||level<0||level>255)throw new Error('景物掉落等级无效');
   const selected=kind==='box'&&modifiers['chest-quality']&&draw(random,999)+1<=49?'fortunate-box':kind;
   const rule=catalog.breakables?.[selected];
   if(!rule)throw new Error('景物掉落规则缺失');
+  const band=chapterBand(catalog,level);
   return rollDropRule(catalog,{...rule,level,chances:{...rule.chances,
-    unique:Math.floor(rule.uniqueChance.numerator/(level+rule.uniqueChance.levelOffset))}},playerLevel,random,rule.spawn,modifiers);
+    unique:Math.floor(rule.uniqueChance.numerator/(level+rule.uniqueChance.levelOffset))}},playerLevel,random,rule.spawn,modifiers,
+    {stats,profile:profileFor(catalog,band,'normal',rule.minRarity,rule.rarityProfile),maxItemLevel:band?.maxItemLevel,
+      equipmentBonus:options.equipmentBonus});
+}
+
+/** 首杀保底只在配置显式打开时生效；关闭时仍由普通 pity 计算加成。 */
+export function firstBossGuarantee(pity:PityConfig|undefined,firstDefeat:boolean):{equipmentBonus:number;minRarity?:number} {
+  if(!firstDefeat||!pity?.bossGuarantee.equipment)return {equipmentBonus:0};
+  return {equipmentBonus:10000,minRarity:pity.bossGuarantee.minRarity};
 }
 
 interface LootContext {

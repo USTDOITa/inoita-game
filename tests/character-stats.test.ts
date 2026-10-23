@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { BattleCharacter, calculateCharacter, equipmentAttributeBonuses, equipmentPower, PRIMARY_STATS } from '../src/domain/character-stats.ts';
+import { BattleCharacter, calculateCharacter, equipmentPower, PRIMARY_STATS } from '../src/domain/character-stats.ts';
 import { parseCharacterStats, validateCharacterStats, parseItemCatalog, parseBattle, parseWardrobe, validateWardrobe } from '../src/application/content-validation.ts';
 import type { ItemDefinition } from '../src/domain/items.ts';
 import { costumeRecipe } from '../src/domain/wardrobe.ts';
@@ -251,14 +251,4 @@ test('weapon changes select native skill clips and timing, and unarmed ranger sk
   const invalid=structuredClone(wardrobe);
   invalid.skillStances['dark-knight']['two-handed:empty'].actions['dark-strike']!.events[0].frame=999;
   assert.throws(()=>validateWardrobe(invalid,items,battle),/帧号升序|触发帧越界/);
-});
-
-test('equipment attribute bonuses count only the primary attributes',()=>{
-  // 人物页加点视图右侧的橙色「+N」取的是这个合计：装备词条与宝石词条都算，非主属性的词条（暴击率之类）不算。
-  const bonuses=equipmentAttributeBonuses([
-    {numbers:{modifiers:[{stat:'strength',value:3},{stat:'criticalRate',value:5}],
-      gemModifiers:[{stat:'strength',value:2},{stat:'dexterity',value:1}]}} as never,
-    undefined,
-  ]);
-  assert.deepEqual(bonuses,{strength:5,dexterity:1,vitality:0,intelligence:0,mentality:0});
 });

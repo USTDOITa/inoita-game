@@ -122,7 +122,7 @@ test('native quest spirits use ordinary map spawns and deaths alone do not grant
   const session=new Session({...campaign,quests:[quest],questGroups:[],events:[]});
   assert.equal(session.accept('knight-uniform'),true);
   const map=content('maps/shadow-training-dungeon-2-a6b8293b.json') as WorldMap;
-  const roster=new WorldEnemyRoster(session,map,[],4);
+  const roster=new WorldEnemyRoster(session,map,[],4,undefined,()=>1);
   const spirits=roster.spawns.filter(spawn=>spawn.enemyId==='enemy-reagents-1');
   assert.equal(spirits.length,5);
   for(const spawn of spirits){
@@ -182,6 +182,51 @@ test('story encounter instances appear after a node commit, require every settle
   restored.refresh();assert.equal(restored.completedEncounters().length,0);
   session.advanceGameTime(DEFAULT_ENEMY_RESPAWN_MS*10);
   assert.equal(restored.refresh().added.some(enemy=>enemy.key===earl.id||enemy.key===guard.id),false);
+});
+
+test('breakable spawns follow the native replacement branch and reroll after death',()=>{
+  const map={id:'breakable-map',breakableSpawn:'jar' as const,enemySpawns:[
+    {id:'slot',enemyId:'enemy-base',x:0,y:0,breakableEligible:true}
+  ]} as unknown as WorldMap;
+  const values=[0,0.05];
+  let index=0;
+  const session=new Session(campaign);
+  const roster=new WorldEnemyRoster(session,map,[],1,undefined,()=>values[index++]??1);
+  assert.equal(roster.source('slot')?.enemyId,'enemy-jar-1');
+  const source=roster.source('slot')!;
+  session.setEnemyVitals(source.id,0,0);
+  session.enemyDefeated(source);
+  roster.refresh();
+  session.advanceGameTime(DEFAULT_ENEMY_RESPAWN_MS);
+  roster.refresh();
+  assert.equal(roster.source('slot')?.enemyId,'enemy-box-1','刷新后重新掷替换结果');
+});
+
+test('breakable replacement respects branch, eligibility and quest protection',()=>{
+  const spawn={id:'slot',enemyId:'enemy-base',x:0,y:0,breakableEligible:true};
+  const make=(branch:'bush'|'jar'|undefined,random:()=>number,eligible=true,ids=new Set<string>())=>
+    new WorldEnemyRoster(new Session(campaign),{id:'breakable-map',breakableSpawn:branch,enemySpawns:[{...spawn,breakableEligible:eligible}]} as unknown as WorldMap,
+      [],1,{snapshot:()=>({revision:1,ids})},random);
+  assert.equal(make(undefined,()=>0).source('slot')?.enemyId,'enemy-box-1','缺省分支是箱子');
+  assert.equal(make('bush',()=>0).source('slot')?.enemyId,'enemy-bush-1');
+  assert.equal(make('jar',()=>0).source('slot')?.enemyId,'enemy-jar-1');
+  assert.equal(make('jar',()=>0.05).source('slot')?.enemyId,'enemy-box-1');
+  assert.equal(make('jar',()=>0.07).source('slot')?.enemyId,'enemy-base');
+  assert.equal(make('jar',()=>0,false).source('slot')?.enemyId,'enemy-base','非资格点不替换');
+  assert.equal(make('jar',()=>0,true,new Set(['enemy-base'])).source('slot')?.enemyId,'enemy-base','任务敌人不替换');
+});
+
+test('a breaking spawn that becomes a quest target restores the original enemy',()=>{
+  const map={id:'breakable-map',breakableSpawn:'jar' as const,enemySpawns:[
+    {id:'slot',enemyId:'enemy-base',x:0,y:0,breakableEligible:true}
+  ]} as unknown as WorldMap;
+  let ids=new Set<string>();
+  const provider={snapshot:()=>({revision:ids.size,ids})};
+  const roster=new WorldEnemyRoster(new Session(campaign),map,[],1,provider,()=>0);
+  assert.equal(roster.source('slot')?.enemyId,'enemy-jar-1');
+  ids=new Set(['enemy-base']);
+  roster.refresh();
+  assert.equal(roster.source('slot')?.enemyId,'enemy-base');
 });
 
 test('a second encounter occurrence with the same cast owns fresh enemy resources',()=>{

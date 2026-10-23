@@ -74,7 +74,7 @@ export class PartyPanel {
     v.button('',9,-4,56,56,()=>{this.page=1-this.page;this.selected=undefined;this.modal=undefined;this.error='';this.changed();},
       {image:assets[`party-page-${this.page+1}`]}).setData('label',`佣兵名册第 ${this.page+1} 页，切换页面`);
     story.forEach((id,index)=>{
-      const button=v.button('',6,80+index*91,52,65,()=>this.select(id),{bare:true,selected:this.selected===id}).setData('label',this.name(id));
+      const button=v.button('',6,80+index*91,52,65,()=>this.select(id),{bare:true}).setData('label',this.name(id));
       v.image(this.portrait(id),0,0,52,58,button).setAlpha(this.member(id)!.player.health>0?1:.45);
       v.text(id==='player'?'主角':'伙伴',26,63,0,16,undefined,button).setOrigin(.5,0);
       if(this.selected===id)v.rect(0,0,52,58,0xffda88,.12,button).setStrokeStyle(2,0xffda88);

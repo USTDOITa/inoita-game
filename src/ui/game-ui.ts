@@ -6,6 +6,11 @@ import { InstantMessage } from './instant-message.ts';
 import { typedIndex, typedLength, typedOffset } from '../domain/text-markup.ts';
 import type { DialoguePage } from './dialogue-text.ts';
 
+/** 提示条停留时长，以及打字机每次推进的间隔和字数。 */
+const TOAST_DURATION_MS=2600;
+const TYPE_INTERVAL_MS=24;
+const TYPE_CHARS_PER_INTERVAL=2;
+
 interface DialogueState { text:string; start:number; readTo:number; skipped:boolean }
 type DefeatAction = 'prayer' | 'checkpoint';
 interface DefeatActions {
@@ -114,7 +119,7 @@ export class GameUI {
   }
   closeDefeat():void {if(!this.defeatFlow)return;this.defeatFlow=undefined;this.lock(false,'defeat');}
   location(name:string):void{this.locationName=name;this.view?.sync(this);}
-  toast(message:string):void{this.toastMessage=message;this.toastRemaining=2600;this.view?.sync(this);}
+  toast(message:string):void{this.toastMessage=message;this.toastRemaining=TOAST_DURATION_MS;this.view?.sync(this);}
   tick(delta:number):void{
     if(this.suspended)return;
     this.instant.tick(delta);
@@ -123,7 +128,7 @@ export class GameUI {
     // 进度按**打出来的字**记：控制码零宽，显式换行是排版断行，都不该让打字机停一拍。
     const typed=typedIndex(this.page).text;
     if(this.revealed>=typed.length){this.elapsed=0;return;}
-    this.elapsed+=delta;const count=Math.floor(this.elapsed/24)*2;this.elapsed%=24;
+    this.elapsed+=delta;const count=Math.floor(this.elapsed/TYPE_INTERVAL_MS)*TYPE_CHARS_PER_INTERVAL;this.elapsed%=TYPE_INTERVAL_MS;
     if(count){let end=Math.min(typed.length,this.revealed+count);if(end<typed.length&&/[\uD800-\uDBFF]/.test(typed[end-1]))end++;this.revealed=end;this.renderText();}
   }
   pressDialogue(id:number):void{this.pressed=this.canSkip&&this.pending?{id,pending:this.pending}:undefined;}

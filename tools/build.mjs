@@ -25,5 +25,5 @@ try{
  validateContent(output);
  try{await fs.rename(dist,previous);moved=true;}catch(error){if(error.code!=='ENOENT')throw error;}
  try{await fs.rename(output,dist);}catch(error){if(moved)await fs.rename(previous,dist);throw error;}
- console.log(`Standalone build: dist/ (assets ${versions.assetVersion}, content ${versions.contentVersion})`);
+ console.log(`Standalone build: story-game/dist/ (assets ${versions.assetVersion}, content ${versions.contentVersion})`);
 }finally{await fs.rm(staging,{recursive:true,force:true});}

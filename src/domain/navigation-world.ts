@@ -14,7 +14,7 @@ export interface NavigationActor {
   /** 演出角色按脚本走位：只受地形约束，不被其他人物或机关的占位挡住。 */
   ghost?(): boolean;
   /**
-   * 由移动层驱动的可控角色（主角、佣兵）。这类角色即使位置没变、或当前隐藏，
+   * 由移动层驱动的队伍单位（主角、佣兵、友方召唤物）。这类单位即使位置没变、或当前隐藏，
    * 落位也要通过整盒校验；内容实体与敌人不设此标记，保持内容坐标的可信语义。
    */
   strictTerrain?(): boolean;
@@ -148,7 +148,7 @@ export class NavigationWorld {
   /**
    * 只校验位置真正变了的落位。地图自带实体（火把、泉水、宝箱、按阶段显隐的人物）保持原位时，
    * 位置来自地图数据本身，本来就允许贴在墙上、摆在阻挡格或与相邻实体重叠；重放它们不该失败。
-   * 可控角色（`strictTerrain`）例外：位置没变或当前隐藏也要求整盒落点成立，堵住
+   * 队伍单位（`strictTerrain`）例外：位置没变或当前隐藏也要求整盒落点成立，堵住
    * 「隐藏时写入非法坐标，再显示出来就永久卡墙」的路径。
    */
   canSettleAll(placements: readonly Placement[]): boolean {
@@ -182,7 +182,7 @@ export class NavigationWorld {
       if (strict
         ? this.terrainFree(point) && this.canPlaceBody(actor.shape(), point, actor, others)
         : this.canPlace(actor.shape(), point, actor, others)) continue;
-      // 可控角色（主角/佣兵）要让位的点也必须过整盒 + 脚点两关，否则 placeAll 收尾仍会判它非法。
+      // 队伍单位要让位的点也必须过整盒 + 脚点两关，否则 placeAll 收尾仍会判它非法。
       const position = strict
         ? this.nearestSettledBody(actor.shape(), point, actor, others) ?? point
         : this.nearest(actor.shape(), point, actor, others);
@@ -202,7 +202,7 @@ export class NavigationWorld {
     return this.scanNearest(p => this.canPlaceBody(shape, p, ignore, placements), point);
   }
   /**
-   * 可控角色落位用的就近点：整盒可站之外还要求脚点地形可站。
+   * 队伍单位落位用的就近点：整盒可站之外还要求脚点地形可站。
    *
    * `canSettleAll` 对 `strictTerrain` 角色同时检查 `canPlaceBody` 与 `terrainFree(脚点)`；
    * 只用 `nearestBody` 选点会在矩形边界附近选出「整盒通过、脚点仍压阻挡格」的位置，

@@ -60,7 +60,7 @@ function inputs() {
       feedback: { digits: {}, normalImpacts: [], skillImpact: 'hit', criticalImpact: 'hit', criticalRing: 'hit', criticalBursts: [], missEffect: 'hit' }
     },
     items: { items: {} }, wardrobe: { textures: [], attacks: {}, dualWieldAttacks: {}, skillStances: {} },
-    drops: { version: 2, questItems: {}, chests: { wooden: { spawn: { enemyId: 'chest-enemy' } } }, enemies: {}, pools: {}, equipment: { weapon: [], armor: [], special: [], unique: [] } },
+    drops: { version: 2, questItems: {}, chests: { wooden: { spawn: { enemyId: 'chest-enemy' } } }, breakables: { jar: { spawn: { enemyId: 'jar-enemy' } } }, enemies: {}, pools: {}, equipment: { weapon: [], armor: [], special: [], unique: [] } },
     springs: {
       version: 1, empty: 'spring-empty',
       springs: [{ id: 'spring-a', name: 'A', unlockLevel: 1 }],
@@ -85,10 +85,10 @@ const map = {
   id: 'map-a', name: 'A', width: 100, height: 100, ground: 'assets/map-a-ground.png', canopy: 'assets/map-a-canopy.png',
   features: [{ texture: 'prop-a', x: 0, y: 0 }],
   entities: [
-    { id: 'e', actor: 'base', x: 0, y: 0, spring: true, downgrade: { atLeast: 1, of: 2, actor: 'downgraded' } },
+    { id: 'e', actor: 'base', x: 0, y: 0, spring: true, downgrade: { atLeast: 1, actor: 'downgraded' } },
     { id: 'chest', actor: 'chest-actor', x: 0, y: 0 }
   ],
-  enemySpawns: [{ id: 'spawn', enemyId: 'goblin', x: 0, y: 0 }]
+  enemySpawns: [{ id: 'spawn', enemyId: 'goblin', x: 0, y: 0, breakableEligible: true }]
 } as unknown as Parameters<typeof planMapVisuals>[0];
 
 test('visual plan includes conservative actors, springs, stage cast, placements and story placements', () => {
@@ -102,7 +102,8 @@ test('visual plan includes conservative actors, springs, stage cast, placements 
 
 test('enemy ids are a conservative superset across spawns, chests, springs, encounters and checkpoints', () => {
   const ids = new Set(potentialMapEnemyIds(map, inputs(), { scripts: ['s'], checkpointEnemies: ['checkpoint-enemy'] }));
-  for (const id of ['goblin', 'chest-enemy', 'spring-enemy', 'encounter-enemy', 'checkpoint-enemy']) assert.ok(ids.has(id), `missing ${id}`);
+  for (const id of ['goblin', 'chest-enemy', 'spring-enemy', 'encounter-enemy', 'checkpoint-enemy',
+    'enemy-bush-1', 'enemy-jar-1', 'enemy-box-1', 'jar-enemy']) assert.ok(ids.has(id), `missing ${id}`);
 });
 
 test('shared entry assets include story effects and HUD art', () => {

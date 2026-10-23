@@ -3,7 +3,7 @@ import type { BattleCatalog } from '../domain/battle.ts';
 import type { BattleCharacter } from '../domain/character-stats.ts';
 import type { ActorDefinition, EntityPlacement, WorldIndex, WorldMap } from '../domain/content.ts';
 import type { ControlSkin } from '../domain/control-skin.ts';
-import type { DropCatalog } from '../domain/drops.ts';
+import { BREAKABLE_ENEMY_IDS, type DropCatalog } from '../domain/drops.ts';
 import type { ItemCatalog } from '../domain/items.ts';
 import type { CompanionCatalog, PartyRoster } from '../domain/party.ts';
 import type { SpringCatalog } from '../domain/springs.ts';
@@ -14,6 +14,7 @@ import type { StoryStage } from '../domain/story-performance.ts';
 import type { StoryEncounter, StoryWorldState } from '../domain/story-world.ts';
 import type { WardrobeCatalog } from '../domain/wardrobe.ts';
 import { characterAssets } from './characters.ts';
+import { mapSurfaceAssets } from './map-layers.ts';
 import { effectAssets } from './effects.ts';
 import { enemyCombatAssets, partyMemberCombatAssets, playerCombatAssets, sharedCombatAssets } from './combat-assets.ts';
 import { groundLootAssets } from './ground-loot.ts';
@@ -82,15 +83,7 @@ export function stageActorsForMap(campaign: Pick<Campaign, 'scripts'>, mapId: st
  */
 export function planMapVisuals(map: WorldMap, input: WorldAssetInputs, options: MapVisualOptions = {}): MapVisualPlan {
   const { campaign, world, storyWorld, springs } = input;
-  const assets: PendingAsset[] = [
-    { kind: 'image', key: map.id + '-ground', file: map.ground },
-    { kind: 'image', key: map.id + '-canopy', file: map.canopy }
-  ];
-  for (const feature of map.features) {
-    const prop = world.props.find(entry => entry.key === feature.texture);
-    if (!prop) throw new Error('场景物件缺少资源');
-    assets.push({ kind: 'image', key: prop.key, file: prop.file });
-  }
+  const assets = mapSurfaceAssets(map, world.props);
 
   const actorIds = new Set<string>();
   const add = (id: string | undefined) => {
@@ -152,6 +145,13 @@ export function potentialMapEnemyIds(map: WorldMap, input: WorldAssetInputs, opt
   const ids = new Set<string>();
   // 预取不按等级选档：剧情可能在到达目的地前升级，档位会变；全档敌人种类很少。
   for (const spawn of map.enemySpawns ?? []) ids.add(spawn.enemyId);
+  if ((map.enemySpawns ?? []).some(spawn => spawn.breakableEligible)) {
+    for (const enemyId of Object.values(BREAKABLE_ENEMY_IDS)) ids.add(enemyId);
+    for (const kind of ['bush', 'jar', 'box', 'fortunate-box'] as const) {
+      const spawn = input.drops.breakables?.[kind]?.spawn;
+      if (spawn) ids.add(spawn.enemyId);
+    }
+  }
   for (const spawn of input.campaign.enemyPlacements ?? []) if (spawn.map === map.id) ids.add(spawn.enemyId);
   for (const spawn of input.storyWorld.enemySpawns(map.id)) ids.add(spawn.enemyId);
   for (const encounter of input.storyWorld.activeEncounters)

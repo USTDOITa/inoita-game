@@ -20,7 +20,7 @@ export function movementBodyClass(Base: typeof Phaser.Physics.Arcade.Body) {
     private resumeImmovable=false;
     /** 注册意图：由移动层驱动的角色（true）还是内容摆放的实体（false）。 */
     private movable=true;
-    /** 是否允许在脚点非法时按整盒落点自愈；只有主角与佣兵开启。 */
+    /** 是否允许在脚点非法时按整盒落点自愈；主角、佣兵与友方召唤物开启。 */
     private terrainRecovery=true;
     get recoversTerrain():boolean{return this.terrainRecovery;}
     /** 被物理分离挤进阻挡格后拉回来的次数与最近一次的前后位置；卡墙排查用。 */
@@ -28,9 +28,8 @@ export function movementBodyClass(Base: typeof Phaser.Physics.Arcade.Body) {
     private lastWallRecovery?: { from: Point; to: Point };
     /** 找不到合法落点时别每帧全图扫描：隔 500ms 再试。 */
     private wallRetryAt=0;
-    /** 可控角色带着非法脚点起跑的次数：第一次非法写入的旁证。 */
+    /** 队伍单位带着非法脚点起跑的次数：第一次非法写入的旁证。 */
     private illegalStarts=0;
-    get isPaused():boolean{return this.suspended;}
     setPaused(paused:boolean):void {
       if(this.suspended===paused)return;
       this.suspended=paused;
@@ -98,7 +97,7 @@ export function movementBodyClass(Base: typeof Phaser.Physics.Arcade.Body) {
         this.lastWallRecovery = { from: { ...pushed }, to: { ...this.stepStart } };
       }
       if (this.navigation.terrainFree(this.footPosition())) return;
-      // 起点本身也不合法。只有主角/佣兵允许搬迁，且只接受整盒落点——窄足底兜底会重新
+      // 起点本身也不合法。主角、佣兵与友方召唤物允许搬迁，且只接受整盒落点——窄足底兜底会重新
       // 制造「脚点合法、身体压墙」的状态。内容实体与敌人保持原位。
       if (!this.terrainRecovery) return;
       if (Date.now() < this.wallRetryAt) return;

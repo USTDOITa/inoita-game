@@ -698,6 +698,45 @@ test('description buttons and scrolling reject modal, busy, suspended and closed
   assert.deepEqual(f.session.captureState(), before);
 });
 
+test('scrolling a worn item description never scrolls the bag grid underneath', t => {
+  const f = fixture(); t.after(f.cleanup);
+  const worn = f.hero.bag.get(f.hero.bag.equipment['main-hand']!)!;
+  f.menu.debugDescribe(worn.id, 'right');
+  const bag = f.internals.body.scrolls[0]!, detail = f.internals.description.scrolls[0]!;
+  bag.setHeight(2000); detail.setHeight(2000);
+  const a = (bag as unknown as { mask: Display }).mask.getBounds();
+  const b = (detail as unknown as { mask: Display }).mask.getBounds();
+  const left = Math.max(a.x, b.x), right = Math.min(a.x + a.width, b.x + b.width);
+  const top = Math.max(a.y, b.y), bottom = Math.min(a.y + a.height, b.y + b.height);
+  assert.ok(right > left && bottom > top, '说明面板必须与背包网格重叠');
+  Object.assign(f.scene.input.activePointer, { x: (left + right) / 2, y: (top + bottom) / 2 });
+  const pointer = f.scene.input.activePointer as Phaser.Input.Pointer;
+  assert.equal(bag.contains(pointer), true); assert.equal(detail.contains(pointer), true);
+  const bagOffset = bag.scrollTop;
+  f.scene.input.emit('wheel', pointer, [], 0, 120);
+  assert.ok(detail.scrollTop > 0, '说明面板跟随滚轮');
+  assert.equal(bag.scrollTop, bagOffset, '被盖住的背包不能一起滚动');
+});
+
+test('scrolling a shop description never scrolls the bag column underneath', t => {
+  const f = fixture(); t.after(f.cleanup); f.session.gainMoney(1_000_000);
+  f.menu.debugShop(f.app.shops.lampShop, 'description', 'buy');
+  const bag = f.internals.shopPanel!.bagScroll!, detail = f.internals.description.scrolls.at(-1)!;
+  bag.setHeight(2000); detail.setHeight(2000);
+  const a = (bag as unknown as { mask: Display }).mask.getBounds();
+  const b = (detail as unknown as { mask: Display }).mask.getBounds();
+  const left = Math.max(a.x, b.x), right = Math.min(a.x + a.width, b.x + b.width);
+  const top = Math.max(a.y, b.y), bottom = Math.min(a.y + a.height, b.y + b.height);
+  assert.ok(right > left && bottom > top, '商店说明面板必须与背包栏重叠');
+  Object.assign(f.scene.input.activePointer, { x: (left + right) / 2, y: (top + bottom) / 2 });
+  const pointer = f.scene.input.activePointer as Phaser.Input.Pointer;
+  assert.equal(bag.contains(pointer), true); assert.equal(detail.contains(pointer), true);
+  const bagOffset = bag.scrollTop;
+  f.scene.input.emit('wheel', pointer, [], 0, 120);
+  assert.ok(detail.scrollTop > 0, '商店说明面板跟随滚轮');
+  assert.equal(bag.scrollTop, bagOffset, '被盖住的商店背包不能一起滚动');
+});
+
 test('opening a modal cancels an unfinished description press before it can resume', t => {
   const f = fixture(); t.after(f.cleanup); const source = f.add('stats-reset-spell'); f.menu.debugDescribe(source.id);
   const button = f.scene.button('初始化能力');

@@ -89,7 +89,7 @@ async function main(): Promise<number> {
   const remote = await remoteBuild(base);
   if (!remote.meta) {
     console.error(`构建完成，但 ${base} 的打包服务没有响应（${remote.error ?? '未知原因'}）。`);
-    console.error('启动：npm run serve（默认 4002），再重试 npm run deploy');
+    console.error('启动：systemctl --user start inoitia-game，或 cd story-game && npm run serve');
     return 2;
   }
   const compared = compareBuild(local, remote.meta);

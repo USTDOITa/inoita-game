@@ -314,7 +314,6 @@ export class GmPanel {
   }
 
   /** 剧情页只有任务列表一层；Escape 交给菜单继续处理。 */
-  back(): boolean { return false; }
 
   private renderStory(body: UiSurface): string {
     // 缺口分区读导出器台账：只说明缺哪条证据，不触发预览，也不能进入任务。

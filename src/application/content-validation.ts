@@ -41,6 +41,7 @@ const number:Check=(v,p)=>requireValue(typeof v==='number'&&Number.isFinite(v),p
 const positive:Check=(v,p)=>{number(v,p);requireValue((v as number)>0,p,'必须大于零');};
 const integer:Check=(v,p)=>{number(v,p);requireValue(Number.isInteger(v)&&(v as number)>=0,p,'需要非负整数');};
 const count:Check=(v,p)=>{integer(v,p);requireValue((v as number)>0,p,'必须是正整数');};
+const diceFace:Check=(v,p)=>{count(v,p);requireValue((v as number)<=99,p,'骰面不能超过 99');};
 const offsetInteger:Check=(v,p)=>{number(v,p);requireValue(Number.isInteger(v),p,'需要整数');};
 const boolean:Check=(v,p)=>requireValue(typeof v==='boolean',p,'需要布尔值');
 const optional=(check:Check):Check=>(v,p)=>{if(v!==undefined)check(v,p);};
@@ -441,12 +442,12 @@ const storyCondition:Check=(v,p)=>{
 };
 const visibility={id:text,condition:optional(storyCondition)};
 const entity={...visibility,actor:text,characterId:optional(text),x:number,y:number,flip:optional(boolean),name:optional(text),hint:optional(text),objective:optional(text),collectible:optional(boolean),afterInteractScript:optional(text),
-  appear:optional(object({atMost:count,of:count})),downgrade:optional(object({atLeast:count,of:count,actor:text})),spring:optional(boolean)};
-const enemySpawn={respawn:optional((v,p)=>requireValue(v===false,p,'一次性敌人不可刷新')),id:text,enemyId:text,x:number,y:number,tierLevel:optional(count)};
+  appear:optional(object({atMost:diceFace})),downgrade:optional(object({atLeast:diceFace,actor:text})),spring:optional(boolean)};
+const enemySpawn={respawn:optional((v,p)=>requireValue(v===false,p,'一次性敌人不可刷新')),id:text,enemyId:text,x:number,y:number,tierLevel:optional(count),breakableEligible:optional(boolean)};
 const campaignEnemy={...enemySpawn,map:text,activeQuest:text,rewardItem:text,respawn:(value:unknown,path:string)=>requireValue(value===false,path,'任务敌人不可刷新')};
 const world=shape<WorldIndex>({storyEffects:optional(record(object({clips:record(effectClip),placement:optional(oneOf('ground','above-characters'))}))),version:integer,maps:array(object({id:text,name:text,file})),actors:record(actor),portraits:record(object({file,width:positive,height:positive})),props:array(object({key:text,file}))});
 const map=shape<WorldMap>({lootLevel:optional(integer),chestLevel:optional(integer),chestLevelSource:optional(oneOf('native','neighbor','floor','override')),id:text,name:text,width:positive,height:positive,tileSize:positive,columns:positive,rows:positive,blocked:array(boolean),ground:file,canopy:file,
-  features:array(object({texture:text,x:number,y:number,offsetX:number,offsetY:number,width:positive,flip:boolean,blend:oneOf('normal','screen','add','multiply','color-dodge')})),entities:array(object(entity)),enemySpawns:optional(array(object(enemySpawn))),
+  features:array(object({texture:text,x:number,y:number,offsetX:number,offsetY:number,width:positive,flip:boolean,blend:oneOf('normal','screen','add','multiply','color-dodge')})),entities:array(object(entity)),enemySpawns:optional(array(object(enemySpawn))),breakableSpawn:optional(oneOf('bush','jar')),
   questItemSpawns:optional(array(object({id:text,quest:text,item:text,x:number,y:number,respawnFrames:count}))),
   exits:array(object({...box,id:optional(text),destination:text,spawn:object({x:number,y:number}),exitFacing,facing:exitFacing}))});
 const line={speaker:text,text,actor:nullable(text),portrait:optional(nullable(text)),presentation:optional(oneOf('screen'))};

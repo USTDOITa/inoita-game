@@ -27,7 +27,8 @@ interface Collector {
   setSnapshot(provider: () => unknown): void; markFrame(phase: string): void; stopFrames(): void;
   export(): string;
 }
-function client(storage = new Map<string, string>(), brokenStorage = false) {
+function client(storage = new Map<string, string>(), brokenStorage = false,
+  options: { native?: boolean; hostname?: string; onNativeReport?: (body: string, id: string) => void } = {}) {
   const windowEvents = new EventEmitter(), documentEvents = new EventEmitter();
   const sent: { entries: Entry[] }[] = [], originals: unknown[][] = [], intervals: (() => void)[] = [];
   let now = 1000, online = true;
@@ -36,16 +37,17 @@ function client(storage = new Map<string, string>(), brokenStorage = false) {
     addEventListener: (event: string, callback: (...args: unknown[]) => void) => documentEvents.on(event, callback) };
   const sandbox = {
     document, console: { error: (...args: unknown[]) => originals.push(args) },
-    location: { pathname: '/' }, navigator: { userAgent: 'test mobile' },
+    location: { pathname: '/', hostname: options.hostname }, navigator: { userAgent: 'test mobile' },
     innerWidth: 800, innerHeight: 400, devicePixelRatio: 2, URL, AbortController, Date: Clock,
     localStorage: { getItem: (key: string) => { if (brokenStorage) throw Error('disabled'); return storage.get(key) ?? null; },
       setItem: (key: string, value: string) => { if (brokenStorage) throw Error('disabled'); storage.set(key, value); } },
     addEventListener: (event: string, callback: (...args: unknown[]) => void) => windowEvents.on(event, callback),
     setInterval: (callback: () => void) => { intervals.push(callback); return intervals.length; },
     setTimeout: () => 1, clearTimeout: () => {},
-    fetch: async (_url: string, options: { body: string }) => {
-      if (!online) throw Error('offline'); sent.push(JSON.parse(options.body)); return { ok: true };
+    fetch: async (_url: string, request: { body: string }) => {
+      if (!online) throw Error('offline'); sent.push(JSON.parse(request.body)); return { ok: true };
     },
+    InotiaNative: options.native ? { report: (body: string, id: string) => options.onNativeReport?.(body, id) } : undefined,
     storyDiagnostics: undefined as Collector | undefined,
     window: undefined as unknown
   };
@@ -55,6 +57,10 @@ function client(storage = new Map<string, string>(), brokenStorage = false) {
   const collector = sandbox.storyDiagnostics!;
   const entries = () => (JSON.parse(collector.export()) as { entries: Entry[] }).entries;
   return { sandbox, context, collector, sent, entries, originals, windowEvents, documentEvents, document, storage,
+    pending: () => (JSON.parse(collector.export()) as { pending: Entry[] }).pending,
+    nativeResult: (id: string, ok: boolean) =>
+      (sandbox as unknown as { __inoitaNativeReportResult?: (id: string, ok: boolean) => void })
+        .__inoitaNativeReportResult?.(id, ok),
     online(value: boolean) { online = value; },
     advance(ms: number) { now += ms; for (const timer of intervals) timer(); } };
 }
@@ -95,6 +101,33 @@ test('failed upload persists across reload and is only removed after server ackn
   assert.equal(next.sent[0].entries[0].id, f.entries().at(-1)!.id);
   await next.collector.flush(); await settle();
   assert.equal(next.storage.get('inotia4.diagnostics.pending.v1'), '[]');
+});
+
+test('the native bridge acknowledges records without a fetch round trip', async () => {
+  const reports: string[] = [];
+  const f = client(new Map(), false, { native: true, onNativeReport: (_body, id) => reports.push(id) });
+  await settle();
+  assert.equal(f.sent.length, 0, '原生桥可用时不再走 fetch');
+  assert.equal(reports.length, 1, '启动记录立即交给原生桥');
+  assert.equal(f.pending().length, 1);
+  f.nativeResult(reports[0]!, true);
+  await settle();
+  assert.equal(f.pending().length, 0, '原生桥确认后才删除待发记录');
+});
+
+test('a rejected native report keeps the record pending', async () => {
+  const reports: string[] = [];
+  const f = client(new Map(), false, { native: true, onNativeReport: (_body, id) => reports.push(id) });
+  await settle();
+  f.nativeResult(reports[0]!, false);
+  await settle();
+  assert.equal(f.pending().length, 1);
+});
+
+test('an offline shell placeholder response never discards pending records', async () => {
+  const f = client(new Map(), false, { hostname: 'appassets.androidplatform.net' });
+  await settle();
+  assert.ok(f.pending().length > 0, '本地 asset loader 的 204 只是占位响应');
 });
 
 test('broken storage, circular state and throwing getters cannot prevent console output', () => {
@@ -152,7 +185,7 @@ test('engine event observers do not replace updates and are removed on destroy',
 
 function request(middleware: Middleware, body: string, method = 'POST', url = '/__diagnostics/report') {
   return new Promise<number>(resolve => {
-    const req = Object.assign(new EventEmitter(), { method, url });
+    const req = Object.assign(new EventEmitter(), { method, url, headers: {} as Record<string, string> });
     let status = 200;
     const res = { writableEnded: false, setHeader() {}, writeHead(value: number) { status = value; },
       end() { this.writableEnded = true; resolve(status); } };

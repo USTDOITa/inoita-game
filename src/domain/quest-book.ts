@@ -57,8 +57,9 @@ export interface QuestProgress {
   completedCycles: number;
   goals: Record<string, number>;
 }
+const QUEST_BOOK_STATE_VERSION = 5;
 export interface QuestBookState {
-  version: 5;
+  version: typeof QUEST_BOOK_STATE_VERSION;
   quests: [string, QuestProgress][];
   /** 接取时追加，完成或重置时由尾项补位；包含进行中与待交付任务。 */
   runningQuestIds: string[];
@@ -254,7 +255,7 @@ export class QuestBook {
   visible(id: string): boolean { const definition=this.definitions.get(id); return !!definition && questIsVisible(definition); }
   get runningQuestIds(): readonly string[] { return [...this.runningIds]; }
   captureState(): QuestBookState {
-    return structuredClone({ version: 5, quests: [...this.states], runningQuestIds: this.runningIds,
+    return structuredClone({ version: QUEST_BOOK_STATE_VERSION, quests: [...this.states], runningQuestIds: this.runningIds,
       factSequences: [...this.factSequences], ...(this.debugPins.size ? { debugPins: [...this.debugPins].sort() } : {}) });
   }
   /** 某个来源已经记到的事实序号。比 `captureState()` 克隆整本任务簿再读一个数字便宜得多。 */
@@ -313,14 +314,14 @@ export class QuestBook {
     const refresh = (): void => {
       // Unlocking can depend on another quest becoming available in the same batch.
       for (let pass = 0; pass <= states.size; pass++) {
-        let unlocked = false;
+        let availabilityChanged = false;
         for (const [id, quest] of this.definitions) {
           const state = states.get(id)!;
           const available = quest.completion !== 'internal' && evaluateStoryCondition(quest.availableWhen, conditionContext);
           // 只有「可接取 ⇄ 锁定」的翻转才需要再跑一轮：别的任务的条件可能读了它。
           let status = state.status;
-          if (status === 'available' && !available) { status = 'locked'; unlocked = true; }
-          else if (status === 'locked' && available) { status = 'available'; unlocked = true; }
+          if (status === 'available' && !available) { status = 'locked'; availabilityChanged = true; }
+          else if (status === 'locked' && available) { status = 'available'; availabilityChanged = true; }
           // 目标进度先在本地的 `goals` 上算，真的变了才复制一层；`state.goals` 是共享的不可变对象。
           let goals = state.goals;
           if (['active', 'ready'].includes(status) && quest.completion === 'all') {
@@ -346,7 +347,7 @@ export class QuestBook {
           if (status === state.status && goals === state.goals) continue;
           write(id, { status, goals });
         }
-        if (!unlocked) break;
+        if (!availabilityChanged) break;
       }
     };
     const settle = (quest: QuestRules, state: QuestProgress): void => {
@@ -492,7 +493,7 @@ export class QuestBook {
       itemRemovals: Object.freeze([...delta].filter(([, quantity]) => quantity < 0).map(([item, quantity]) => Object.freeze({ item, quantity: -quantity }))),
       rewards: Object.freeze(rewards.map(reward => Object.freeze(reward))),
       get nextState(): QuestBookState {
-        return entry.snapshot ??= freeze({ version: 5, quests: [...states], runningQuestIds: [...runningIds], factSequences: [...factSequences],
+        return entry.snapshot ??= freeze({ version: QUEST_BOOK_STATE_VERSION, quests: [...states], runningQuestIds: [...runningIds], factSequences: [...factSequences],
           ...(debugPins.size ? { debugPins: [...debugPins].sort() } : {}) });
       } });
     this.plans.set(plan, entry); return plan;
@@ -523,7 +524,7 @@ export class QuestBook {
   }
   prepareRestore(input: QuestBookState): QuestRestorePlan {
     const next = structuredClone(input);
-    if (next.version !== 5) throw new Error('任务快照版本不支持');
+    if (next.version !== QUEST_BOOK_STATE_VERSION) throw new Error('任务快照版本不支持');
     if (new Set(next.quests.map(([id]) => id)).size !== next.quests.length) throw new Error('任务快照标识重复');
     const states = new Map(next.quests);
     for (const [id, state] of states) {
@@ -571,7 +572,7 @@ export class QuestBook {
    * 作为「同源」这条前提的最低保障。传入的状态归本对象所有，调用方不得再改它。
    */
   installTrustedState(state: QuestBookState): void {
-    if (state.version !== 5) throw new Error('任务快照版本不支持');
+    if (state.version !== QUEST_BOOK_STATE_VERSION) throw new Error('任务快照版本不支持');
     const states = new Map(state.quests);
     for (const id of states.keys()) if (!this.definitions.has(id)) throw new Error(`任务快照引用未知任务 ${id}`);
     for (const [id, quest] of this.definitions) if (!states.has(id)) states.set(id, initialProgress(quest));

@@ -26,32 +26,35 @@ async function inTextureQueue<T>(scene: Phaser.Scene, work: () => Promise<T>): P
   finally { release(); }
 }
 
+export type AssetGap = 'texture' | `frame:${number}`;
+
+/** 纹理存在且 spritesheet 帧完整才算就绪；预检、加载、验收共用这一判据。 */
+export function assetGap(scene: Phaser.Scene, asset: PendingAsset): AssetGap | undefined {
+  if (!scene.textures.exists(asset.key)) return 'texture';
+  if (asset.kind !== 'spritesheet') return undefined;
+  const texture = scene.textures.get(asset.key);
+  const end = asset.config.endFrame ?? -1;
+  const count = end < 0 ? 1 : end - (asset.config.startFrame ?? 0) + 1;
+  for (let frame = 0; frame < count; frame++) if (!texture.has(String(frame))) return `frame:${frame}`;
+  return undefined;
+}
+
 /** 纹理和 spritesheet 帧都不缺才算已加载；用于静默重建前的 preflight。 */
 export function missingSceneAssets(scene: Phaser.Scene, assets: readonly PendingAsset[]): PendingAsset[] {
-  return assets.filter(asset => {
-    if (!scene.textures.exists(asset.key)) return true;
-    if (asset.kind !== 'spritesheet') return false;
-    const texture = scene.textures.get(asset.key);
-    const end = asset.config.endFrame ?? -1;
-    const count = end < 0 ? 1 : end - (asset.config.startFrame ?? 0) + 1;
-    for (let frame = 0; frame < count; frame++) if (!texture.has(String(frame))) return true;
-    return false;
-  });
+  return assets.filter(asset => assetGap(scene, asset) !== undefined);
+}
+
+function removeTexture(scene: Phaser.Scene, key: string): void {
+  if (scene.anims.exists(key)) scene.anims.remove(key);
+  if (scene.textures.exists(key)) scene.textures.remove(key);
 }
 
 function verifyAssets(scene: Phaser.Scene, assets: PendingAsset[]): void {
   const failures: string[] = [];
   for (const asset of assets) {
-    if (!scene.textures.exists(asset.key)) {
-      failures.push(`${asset.key} (${asset.file})：纹理未加载`);
-      continue;
-    }
-    if (asset.kind !== 'spritesheet') continue;
-    const texture = scene.textures.get(asset.key);
-    const end = asset.config.endFrame ?? -1;
-    const count = end < 0 ? 1 : end - (asset.config.startFrame ?? 0) + 1;
-    for (let frame = 0; frame < count; frame += 1)
-      if (!texture.has(String(frame))) { failures.push(`${asset.key} (${asset.file})：缺少帧 ${frame}`); break; }
+    const gap = assetGap(scene, asset);
+    if (gap === 'texture') failures.push(`${asset.key} (${asset.file})：纹理未加载`);
+    else if (gap) failures.push(`${asset.key} (${asset.file})：缺少帧 ${gap.slice('frame:'.length)}`);
   }
   if (failures.length) throw new Error('部分画面未能加载，请重试', { cause: new Error(failures.join('\n')) });
 }
@@ -59,10 +62,7 @@ function verifyAssets(scene: Phaser.Scene, assets: PendingAsset[]): void {
 export async function loadSceneAssets(scene: Phaser.Scene, assets: PendingAsset[], progress: (value: number) => void, retain=false): Promise<AssetLease> {
   let pool = pools.get(scene.textures);
   if (!pool) {
-    pool = new AssetPool(key => {
-      if(scene.anims.exists(key))scene.anims.remove(key);
-      if(scene.textures.exists(key))scene.textures.remove(key);
-    }); pools.set(scene.textures,pool);
+    pool = new AssetPool(key => removeTexture(scene, key)); pools.set(scene.textures,pool);
   }
   const byKey = new Map<string, PendingAsset>();
   for (const asset of assets) {
@@ -79,7 +79,14 @@ export async function loadSceneAssets(scene: Phaser.Scene, assets: PendingAsset[
   try {
     await inTextureQueue(scene, async () => {
       controller.signal.throwIfAborted();
-      const needed = unique.filter(asset => !scene.textures.exists(asset.key));
+      const needed = unique.filter(asset => assetGap(scene, asset) !== undefined);
+      // 纹理键已存在但帧不全：先确认没有别的租约在用它，再删掉重建。
+      for (const asset of needed) {
+        if (assetGap(scene, asset) === 'texture') continue;
+        if (pool.holders(asset.key) !== 1)
+          throw new Error(`贴图 ${asset.key} 仍被其他租约持有，无法补齐缺失帧`);
+        removeTexture(scene, asset.key);
+      }
       if (!needed.length) { progress(1); return; }
       await new Promise<void>((resolve,reject)=>{
         const clean=()=>{scene.load.off('progress',progress);scene.load.off('complete',complete);controller.signal.removeEventListener('abort',cancelled);};

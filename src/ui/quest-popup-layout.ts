@@ -2,7 +2,6 @@ import type { QuestRewardReceipt } from '../domain/content.ts';
 import type { CampaignQuest } from '../domain/campaign.ts';
 import { questTextParts, type QuestTextTone } from '../domain/quest-text.ts';
 
-export type { QuestTextTone } from '../domain/quest-text.ts';
 interface QuestTextRun { text: string; tone: QuestTextTone; x: number }
 export interface QuestTextLine { runs: QuestTextRun[]; width: number }
 
@@ -48,8 +47,8 @@ export function layoutKeyedText<K>(parts: readonly KeyedTextPart<K>[], width: nu
   return lines;
 }
 
-export function layoutQuestText(value: string, width: number, measure: (text: string) => number): QuestTextLine[] {
-  const parts = questTextParts(value).map(part => 'break' in part ? part : { text: part.text, key: part.tone });
+export function layoutQuestText(text: string, width: number, measure: (text: string) => number): QuestTextLine[] {
+  const parts = questTextParts(text).map(part => 'break' in part ? part : { text: part.text, key: part.tone });
   return layoutKeyedText(parts, width, measure)
     .map(line => ({ width: line.width, runs: line.runs.map(run => ({ text: run.text, tone: run.key, x: run.x })) }));
 }

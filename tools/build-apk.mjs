@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 把 dist 打进一个离线 APK。
+ * 把 story-game/dist 打进一个离线 APK。
  *
  * 用法：
  *   node tools/build-apk.mjs              先构建网页产物，再打包

@@ -6,6 +6,8 @@ import type { ItemCatalog, ItemInstance } from './items.ts';
 import { calculateEffectiveDefense,calculateMagicResistance } from './physical-hit.ts';
 
 export const PRIMARY_STATS = ['strength','dexterity','vitality','intelligence','mentality'] as const;
+/** 装备没有写默认品级时使用的档位。 */
+export const DEFAULT_EQUIPMENT_GRADE = 2;
 export type PrimaryStat = typeof PRIMARY_STATS[number];
 export type PrimaryAttributes = Record<PrimaryStat,number>;
 export interface Modifier { stat: string; value: number }
@@ -95,6 +97,7 @@ const EVASION_LEVEL_FACTOR=5000,EVASION_CONSTANT=1000000,EVASION_LEVEL_DIVISOR=5
  */
 /** 判定区间上界：原版取 `MATH_GetRandom(1, 998)`，小于阈值即成功。 */
 const ENHANCEMENT_ROLL_MAX=998;
+const MAX_ENHANCEMENT_LEVEL=30;
 /** 混沌卷轴第一次判定阈值 `T1 = 50000 / (10 + 等级²)`，失败降一级。 */
 const CHAOS_CHANCE_NUMERATOR=50000,CHAOS_CHANCE_BASE=10;
 /** 第二次判定阈值 `T2 = 1500 / (L + 6)`，L 已加一；通过再升一级。 */
@@ -115,21 +118,6 @@ export function equipmentPower(definition:EquipmentNumbers, entry:ItemInstance) 
   const rate=entry.numbers?.chaos?.valuePercent??100;
   const attack=baseAttack?(entry.numbers?.chaos?Math.max(1,trunc((baseAttack+bonus)*rate/100)):baseAttack+bonus):0;
   return {attack,magicAttack:trunc(attack*(entry.numbers?.magicPercent??0)/100),defense:baseDefense?trunc((baseDefense+bonus)*rate/100):0};
-}
-
-/**
- * 装备（含镶嵌的宝石）对五项主属性的加成合计。
- * 人物页的加点视图在每行右侧用橙色的「+N」显示它（原版 `Scene_Draw_POPUP_SC_CHARACTER_INFO
- * 0x1e76dc` 读静态数组后按 `"+%d"` 格式化，值小于 1 就不画）。
- */
-export function equipmentAttributeBonuses(equipped:readonly (ItemInstance|undefined)[]):PrimaryAttributes {
-  const bonuses=emptyAttributes();
-  for(const entry of equipped) {
-    if(!entry)continue;
-    for(const modifier of [...entry.numbers?.modifiers??[],...entry.numbers?.gemModifiers??[]])
-      if(PRIMARY_STATS.includes(modifier.stat as PrimaryStat))bonuses[modifier.stat as PrimaryStat]+=modifier.value;
-  }
-  return bonuses;
 }
 
 export function calculateCharacter(catalog:CharacterStatsCatalog, items:ItemCatalog, classId:string, level:number,
@@ -154,23 +142,23 @@ export function calculateCharacter(catalog:CharacterStatsCatalog, items:ItemCata
   const strengthRate=weapon==='two-handed'?STRENGTH_RATE_TWO_HANDED:['longsword','axe','mace'].includes(weapon)?STRENGTH_RATE_MARTIAL:STRENGTH_RATE_OTHER;
   const intelligenceRate=weapon==='unarmed'?0:weapon==='staff'?INTELLIGENCE_RATE_STAFF:weapon==='orb'?INTELLIGENCE_RATE_ORB:PER_MILLE;
   const mentalityRate=weapon==='unarmed'?0:['staff','orb'].includes(weapon)?MENTALITY_RATE_CASTING:PER_MILLE;
-  const b=(key:string)=>bonuses[key]??0;
-  const physicalAttack=Math.max(0,trunc((attack+trunc(attributes.strength*strengthRate/PER_MILLE)+trunc(attributes.dexterity/DEXTERITY_ATTACK_DIVISOR))*(PER_MILLE+b('physicalAttackRate'))/PER_MILLE));
-  const magicAttack=Math.max(0,trunc((magic+trunc(attributes.intelligence*intelligenceRate/PER_MILLE)+trunc(attributes.mentality*mentalityRate/PER_MILLE))*(PER_MILLE+b('magicAttackRate'))/PER_MILLE));
-  const baseDefense=defense+attributes.vitality,defenseRate=b('defenseRate');
+  const bonusOf=(key:string)=>bonuses[key]??0;
+  const physicalAttack=Math.max(0,trunc((attack+trunc(attributes.strength*strengthRate/PER_MILLE)+trunc(attributes.dexterity/DEXTERITY_ATTACK_DIVISOR))*(PER_MILLE+bonusOf('physicalAttackRate'))/PER_MILLE));
+  const magicAttack=Math.max(0,trunc((magic+trunc(attributes.intelligence*intelligenceRate/PER_MILLE)+trunc(attributes.mentality*mentalityRate/PER_MILLE))*(PER_MILLE+bonusOf('magicAttackRate'))/PER_MILLE));
+  const baseDefense=defense+attributes.vitality,defenseRate=bonusOf('defenseRate');
   defense=calculateEffectiveDefense(baseDefense,defenseRate);
   const hitBase=HIT_BASE_PER_POINT*(attributes.dexterity+attributes.mentality);
-  return {attributes,maxHealth:BASE_HEALTH+HEALTH_PER_LEVEL*level+HEALTH_PER_VITALITY*attributes.vitality,maxMana:BASE_MAX_MANA+b('maxMana'),
-    physicalAttack,magicAttack,hitBase,hitBonus:Math.max(0,b('hitBonus')),evasionBase:attributes.dexterity,
-    evasionBonus:Math.max(0,Math.min(RATE_CAP,b('evasionBonus'))),
-    criticalResistance:Math.max(0,b('criticalResistance')),criticalDamageResistance:Math.max(0,b('criticalDamageResistance')),
-    criticalRate:Math.max(0,DEFAULT_CRITICAL_RATE+b('criticalRate')),
-    hitRate:trunc((hitBase*PER_MILLE+HIT_NUMERATOR)/(hitBase+level+HIT_LEVEL_OFFSET))+Math.max(0,b('hitBonus'))+HIT_DISPLAY_BONUS,
-    criticalDamage:Math.max(0,DEFAULT_CRITICAL_DAMAGE+b('criticalDamage')),baseDefense,defense,defenseRate,
-    physicalResistance:trunc(PER_MILLE*defense/(defense+DEFENSE_WEIGHT_PER_LEVEL*(level+DEFENSE_LEVEL_OFFSET))),baseMagicResistance:b('magicResistance'),
-    magicResistance:calculateMagicResistance(b('magicResistance')),
-    evasionRate:Math.min(RATE_CAP,PER_MILLE+Math.max(0,Math.min(RATE_CAP,b('evasionBonus')))-trunc((EVASION_LEVEL_FACTOR*level+EVASION_CONSTANT)/(EVASION_LEVEL_DIVISOR*level+attributes.dexterity+EVASION_DEXTERITY_OFFSET))),
-    weaponBlock:Math.max(0,DEFAULT_WEAPON_BLOCK+b('weaponBlock')),shieldBlock:Math.max(0,b('shieldBlock')),
+  return {attributes,maxHealth:BASE_HEALTH+HEALTH_PER_LEVEL*level+HEALTH_PER_VITALITY*attributes.vitality,maxMana:BASE_MAX_MANA+bonusOf('maxMana'),
+    physicalAttack,magicAttack,hitBase,hitBonus:Math.max(0,bonusOf('hitBonus')),evasionBase:attributes.dexterity,
+    evasionBonus:Math.max(0,Math.min(RATE_CAP,bonusOf('evasionBonus'))),
+    criticalResistance:Math.max(0,bonusOf('criticalResistance')),criticalDamageResistance:Math.max(0,bonusOf('criticalDamageResistance')),
+    criticalRate:Math.max(0,DEFAULT_CRITICAL_RATE+bonusOf('criticalRate')),
+    hitRate:trunc((hitBase*PER_MILLE+HIT_NUMERATOR)/(hitBase+level+HIT_LEVEL_OFFSET))+Math.max(0,bonusOf('hitBonus'))+HIT_DISPLAY_BONUS,
+    criticalDamage:Math.max(0,DEFAULT_CRITICAL_DAMAGE+bonusOf('criticalDamage')),baseDefense,defense,defenseRate,
+    physicalResistance:trunc(PER_MILLE*defense/(defense+DEFENSE_WEIGHT_PER_LEVEL*(level+DEFENSE_LEVEL_OFFSET))),baseMagicResistance:bonusOf('magicResistance'),
+    magicResistance:calculateMagicResistance(bonusOf('magicResistance')),
+    evasionRate:Math.min(RATE_CAP,PER_MILLE+Math.max(0,Math.min(RATE_CAP,bonusOf('evasionBonus')))-trunc((EVASION_LEVEL_FACTOR*level+EVASION_CONSTANT)/(EVASION_LEVEL_DIVISOR*level+attributes.dexterity+EVASION_DEXTERITY_OFFSET))),
+    weaponBlock:Math.max(0,DEFAULT_WEAPON_BLOCK+bonusOf('weaponBlock')),shieldBlock:Math.max(0,bonusOf('shieldBlock')),
     offhandShield:equipped['off-hand']!==undefined&&items.items[equipped['off-hand']!.item]?.kind==='shield'};
 }
 
@@ -318,29 +306,29 @@ export class BattleCharacter {
   private initializeItem(entry:ItemInstance,drop?:{grade?:EquipmentGradeSeed;sockets?:boolean}):void {
     const random=itemRandom(`battle:${this.classId}:${entry.item}:${entry.id}`);
     const roll=(range:ModifierRange):Modifier=>({stat:range.stat,value:random(range.min,range.max)});
-    const d=this.catalog.equipment[entry.item],gem=this.catalog.gems[entry.item];
-    if(!d&&!gem)return;
-    const n:ItemNumbers={modifiers:[],gemModifiers:[],magicPercent:0,sockets:0,enhancementUses:0};entry.numbers=n;
-    if(gem){const choices=gem[random(0,gem.length-1)];n.modifiers=[roll(choices[random(0,choices.length-1)])];return;}
-    entry.numbers=rollEquipmentNumbers(d,random,drop?.sockets!==false,drop?.grade);
+    const definition=this.catalog.equipment[entry.item],gem=this.catalog.gems[entry.item];
+    if(!definition&&!gem)return;
+    const numbers:ItemNumbers={modifiers:[],gemModifiers:[],magicPercent:0,sockets:0,enhancementUses:0};entry.numbers=numbers;
+    if(gem){const choices=gem[random(0,gem.length-1)];numbers.modifiers=[roll(choices[random(0,choices.length-1)])];return;}
+    entry.numbers=rollEquipmentNumbers(definition,random,drop?.sockets!==false,drop?.grade);
   }
   private targetProblem(source:ItemInstance,target:ItemInstance,items:ItemCatalog):ItemNotice|undefined {
-    const use=items.items[source.item].use!,n=target.numbers;
-    if(!n)return 'socket-incompatible';
-    if(use.kind==='socket'&&target.gems.length>=n.sockets)return 'socket-full';
+    const use=items.items[source.item].use!,numbers=target.numbers;
+    if(!numbers)return 'socket-incompatible';
+    if(use.kind==='socket'&&target.gems.length>=numbers.sockets)return 'socket-full';
     if(use.kind==='enchant'){
-      if(use.requiresEnhanced&&n.enhancementUses!==0)return 'enchant-chaos-durability';
-      if(!use.requiresEnhanced&&n.enhancementUses<1)return 'enchant-durability';
-      if(target.enhancement>=30)return 'enchant-max';
+      if(use.requiresEnhanced&&numbers.enhancementUses!==0)return 'enchant-chaos-durability';
+      if(!use.requiresEnhanced&&numbers.enhancementUses<1)return 'enchant-durability';
+      if(target.enhancement>=MAX_ENHANCEMENT_LEVEL)return 'enchant-max';
       const next=this.catalog.enchantments[source.item]?.[items.items[target.item].kind];
       if(!next)return 'enchant-rule';
-      if(!use.requiresEnhanced&&n.enhancementScroll&&n.enhancementScroll!==source.item){
+      if(!use.requiresEnhanced&&numbers.enhancementScroll&&numbers.enhancementScroll!==source.item){
         // 原版只把顶级与特级配成一对可互换的同类卷轴（ITEMENCHANTBASE 19↔946 武器、24↔947 防具），其余必须沿用同一张。
-        const original=items.items[n.enhancementScroll]?.use;
+        const original=items.items[numbers.enhancementScroll]?.use;
         const sameTierPair=!!original&&!original.maxLevel&&!original.requiresEnhanced&&original.target===use.target&&!use.maxLevel;
         if(!sameTierPair)return 'enchant-rule';
       }
-      if(!use.requiresEnhanced&&n.enhancementRule&&['step','threshold','extra'].some(key=>n.enhancementRule![key as keyof EnhancementRule]!==next[key as keyof EnhancementRule]))return 'enchant-rule';
+      if(!use.requiresEnhanced&&numbers.enhancementRule&&['step','threshold','extra'].some(key=>numbers.enhancementRule![key as keyof EnhancementRule]!==next[key as keyof EnhancementRule]))return 'enchant-rule';
     }
     return undefined;
   }
@@ -354,21 +342,21 @@ const enhancementSucceeds=(random:()=>number,threshold:number):boolean=>{
   return 1+Math.floor(value*ENHANCEMENT_ROLL_MAX)<Math.trunc(threshold);
 };
 
-export function rollEquipmentNumbers(d:EquipmentNumbers,random:(min:number,max:number)=>number,withSockets=true,grade?:EquipmentGradeSeed):ItemNumbers {
+export function rollEquipmentNumbers(definition:EquipmentNumbers,random:(min:number,max:number)=>number,withSockets=true,grade?:EquipmentGradeSeed):ItemNumbers {
   const roll=(range:ModifierRange):Modifier=>({stat:range.stat,value:random(range.min,range.max)});
-  const n:ItemNumbers={modifiers:[],gemModifiers:[],magicPercent:0,sockets:0,enhancementUses:0};
-  n.grade=grade?.grade??d.defaultGrade??2;n.gradeName=grade?.gradeName??d.gradeName;
-  if(grade){n.baseAttack=grade.attack;n.baseDefense=grade.defense;}
-  n.magicPercent=trunc((random(d.magicPercent[0],d.magicPercent[1])+random(d.magicPercent[0],d.magicPercent[1]))/2);
-  n.enhancementUses=d.fixedEnhancementUses??random(...d.enhancementUses as [number,number])+random(...d.enhancementUses as [number,number])+1;
-  n.modifiers=d.fixedOptions.map(roll);
-  const choices=[...d.randomOptions];
-  const optionCount=grade?.optionCount??d.optionCount;
-  for(let i=0;i<optionCount&&choices.length;i++)n.modifiers.push(roll(choices.splice(random(0,choices.length-1),1)[0]));
+  const numbers:ItemNumbers={modifiers:[],gemModifiers:[],magicPercent:0,sockets:0,enhancementUses:0};
+  numbers.grade=grade?.grade??definition.defaultGrade??DEFAULT_EQUIPMENT_GRADE;numbers.gradeName=grade?.gradeName??definition.gradeName;
+  if(grade){numbers.baseAttack=grade.attack;numbers.baseDefense=grade.defense;}
+  numbers.magicPercent=trunc((random(definition.magicPercent[0],definition.magicPercent[1])+random(definition.magicPercent[0],definition.magicPercent[1]))/2);
+  numbers.enhancementUses=definition.fixedEnhancementUses??random(...definition.enhancementUses as [number,number])+random(...definition.enhancementUses as [number,number])+1;
+  numbers.modifiers=definition.fixedOptions.map(roll);
+  const choices=[...definition.randomOptions];
+  const optionCount=grade?.optionCount??definition.optionCount;
+  for(let i=0;i<optionCount&&choices.length;i++)numbers.modifiers.push(roll(choices.splice(random(0,choices.length-1),1)[0]));
   if(withSockets&&random(0,99)<SOCKET_CHANCE_PERCENT){
     const roll=random(0,99);let threshold=0;
-    const socketLimit=grade?.socketLimit??d.socketLimit;
-    for(let i=0;i<socketLimit;i++){threshold+=SOCKET_WEIGHTS[i];if(roll<threshold){n.sockets=i+1;break;}}
+    const socketLimit=grade?.socketLimit??definition.socketLimit;
+    for(let i=0;i<socketLimit;i++){threshold+=SOCKET_WEIGHTS[i];if(roll<threshold){numbers.sockets=i+1;break;}}
   }
-  return n;
+  return numbers;
 }

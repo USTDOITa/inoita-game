@@ -13031,16 +13031,16 @@
               "effect": "story-hit"
             },
             {
+              "type": "leave",
+              "target": "barricade-a1eb664e"
+            },
+            {
               "type": "sound",
               "sound": "UI_Menu_Op"
             },
             {
               "type": "wait",
               "durationMs": 1200
-            },
-            {
-              "type": "leave",
-              "target": "barricade-a1eb664e"
             },
             {
               "type": "walk",
@@ -14810,7 +14810,7 @@
               "type": "appear",
               "target": "story-eara-22d61f15",
               "x": 168,
-              "y": 120,
+              "y": 104,
               "facing": "east"
             },
             {
@@ -20514,7 +20514,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -20536,10 +20536,6 @@
             {
               "type": "wait",
               "durationMs": 900
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -21818,7 +21814,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "switch-6d46d3c1",
@@ -21865,10 +21861,6 @@
             {
               "type": "wait",
               "durationMs": 600
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -22047,7 +22039,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "story-goblin-guard-9e6831cf",
@@ -22207,10 +22199,6 @@
               "durationMs": 300
             },
             {
-              "type": "show",
-              "target": "player"
-            },
-            {
               "type": "camera",
               "target": "player",
               "motion": "pan"
@@ -22346,7 +22334,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "switch-006515f8",
@@ -22393,10 +22381,6 @@
             {
               "type": "wait",
               "durationMs": 600
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -22595,7 +22579,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "story-goblin-guard-9e6831cf",
@@ -22750,10 +22734,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -25121,7 +25101,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 248,
-              "y": 248,
+              "y": 232,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": true
             },
@@ -27213,7 +27193,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 216,
-              "y": 360,
+              "y": 344,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -32589,8 +32569,8 @@
                   "id": "story-arnen-soldier-4d35dd27",
                   "actor": "story-arnen-soldier-4d35dd27",
                   "characterId": "npc-68",
-                  "x": 8,
-                  "y": 232,
+                  "x": 136,
+                  "y": 200,
                   "facing": "south",
                   "visible": false
                 },
@@ -33110,8 +33090,8 @@
             {
               "type": "appear",
               "target": "story-arnen-soldier-4d35dd27",
-              "x": 8,
-              "y": 232,
+              "x": 136,
+              "y": 200,
               "facing": "south"
             },
             {
@@ -33224,7 +33204,7 @@
               "type": "walk",
               "target": "player",
               "x": 152,
-              "y": 104,
+              "y": 88,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -33571,8 +33551,8 @@
                   "id": "story-arnen-soldier-4d35dd27-68",
                   "actor": "story-arnen-soldier-4d35dd27",
                   "characterId": "npc-68",
-                  "x": 632,
-                  "y": 8,
+                  "x": 584,
+                  "y": 120,
                   "facing": "south",
                   "visible": false
                 },
@@ -33846,8 +33826,8 @@
             {
               "type": "appear",
               "target": "story-arnen-soldier-4d35dd27-68",
-              "x": 632,
-              "y": 8,
+              "x": 584,
+              "y": 120,
               "facing": "south"
             },
             {
@@ -35964,7 +35944,7 @@
               "type": "walk",
               "target": "player",
               "x": 328,
-              "y": 200,
+              "y": 184,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -37122,7 +37102,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -37134,10 +37114,6 @@
               "actor": null,
               "portrait": null,
               "presentation": "screen"
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -37176,7 +37152,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "barricade-307ed4dd",
@@ -37217,10 +37193,6 @@
             {
               "type": "wait",
               "durationMs": 420
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -38122,7 +38094,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 136,
-              "y": 184,
+              "y": 168,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -40571,7 +40543,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "barricade-a63be1c1",
@@ -40596,10 +40568,6 @@
             {
               "type": "sound",
               "sound": "UI_Item_Iron_Weapon"
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -43880,7 +43848,7 @@
             {
               "type": "walk",
               "target": "story-eara-e221699c",
-              "x": 120,
+              "x": 104,
               "y": 408,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
@@ -51411,7 +51379,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 40,
-              "y": 88,
+              "y": 72,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -68996,7 +68964,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -69022,10 +68990,6 @@
             {
               "type": "wait",
               "durationMs": 600
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -69825,7 +69789,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "story-tout-be9354dd",
@@ -69869,10 +69833,6 @@
               "text": "呼呼~果然是个通情达理的人啊。&P嘿嘿，其实我知道的是，那个$R知道方法的人$B。到这附近的$R潘德利村$B找一个叫$S贝恩$B的人吧。那个人有这方面的情报哦。",
               "speaker": "迎宾员",
               "actor": "story-tout-be9354dd"
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -70061,7 +70021,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "story-tout-be9354dd",
@@ -70105,10 +70065,6 @@
               "text": "哦，那就去卖点东西吧。这世上可没有免费的午餐哦。",
               "speaker": "迎宾员",
               "actor": "story-tout-be9354dd"
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -74848,7 +74804,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "ben-a380d77f",
@@ -74875,10 +74831,6 @@
               "text": "很抱歉，我也不知道方法。你走吧。",
               "speaker": "贝恩",
               "actor": "ben-a380d77f"
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -91326,8 +91278,8 @@
                   "id": "story-berkel-dispatch-soldier-1dce097c",
                   "actor": "story-berkel-dispatch-soldier-1dce097c",
                   "characterId": "npc-123",
-                  "x": 376,
-                  "y": 360,
+                  "x": 344,
+                  "y": 328,
                   "facing": "south",
                   "visible": false
                 },
@@ -91405,8 +91357,8 @@
             {
               "type": "appear",
               "target": "story-berkel-dispatch-soldier-1dce097c",
-              "x": 376,
-              "y": 360,
+              "x": 328,
+              "y": 328,
               "facing": "south"
             },
             {
@@ -95682,7 +95634,7 @@
               "type": "walk",
               "target": "portia",
               "x": 136,
-              "y": 184,
+              "y": 168,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": true
             },
@@ -104825,7 +104777,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "story-lehman-90989efd",
@@ -104852,10 +104804,6 @@
               "text": "准备好了吗？穿越到艾伦尼的话，之前进行中的所有支线任务将被清除，真的决定了吗？",
               "speaker": "莱曼",
               "actor": "story-lehman-90989efd"
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -104969,7 +104917,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "story-lehman-90989efd",
@@ -104996,10 +104944,6 @@
               "text": "我知道了，都做完了再来找我吧。不过不要耽搁太长时间喔。",
               "speaker": "莱曼",
               "actor": "story-lehman-90989efd"
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -105042,7 +104986,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "story-lehman-90989efd",
@@ -105069,10 +105013,6 @@
               "text": "哦~现在准备好出发了？",
               "speaker": "莱曼",
               "actor": "story-lehman-90989efd"
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -107039,8 +106979,8 @@
                   "id": "story-azad-c7a37952-53",
                   "actor": "story-azad-c7a37952",
                   "characterId": "npc-53",
-                  "x": 504,
-                  "y": 712,
+                  "x": 488,
+                  "y": 664,
                   "facing": "south",
                   "visible": false
                 },
@@ -107098,8 +107038,8 @@
             {
               "type": "appear",
               "target": "story-azad-c7a37952-53",
-              "x": 504,
-              "y": 712,
+              "x": 488,
+              "y": 664,
               "facing": "south"
             },
             {
@@ -107508,7 +107448,7 @@
               "type": "walk",
               "target": "story-azad-c7a37952-53",
               "x": 424,
-              "y": 600,
+              "y": 584,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -108143,7 +108083,7 @@
               "type": "walk",
               "target": "story-azad-c7a37952",
               "x": 360,
-              "y": 424,
+              "y": 408,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -126384,7 +126324,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -126412,10 +126352,6 @@
             {
               "type": "wait",
               "durationMs": 900
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -131077,7 +131013,7 @@
             {
               "type": "appear",
               "target": "enemy-dispatched-monk-of-arnen-1",
-              "x": 88,
+              "x": 104,
               "y": 296,
               "facing": "south"
             },
@@ -137859,7 +137795,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -137885,10 +137821,6 @@
             {
               "type": "wait",
               "durationMs": 600
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -138526,7 +138458,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -138560,10 +138492,6 @@
             {
               "type": "wait",
               "durationMs": 720
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -138654,7 +138582,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -138688,10 +138616,6 @@
             {
               "type": "wait",
               "durationMs": 720
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -138782,7 +138706,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "switch-006515f8",
@@ -138865,10 +138789,6 @@
             {
               "type": "wait",
               "durationMs": 1500
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -141792,7 +141712,7 @@
                   "actor": "story-eara-e221699c",
                   "characterId": "npc-58",
                   "x": 568,
-                  "y": 648,
+                  "y": 520,
                   "facing": "south",
                   "visible": false
                 },
@@ -141810,7 +141730,7 @@
                   "actor": "story-chasers-scout-captain-0a9dd359",
                   "characterId": "npc-397",
                   "x": 568,
-                  "y": 648,
+                  "y": 520,
                   "facing": "south",
                   "visible": false
                 }
@@ -141841,22 +141761,22 @@
             {
               "type": "appear",
               "target": "story-eara-e221699c",
-              "x": 568,
-              "y": 648,
-              "facing": "south"
-            },
-            {
-              "type": "appear",
-              "target": "shinty",
               "x": 552,
               "y": 520,
               "facing": "south"
             },
             {
               "type": "appear",
-              "target": "story-chasers-scout-captain-0a9dd359",
+              "target": "shinty",
               "x": 568,
-              "y": 648,
+              "y": 504,
+              "facing": "south"
+            },
+            {
+              "type": "appear",
+              "target": "story-chasers-scout-captain-0a9dd359",
+              "x": 536,
+              "y": 520,
               "facing": "south"
             },
             {
@@ -142188,7 +142108,7 @@
                   "type": "walk",
                   "target": "shinty",
                   "x": 232,
-                  "y": 248,
+                  "y": 232,
                   "speedPxPerSecond": 133.33333333333334,
                   "followCamera": false
                 }
@@ -146570,7 +146490,7 @@
               "type": "appear",
               "target": "story-eara-22d61f15",
               "x": 184,
-              "y": 168,
+              "y": 152,
               "facing": "south"
             },
             {
@@ -147921,7 +147841,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -147978,10 +147898,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -150915,7 +150831,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "story-drow-adjutant-579de5c2",
@@ -150990,10 +150906,6 @@
             {
               "type": "wait",
               "durationMs": 420
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -155287,7 +155199,7 @@
                   "type": "walk",
                   "target": "story-eara-e221699c",
                   "x": 264,
-                  "y": 104,
+                  "y": 88,
                   "speedPxPerSecond": 133.33333333333334,
                   "followCamera": false
                 }
@@ -164121,7 +164033,7 @@
               "type": "walk",
               "target": "player",
               "x": 120,
-              "y": 216,
+              "y": 200,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -171222,7 +171134,7 @@
                   "type": "walk",
                   "target": "story-snow-fey-s-elder-48224184",
                   "x": 328,
-                  "y": 328,
+                  "y": 312,
                   "speedPxPerSecond": 133.33333333333334,
                   "followCamera": true
                 },
@@ -181634,7 +181546,7 @@
             {
               "type": "appear",
               "target": "story-chasers-soldier-28387be1",
-              "x": 360,
+              "x": 344,
               "y": 328,
               "facing": "south"
             },
@@ -181718,7 +181630,7 @@
               "type": "appear",
               "target": "story-eara-e221699c",
               "x": 120,
-              "y": 200,
+              "y": 184,
               "facing": "south"
             },
             {
@@ -182252,7 +182164,7 @@
               "type": "walk",
               "target": "player",
               "x": 88,
-              "y": 136,
+              "y": 120,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -183559,7 +183471,7 @@
               "type": "walk",
               "target": "story-yirien-27c6ae81",
               "x": 456,
-              "y": 488,
+              "y": 472,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -187360,7 +187272,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 136,
-              "y": 136,
+              "y": 120,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -187716,7 +187628,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 456,
-              "y": 616,
+              "y": 600,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -189320,7 +189232,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -189338,10 +189250,6 @@
             {
               "type": "wait",
               "durationMs": 360
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -195580,7 +195488,7 @@
               "type": "appear",
               "target": "story-eara-e221699c",
               "x": 456,
-              "y": 168,
+              "y": 152,
               "facing": "south"
             },
             {
@@ -202115,7 +202023,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 552,
-              "y": 520,
+              "y": 504,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -205951,7 +205859,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 152,
-              "y": 280,
+              "y": 264,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -208204,7 +208112,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 424,
-              "y": 248,
+              "y": 232,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -208724,7 +208632,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 120,
-              "y": 136,
+              "y": 120,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -209348,7 +209256,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 152,
-              "y": 120,
+              "y": 104,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -215450,7 +215358,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 200,
-              "y": 200,
+              "y": 184,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -215707,7 +215615,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -215749,10 +215657,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -215874,7 +215778,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -215916,10 +215820,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -216041,7 +215941,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "switch-006515f8",
@@ -216102,10 +216002,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -216342,7 +216238,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -216364,10 +216260,6 @@
             {
               "type": "wait",
               "durationMs": 600
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -220404,7 +220296,7 @@
               "type": "walk",
               "target": "player",
               "x": 392,
-              "y": 264,
+              "y": 248,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -221188,7 +221080,7 @@
               "type": "walk",
               "target": "player",
               "x": 392,
-              "y": 312,
+              "y": 296,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": true
             },
@@ -221494,7 +221386,7 @@
               "type": "walk",
               "target": "player",
               "x": 344,
-              "y": 312,
+              "y": 296,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -223454,7 +223346,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 232,
-              "y": 312,
+              "y": 296,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -223551,7 +223443,7 @@
                   "id": "story-olaf-d48a31ff",
                   "actor": "story-olaf-d48a31ff",
                   "characterId": "npc-249",
-                  "x": 472,
+                  "x": 376,
                   "y": 584,
                   "facing": "south",
                   "visible": false
@@ -223561,7 +223453,7 @@
             {
               "type": "appear",
               "target": "story-olaf-d48a31ff",
-              "x": 472,
+              "x": 376,
               "y": 584,
               "facing": "south"
             },
@@ -224807,7 +224699,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -224843,10 +224735,6 @@
             {
               "type": "wait",
               "durationMs": 240
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -226678,7 +226566,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -226702,10 +226590,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -227067,7 +226951,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -227091,10 +226975,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -227456,7 +227336,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -227480,10 +227360,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -231918,7 +231794,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -231942,10 +231818,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -232307,7 +232179,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -232331,10 +232203,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -232696,7 +232564,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -232720,10 +232588,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -236012,7 +235876,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 168,
-              "y": 120,
+              "y": 104,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -238418,7 +238282,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -238442,10 +238306,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -238807,7 +238667,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -238831,10 +238691,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -239196,7 +239052,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -239220,10 +239076,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -243343,7 +243195,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -243367,10 +243219,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -243732,7 +243580,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -243756,10 +243604,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -244121,7 +243965,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -244145,10 +243989,6 @@
             {
               "type": "wait",
               "durationMs": 300
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -249032,7 +248872,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -249060,10 +248900,6 @@
             {
               "type": "wait",
               "durationMs": 360
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -253818,7 +253654,7 @@
               "type": "walk",
               "target": "story-eara-e221699c",
               "x": 136,
-              "y": 568,
+              "y": 552,
               "speedPxPerSecond": 133.33333333333334,
               "followCamera": false
             },
@@ -254577,7 +254413,7 @@
                   "id": "story-olaf-d48a31ff",
                   "actor": "story-olaf-d48a31ff",
                   "characterId": "npc-249",
-                  "x": 472,
+                  "x": 376,
                   "y": 584,
                   "facing": "south",
                   "visible": false
@@ -254587,7 +254423,7 @@
             {
               "type": "appear",
               "target": "story-olaf-d48a31ff",
-              "x": 472,
+              "x": 376,
               "y": 584,
               "facing": "south"
             },
@@ -256058,7 +255894,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [],
               "mapFromWorld": true,
               "retainPlayerPosition": true
@@ -256094,10 +255930,6 @@
             {
               "type": "wait",
               "durationMs": 240
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -257298,7 +257130,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "izelynn-s-daughter-d2585c72",
@@ -257331,10 +257163,6 @@
             {
               "type": "wait",
               "durationMs": 600
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -257388,7 +257216,7 @@
               "x": 8,
               "y": 8,
               "facing": "south",
-              "playerVisible": false,
+              "playerVisible": true,
               "cast": [
                 {
                   "id": "izelynn-s-son-dd8c72f3",
@@ -257421,10 +257249,6 @@
             {
               "type": "wait",
               "durationMs": 600
-            },
-            {
-              "type": "show",
-              "target": "player"
             },
             {
               "type": "camera",
@@ -332352,8 +332176,8 @@
     "meta": {
       "interpreterVersion": 1,
       "semanticsVersion": 1,
-      "sourceHash": "46a7c16fb32dd9ca",
-      "generatedAt": "2026-10-21T10:08:17.300421Z",
+      "sourceHash": "9f924670ec5347bb",
+      "generatedAt": "2026-10-22T16:26:07.876761Z",
       "coverage": {
         "eligible": 487,
         "verified": 487,
@@ -333002,7 +332826,6 @@
           "y": 72,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -333028,6 +332851,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -336120,7 +335944,6 @@
           "y": 424,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -336141,6 +335964,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -336192,7 +336016,6 @@
           "y": 200,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -336213,6 +336036,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -337752,7 +337576,6 @@
           "y": 424,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -337790,6 +337613,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -338159,7 +337983,6 @@
           "y": 104,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -338185,6 +338008,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -341730,7 +341554,6 @@
           "y": 328,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -341751,6 +341574,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -342343,7 +342167,6 @@
           "y": 552,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -342369,6 +342192,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -342420,7 +342244,6 @@
           "y": 184,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -342446,6 +342269,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -342497,7 +342321,6 @@
           "y": 184,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -342536,6 +342359,7 @@
             }
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -351696,7 +351520,6 @@
           "y": 168,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -351717,6 +351540,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -351768,7 +351592,6 @@
           "y": 168,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -351802,6 +351625,7 @@
             "staff-of-justice"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -352166,7 +351990,6 @@
           "y": 344,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -352202,6 +352025,7 @@
             "shadow-mercenary-emblem"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -352479,7 +352303,6 @@
           "y": 472,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -352518,6 +352341,7 @@
             }
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -352569,7 +352393,6 @@
           "y": 552,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -352601,6 +352424,7 @@
             "maria-s-letter"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -352652,7 +352476,6 @@
           "y": 552,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -352693,6 +352516,7 @@
             "daisies"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -359245,7 +359069,6 @@
           "y": 168,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -359281,6 +359104,7 @@
             "prescription"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -359332,7 +359156,6 @@
           "y": 168,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -359368,6 +359191,7 @@
             "swamp-snake-s-poison"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -360858,7 +360682,6 @@
           "y": 264,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -360903,6 +360726,7 @@
             }
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -361052,7 +360876,6 @@
           "y": 264,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -361084,6 +360907,7 @@
             "list-of-supplies"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -361135,7 +360959,6 @@
           "y": 264,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -361176,6 +360999,7 @@
             "forest-spider-s-sting"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -361704,7 +361528,6 @@
           "y": 120,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -361728,6 +361551,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -361850,7 +361674,6 @@
           "y": 232,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -361891,6 +361714,7 @@
             "drow-s-key-piece"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -363827,7 +363651,6 @@
           "y": 264,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -363856,6 +363679,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -366014,7 +365838,6 @@
           "y": 184,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -366040,6 +365863,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -366091,7 +365915,6 @@
           "y": 184,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -366124,6 +365947,7 @@
             "snowflake-cactus-oil"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -368338,7 +368162,6 @@
           "y": 504,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -368364,6 +368187,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -368415,7 +368239,6 @@
           "y": 472,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -368441,6 +368264,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -368492,7 +368316,6 @@
           "y": 264,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -368521,6 +368344,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -368572,7 +368396,6 @@
           "y": 264,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -368607,6 +368430,7 @@
             "rusty-sword"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -368658,7 +368482,6 @@
           "y": 264,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -368704,6 +368527,7 @@
             "gray-rat-fangs"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -370906,7 +370730,6 @@
           "y": 232,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -370932,6 +370755,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -372303,7 +372127,6 @@
           "y": 152,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -372337,6 +372160,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -386448,7 +386272,6 @@
           "y": 216,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -386482,6 +386305,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -386533,7 +386357,6 @@
           "y": 216,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -386562,6 +386385,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -386613,7 +386437,6 @@
           "y": 216,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -386645,6 +386468,7 @@
             "wolf-fang"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -386696,7 +386520,6 @@
           "y": 280,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -386730,6 +386553,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -386781,7 +386605,6 @@
           "y": 280,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -386813,6 +386636,7 @@
             "abandoned-weapon"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -386864,7 +386688,6 @@
           "y": 312,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -386898,6 +386721,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -386949,7 +386773,6 @@
           "y": 312,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -386983,6 +386806,7 @@
             "hard-skull"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -387034,7 +386858,6 @@
           "y": 312,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -387063,6 +386886,7 @@
             }
           }
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -387114,7 +386938,6 @@
           "y": 312,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -387146,6 +386969,7 @@
             "black-sap"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -387339,7 +387163,6 @@
           "y": 280,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -387371,6 +387194,7 @@
             "abandoned-weapon"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],
@@ -387512,7 +387336,6 @@
           "y": 312,
           "source": "quest-giver-placement"
         },
-        "scripts": [],
         "start": {
           "quests": [
             {
@@ -387548,6 +387371,7 @@
             "hard-skull"
           ]
         },
+        "scripts": [],
         "basis": {
           "source": "giver",
           "before": [],

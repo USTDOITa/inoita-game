@@ -81,7 +81,7 @@ import { isBodyWalking } from '../rendering/arcade-movement.ts';
 import { effectAssets } from '../rendering/effects.ts';
 import { loadSceneAssets } from '../rendering/scene-assets.ts';
 import { WorldEnemyRoster } from '../domain/world-enemies.ts';
-import { rollEnemyLoot, rollQuestDrops, type DropCatalog } from '../domain/drops.ts';
+import { breakableKindOf, firstBossGuarantee, rollBreakableLoot, rollEnemyLoot, rollQuestDrops, type DropCatalog } from '../domain/drops.ts';
 import { PendingEnemyDefeats } from '../domain/combat-outcomes.ts';
 import { CombatHitResolution } from '../domain/combat-hit-resolution.ts';
 import {moltenReflectionDamage,rollMoltenSplash,moltenSplashTargets} from '../domain/molten-armor.ts';
@@ -296,10 +296,10 @@ export class WorldCombat {
       ? { length: path.length, first: path[0], last: path.at(-1) } : { length: 0 };
     const aiOf = (id: string) => id === 'player' ? this.heroAi : combatActor(this.allies, id, actor => actor.id)?.ai;
     const member = (id: string) => {
-      const visual = this.visualOf(id), data = this.memberOf(id), aiState = aiOf(id)?.captureState();
+      const visual = this.visualOf(id), memberState = this.memberOf(id), aiState = aiOf(id)?.captureState();
       return {
-        id, alive: (data?.player.health ?? 0) > 0,
-        health: data?.player.health ?? null, mana: data?.player.mana ?? null,
+        id, alive: (memberState?.player.health ?? 0) > 0,
+        health: memberState?.player.health ?? null, mana: memberState?.player.mana ?? null,
         position: visual ? this.movement.position(visual) : null,
         facing: id === 'player' ? this.scene.facing : combatActor(this.allies, id, actor => actor.id)?.facing ?? null,
         visible: visual?.container.visible ?? false,
@@ -413,8 +413,8 @@ export class WorldCombat {
   /**
    * 参战职业的技能音效：技能自身的音效，加上技能动作自带的分支音效。
    *
-   * 三类分支音效（动作单元、派发收尾、时间轴反馈）都只由当前操控的施法者触发，
-   * 所以按可操控角色取就够；画面资源的范围另在 `enemyAssets` 里按出场敌人取。
+   * 三类分支音效（动作单元、派发收尾、时间轴反馈）由玩家阵营的施法者触发，
+   * 所以按可操控角色取；画面资源的范围另在 `enemyAssets` 里按出场敌人取。
    */
   private prepareCombatSounds(characters:Iterable<BattleClass|undefined>):void {
     const catalog=this.app.battleCatalog;
@@ -440,9 +440,11 @@ export class WorldCombat {
     const position = this.movement!.navigation.nearestBody({ collision: box }, placed, ignore)
       ?? this.movement!.navigation.nearest({ collision: box }, placed, ignore);
     const visual = createCharacter(this.scene, actor, { id: placed.key, actor: actor.id, ...position });
-    // 友方召唤物与队伍同属 party，彼此不占位。
-    const faction = placed.summonedBy && this.memberOf(placed.summonedBy) ? 'party' : 'hostile';
-    const body = this.movement!.register(visual, definition.behavior.canMove, false, faction);
+    // 友方召唤物与队伍同属 party，彼此不占位；可移动的召唤物和主角、佣兵一样允许地形自愈，
+    // 避免被物理分离推进墙里后只能等召回。
+    const friendly = !!placed.summonedBy && !!this.memberOf(placed.summonedBy);
+    const faction = friendly ? 'party' : 'hostile';
+    const body = this.movement!.register(visual, definition.behavior.canMove, friendly && definition.behavior.canMove, faction);
     const presenter = new CombatPresenter(this.scene, this.app.battleCatalog, id => this.visualOf(id), () => this.combatants(), this.combatEffects);
     const enemy: MapEnemy = { key: placed.key, definition, visual, body, facing: 'south', presenter, assets: lease,summonedBy:placed.summonedBy,
       summonTauntChance:placed.summonTauntChance,summonedBySkill:placed.summonedBySkill };
@@ -740,7 +742,8 @@ export class WorldCombat {
   private skillFeedback(action:ActionPlayback,event:SkillFeedbackEvent):void {
     if(event.shake)this.feedback.startShake();
     if(event.vibrationMs)this.feedback.vibrate(event.vibrationMs);
-    if(event.sound&&action.caster.id===this.controlledId)this.app.audio?.effect(event.sound);
+    // 佣兵和主角一样是玩家阵营；音效不能只给当前操控者，否则切到佣兵前他们出手全静音。
+    if(event.sound&&this.memberOf(action.caster.id))this.app.audio?.effect(event.sound);
   }
   private dispatcherFor(presenter:CombatPresenter):CombatActionDispatcher {
     const cache=this.actionDispatchers??=new WeakMap();const existing=cache.get(presenter);if(existing)return existing;
@@ -782,7 +785,7 @@ export class WorldCombat {
         const visual=this.visualOf(action.caster.id);if(visual)setCharacterStealth(visual,false);
       },
       afterStealthBreak:()=>this.react({kind:'action-stealth-break',ownerId:action.caster.id}),
-      sound:()=>{if(definition.sound&&action.caster.id===this.controlledId)this.app.audio?.effect(definition.sound);},
+      sound:()=>{if(definition.sound&&this.memberOf(action.caster.id))this.app.audio?.effect(definition.sound);},
     });afterDispatch?.();});
   }
 
@@ -1017,12 +1020,20 @@ export class WorldCombat {
           this.pendingDefeats.add(key,render=>{
             this.runtime.cancel(`defeat:${key}`);this.outcomes.cancelDeath(key);
             if(spawn)session.enemyDefeated(spawn);
+            const breakable=breakableKindOf(targetEnemy.definition.id);
             if(spawn){
               const enemyId=targetEnemy.definition.id;
               const rule=this.drops.enemies[enemyId];
+              if(breakable){
+                // 景物怪只掷一次：地图等级优先，地图没有有效等级时沿用玩家等级。
+                const lootLevel=(this.scene.map?.lootLevel??0)>0?this.scene.map!.lootLevel!:level;
+                const rolled=rollBreakableLoot(this.drops,this.app.characterStats,breakable,lootLevel,hero.level,Math.random,
+                  session.party?.groupModifiers());
+                this.scene.spawnLootOnMap(map,x,y,rolled.rewards,render&&!this.closed);
+                session.chests.spawnBreakableEnemies(map,key,rolled.enemies,{x,y});
+              }else if(rule&&!rule.noNormalDrops){
               // 没有掉落规则或原版标记「无普通掉落」的敌人不掷骰，也不消耗首杀/保底计数；
               // 任务掉落在同块之外，仍按原版 CHARSYSTEM_Die 的闸门后顺序执行。
-              if(rule&&!rule.noNormalDrops){
                 const chapterLevel=(this.scene.map?.lootLevel??0)>0?this.scene.map!.lootLevel!:(rule.level??level);
                 const pity=this.drops.pity;
                 const pityConfig=pity?{equipment:pity.equipment,rare:pity.rare,levelWindow:pity.levelWindow}:undefined;
@@ -1034,9 +1045,10 @@ export class WorldCombat {
                   const member=ownerId==='player'?hero:session.party?.get(ownerId);
                   const memberLevel=member?.level??level;
                   const withinWindow=!pity||(rule.level??level)>=memberLevel-pity.levelWindow;
-                  const equipmentBonus=firstBoss?10000:(pityConfig?session.lootPity.equipmentBonus(ownerId,pityConfig):0);
+                  const guarantee=firstBossGuarantee(pity,firstBoss);
+                  const equipmentBonus=guarantee.equipmentBonus||(pityConfig?session.lootPity.equipmentBonus(ownerId,pityConfig):0);
                   const uniqueBonus=pityConfig?session.lootPity.rareBonus(ownerId,pityConfig):0;
-                  const minRarity=firstBoss?pity?.bossGuarantee.minRarity:undefined;
+                  const minRarity=guarantee.minRarity;
                   const rolled=rollEnemyLoot(this.drops,this.app.characterStats,enemyId,memberLevel,chapterLevel,Math.random,
                     session.party?.groupModifiers(),{equipmentBonus,uniqueBonus,minRarity,itemChance:session.partyItemChance});
                   const equipment=rolled.rewards.filter(reward=>reward.kind==='item'&&!!reward.roll);
@@ -1050,7 +1062,8 @@ export class WorldCombat {
               this.scene.spawnLootOnMap(map,x,y,rollQuestDrops(this.drops,enemyId,session.questDropRequirements()),render&&!this.closed);
             }
             this.removeEnemy(key);
-            if(earnsExperience&&reward>0){
+            if(breakable)this.syncChestEnemies();
+            if(!breakable&&earnsExperience&&reward>0){
               const members=(session.party?.livingIds??[]).map(id=>({id,member:this.memberOf(id)!}));
               const levels=members.map(({member})=>member.level);
               session.party?.addExperience(reward);
@@ -1644,11 +1657,12 @@ export class WorldCombat {
     this.feedback.show(feedback,visual,selection);
     if(feedbackPlan(feedback).flash)this.statusColors.flash(visual,this.scene);
     if(options.sound){
-      if(feedback.casterControlled){
+      // 普攻命中音效对所有玩家阵营成员生效；武器类型按出手者自己的装备取。
+      if(this.memberOf(event.casterId)){
         const equipment=this.hero.bag.equipmentItems(this.hero.bag.equipmentFor(event.casterId)),item=equipment['main-hand'];
         this.app.audio?.playerHit(item?this.app.items.items[item].kind:'unarmed',hit.kind,target?.definition.id);
       }
-      if(hit.kind==='shield-block'&&event.targetId===this.controlledId)this.app.audio?.shieldBlock();
+      if(hit.kind==='shield-block'&&this.memberOf(event.targetId))this.app.audio?.shieldBlock();
     }
     if(hit.damage>0){
       if(caster)this.app.audio?.monsterAttack(caster.definition.id);
@@ -1773,7 +1787,7 @@ export class WorldCombat {
       canReach:position=>this.movement.navigation.path(this.movement.actor(visual),position)!==null,
       relocate:(position,clearance)=>this.relocateVisual(visual,position,clearance),face:setFacing,
       play:(action,frame,complete)=>{setFacing(action.facing);action.getAttackSpeedRate=()=>this.conditions.attribute(id,'attackSpeedRate',1000,this.partyPassives(id));return this.playAction(presenter,action,frame,complete);},
-      frame:(action,index,contact,unitsReady,areaContact)=>{if(id===this.controlledId&&action.skill&&!this.soundedSkills.has(action)&&
+      frame:(action,index,contact,unitsReady,areaContact)=>{if(this.memberOf(action.caster.id)&&action.skill&&!this.soundedSkills.has(action)&&
         !action.skill.action.events.some(event=>event.kind==='feedback'&&event.sound||(event.kind==='units'||event.kind==='summon')&&event.dispatch)&&
         skillPlaybackEvents(action.skill.action,index,action.skill.level).some(event=>event.kind==='units')){
         this.soundedSkills.add(action);this.app.audio?.playerSkill(action.skill.id);
@@ -1790,7 +1804,8 @@ export class WorldCombat {
         runUnitSequence:work=>(this.hitResolution??=new CombatHitResolution()).run(work),
         unitFeedback:(hit,outcome,cue)=>{
           presenter.showUnitFeedback(hit,outcome,cue);
-          if(outcome==='success'&&hit.casterId===this.controlledId&&cue.sound)this.app.audio?.effect(cue.sound);
+          // 佣兵自己的技能单元命中也要出声；敌方单元保持原来的静音。
+          if(outcome==='success'&&this.memberOf(hit.casterId)&&cue.sound)this.app.audio?.effect(cue.sound);
         },clearEffects:()=>{this.runtime.cancel(id);presenter.clear();}
     };
     const controller=new CombatController(id,attack,port);

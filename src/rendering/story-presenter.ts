@@ -497,5 +497,11 @@ export class StoryPresenter implements StoryPresentationPort {
       this.closing = closing;
       try { await closing; } finally { if (this.closing === closing) this.closing = undefined; }
     }
+    // 舞台切过别的图之后，音乐停在那一幕的配置上。原版每 255 帧按当前地图重新
+    // 调用 `SOUNDSYSTEM_Play_BGM_AMBIENT_CURRENT`，回到正式世界时地图会重新成为
+    // 当前地图；这里在演出交还操作权时补同一次应用，255 的地图仍按原版保留当前曲目。
+    // 回主菜单时 `ui.mode` 已经切走，不能再把地图音乐盖到菜单主题上。
+    const world = this.world();
+    if (this.app.ui?.mode === 'game' && world.map) this.app.audio?.enterMap(world.map.id);
   }
 }

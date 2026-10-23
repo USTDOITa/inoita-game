@@ -131,6 +131,7 @@ function installStringReplaceAll(): void {
       const pattern = search instanceof RegExp
         ? search
         : new RegExp(String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+      // 分开写是为了让 TypeScript 按字符串/函数两个重载各自收窄类型，两分支的实现相同。
       return typeof replacement === 'string'
         ? this.replace(pattern, replacement)
         : this.replace(pattern, replacement);

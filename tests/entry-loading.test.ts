@@ -9,7 +9,7 @@ function plan(overrides: Partial<EntryPlan> = {}): EntryPlan {
     kind: 'image' as const, key: `current-${index}`, file: `current-${index}.png`
   }));
   return {
-    current: { map, visuals: { assets, actorIds: new Set() }, combat: [], assets },
+    current: { map, visuals: { assets, actorIds: new Set() }, assets },
     shared: [{ kind: 'image', key: 'shared', file: 'shared.png' }],
     portraits: ['portrait.png'],
     sounds: ['sound-1'],

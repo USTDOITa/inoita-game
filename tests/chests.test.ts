@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { ChestVisits, canReachChest, facesTarget, nearInteractable, nearInteractive, rollPlacement } from '../src/domain/chests.ts';
-import { rollChestDrops, rollChestLoot, parseDrops, type DropCatalog } from '../src/domain/drops.ts';
+import { rollChestLoot, parseDrops, type DropCatalog } from '../src/domain/drops.ts';
 import { parseCharacterStats, parseMap } from '../src/application/content-validation.ts';
 import { Session, DEFAULT_ENEMY_RESPAWN_MS } from '../src/domain/session.ts';
 import { WorldEnemyRoster } from '../src/domain/world-enemies.ts';
@@ -11,6 +11,7 @@ import type { Campaign } from '../src/domain/campaign.ts';
 
 const content=(name:string)=>JSON.parse(fs.readFileSync(new URL(`../public/content/${name}`,import.meta.url),'utf8'));
 const drops=content('drops.json') as DropCatalog;
+const stats=parseCharacterStats(content('character-stats.json'));
 const world=content('world.json') as WorldIndex;
 const campaign=content('campaign.json') as Campaign;
 const map=content('maps/shadow-forest-west.json') as WorldMap;
@@ -62,14 +63,16 @@ test('native chest rules retain independent one-pass and three-pass drops and mi
   const rules=drops.chests;
   assert.deepEqual(rules.ordinary.chances,{money:9000,equipment:1200,consumable:1800,upgrade:300,crafting:2000,misc:400,unique:0,fixed:0});
   assert.deepEqual(rules.improved.chances,{money:9000,equipment:3000,consumable:3600,upgrade:3200,crafting:3000,misc:1200,unique:0,fixed:0});
-  const ordinary=rollChestDrops(drops,'ordinary',30,30,()=>0);
-  const improved=rollChestDrops(drops,'improved',30,30,()=>0);
-  assert.deepEqual(improved.rewards,[...ordinary.rewards,...ordinary.rewards,...ordinary.rewards]);
+  const ordinary=rollChestLoot(drops,stats,'ordinary',30,30,()=>0);
+  const improved=rollChestLoot(drops,stats,'improved',30,30,()=>0);
+  // 普通箱与优质箱的品质下限不同，品级快照不能直接逐项比较；这里核对三次重复的奖励身份。
+  const identity=(result:typeof ordinary)=>result.rewards.map(reward=>reward.kind==='money'
+    ?{kind:reward.kind,amount:reward.amount}:{kind:reward.kind,item:reward.item});
+  assert.deepEqual(identity(improved),[...identity(ordinary),...identity(ordinary),...identity(ordinary)]);
   assert.deepEqual(ordinary.enemies,[mimic]);
   assert.deepEqual(improved.enemies,[]);
-  assert.deepEqual(rollChestDrops(drops,'ordinary',30,30,()=>.9999),empty());
-  assert.deepEqual(rollChestDrops(drops,'improved',0,30,()=>{assert.fail('zero level must not roll');}),empty());
-  assert.throws(()=>rollChestDrops(drops,'ordinary',-1,1),/掉落等级/);
+  assert.deepEqual(rollChestLoot(drops,stats,'ordinary',30,30,()=>.9999),empty());
+  for(const level of [0,-1])assert.throws(()=>rollChestLoot(drops,stats,'ordinary',level,1),/掉落等级/);
 });
 
 test('chest rare chance uses map level, hero level adjustment, and strict random boundary',()=>{
@@ -79,9 +82,9 @@ test('chest rare chance uses map level, hero level adjustment, and strict random
   delete rule.spawn;
   data.equipment.unique=[{item:'test-rare',dropLevel:1}];
   // floor(2000/(100+100))=10; at equal levels random integer 9 passes and 10 fails.
-  assert.equal(rollChestDrops(data,'ordinary',100,100,()=>8/9999).rewards.length,1);
-  assert.equal(rollChestDrops(data,'ordinary',100,100,()=>9/9999).rewards.length,0);
-  assert.equal(rollChestDrops(data,'ordinary',1,100,()=>0).rewards.length,0);
+  assert.equal(rollChestLoot(data,stats,'ordinary',100,100,()=>8/9999).rewards.length,1);
+  assert.equal(rollChestLoot(data,stats,'ordinary',100,100,()=>9/9999).rewards.length,0);
+  assert.equal(rollChestLoot(data,stats,'ordinary',1,100,()=>0).rewards.length,0);
 });
 
 test('drop parser rejects missing chest profiles and invalid mimic references',()=>{
@@ -159,11 +162,11 @@ test('chest placement rerolls each entry: ordinary passes one gate, improved pas
   // 注入的随机源按顺序给出点数：rollPlacement 里的 dice() = floor(random()*99)+1。
   // 取每个点数区间的中点，避免 (n-1)/99 再乘 99 时的浮点误差把 60 落成 59。
   const dice=(...values:number[])=>{let index=0;return()=>((values[Math.min(index++,values.length-1)]!-.5)/99);};
-  const ordinary={id:'box',actor:'treasure-box-a0caef88',x:0,y:0,appear:{atMost:29,of:99}};
+  const ordinary={id:'box',actor:'treasure-box-a0caef88',x:0,y:0,appear:{atMost:29}};
   assert.equal(rollPlacement(ordinary,dice(30)),undefined,'普通宝箱掷 30 点不出现');
   assert.ok(rollPlacement(ordinary,dice(29)),'普通宝箱掷 29 点出现');
-  const improved={id:'box',actor:'improved-treasure-box-85467c1c',x:0,y:0,appear:{atMost:29,of:99},
-    downgrade:{atLeast:60,of:99,actor:'treasure-box-a0caef88'}};
+  const improved={id:'box',actor:'improved-treasure-box-85467c1c',x:0,y:0,appear:{atMost:29},
+    downgrade:{atLeast:60,actor:'treasure-box-a0caef88'}};
   assert.equal(rollPlacement(improved,dice(30)),undefined,'第一道关没过就不出现');
   assert.equal(rollPlacement(improved,dice(29,60))?.actor,'improved-treasure-box-85467c1c','两道关都过才是优质宝箱');
   assert.equal(rollPlacement(improved,dice(29,59))?.actor,'treasure-box-a0caef88','第二道关没过降级成普通宝箱');
@@ -195,7 +198,6 @@ test('chest interaction follows the native near-object, rect-distance and facing
 
 
 test('every real chest has a positive effective level and zero-level maps fall back',()=>{
-  const stats=parseCharacterStats(content('character-stats.json'));
   const zeroMaps:string[]=[];
   for(const reference of world.maps){
     const map=content(reference.file.replace('content/','')) as WorldMap;

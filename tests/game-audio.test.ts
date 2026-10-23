@@ -124,6 +124,20 @@ test('story entry stops menu music; maps retain only story music and returning t
   assert.deepEqual(f.playing(), [`bgm:${catalog.menuMusic}`]);
 });
 
+test('环境音编号 255 表示不更换，进入没有环境音配置的地图不会停掉当前循环', async () => {
+  const f = harness();
+  const ambience = catalog.maps['shadow-camp'].ambience;
+  assert.ok(ambience);
+  const keepsAmbience = Object.entries(catalog.maps).find(([, entry]) => !entry.ambience);
+  assert.ok(keepsAmbience);
+  f.audio.enterMap('shadow-camp'); await f.drain();
+  assert.deepEqual(f.playing(), [`se:${ambience}`]);
+
+  f.audio.enterMap(keepsAmbience[0]); await f.drain();
+  assert.deepEqual(f.playing().filter(key => key.startsWith('se:')), [`se:${ambience}`]);
+  assert.equal(f.audio.captureStoryAudio().ambience, ambience);
+});
+
 test('a menu track that finishes loading after story entry cannot start during the opening', async () => {
   const f = harness();
   f.audio.enterMenu();

@@ -189,10 +189,10 @@ export interface EntityPlacement extends VisibilityRules {
   collectible?: boolean;
   /** 交互成功后播放的剧情。 */
   afterInteractScript?: string;
-  /** 出现判定：每次进图掷 1..of，不超过 atMost 才生成。见 `domain/chests.ts` 的 `rollPlacement`。 */
-  appear?: { atMost: number; of: number };
-  /** 出现之后再掷一次 1..of，没到 atLeast 就换成 `actor` 指向的对象。 */
-  downgrade?: { atLeast: number; of: number; actor: string };
+  /** 出现判定：每次进图掷原生 1..99，不超过 atMost 才生成。见 `domain/chests.ts` 的 `rollPlacement`。 */
+  appear?: { atMost: number };
+  /** 出现之后再掷一次原生 1..99，没到 atLeast 就换成 `actor` 指向的对象。 */
+  downgrade?: { atLeast: number; actor: string };
   /** 摆放记录里的"水井"其实是泉水生成点，档位由 `domain/springs.ts` 按等级重掷。 */
   spring?: boolean;
 }
@@ -212,6 +212,8 @@ export interface EnemySpawn {
   y: number;
   /** 地图被多个等级阶段复用时，本批敌人的代表等级。 */
   tierLevel?: number;
+  /** 原怪类别为 0，允许在激活时被罐子/箱子替换。 */
+  breakableEligible?: boolean;
 }
 
 /** 剧情指定的敌人。击败奖励只发给这一处实例一次。 */
@@ -254,6 +256,8 @@ export interface WorldMap {
   features: MapFeature[];
   entities: EntityPlacement[];
   enemySpawns?: EnemySpawn[];
+  /** 地图的生成槽替换分支；缺省表示只生成箱子。 */
+  breakableSpawn?: 'bush' | 'jar';
   questItemSpawns?: QuestItemSpawn[];
   exits: MapExit[];
 }

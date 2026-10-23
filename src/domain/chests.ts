@@ -42,6 +42,13 @@ export class ChestVisits {
   spawnEnemy(map: string, key: string, enemyId: string, position: {x:number;y:number}): void {
     this.enemies.push({ id: `spring:${this.visit}:${map}:${key}`, enemyId, x: position.x, y: position.y, respawn: false });
   }
+  /** 可破坏物里开出的怪：同样只活到本次地图访问结束。 */
+  spawnBreakableEnemies(map: string, key: string, enemyIds: readonly string[], position: {x:number;y:number}): void {
+    if (map !== this.map) return;
+    enemyIds.forEach((enemyId, index) => this.enemies.push({
+      id: `breakable:${this.visit}:${map}:${key}:${index}`, enemyId, x: position.x, y: position.y, respawn: false
+    }));
+  }
   open(map: string, entity: string, position: {x:number;y:number}, roll: () => ChestOpenResult, oneTime = false): ChestOpenResult | undefined {
     if (map !== this.map) return;
     const key = this.persistentKey(map, entity);
@@ -67,8 +74,10 @@ export class ChestVisits {
  * 「1..99 达到 60」的关——过了才是优质宝箱，没过就降级成普通宝箱，所以优质宝箱
  * 实际约 11.6%。这一次没出现就返回 undefined。
  */
+const PLACEMENT_DICE = 99;
+
 export function rollPlacement(entity: EntityPlacement, random: () => number): EntityPlacement | undefined {
-  const dice = () => Math.floor(random() * 99) + 1;
+  const dice = () => Math.floor(random() * PLACEMENT_DICE) + 1;
   const { appear, downgrade } = entity;
   if (appear && dice() > appear.atMost) return undefined;
   if (downgrade && dice() < downgrade.atLeast) return { ...entity, actor: downgrade.actor };

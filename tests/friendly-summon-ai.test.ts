@@ -56,7 +56,7 @@ function setup(role:FriendlySummonRole='hell-soldier',id='summon',behaviorOverri
     if(playback){const active=playback;active.frame(++active.index);if(active.index>=15&&playback===active){playback=undefined;active.complete();}}
     ai.step();
   }};
-  return {ai,actor,owner,actors,vitals,port,enemy,advance,actions,
+  return {ai,actor,owner,actors,vitals,enemy,advance,actions,
     setTactics:(value:Partial<FriendlySummonTactics>)=>{tactics={...tactics,...value};},
     setBounds:(value:GameRectangle)=>{bounds=value;},setBlocked:(value:(point:Point)=>boolean)=>{blocked=value;},
     allowRecall:()=>{allowedRecall=true;},setPaused:(value:boolean)=>{paused=value;},
@@ -240,6 +240,24 @@ test('a fully proven short-distance blocked route can recover without the 320 pi
   run.setBlocked(point=>point.x>=32&&point.x<=48);run.allowRecall();
   run.advance(83,false);assert.equal(run.recalls(),0);run.advance(4,false);assert.ok(run.recalls()>=1);
   assert.deepEqual(run.actor.position,{x:32,y:0});
+});
+
+test('a summon blocked within 64 pixels of its owner still recalls after the delay',()=>{
+  const run=setup();run.actor.position={x:56,y:0};run.setBounds({x:-16,y:-16,width:96,height:32});
+  run.setBlocked(point=>point.x>=24&&point.x<=40);run.allowRecall();
+  let recalledAt=0;
+  for(let frame=0;frame<220;frame++){
+    run.advance(1,false);
+    if(run.recalls()){recalledAt=frame+1;break;}
+  }
+  assert.ok(recalledAt>=80,`贴身卡住也要完整等待，实际第 ${recalledAt} 帧`);
+  assert.ok(recalledAt<140,`贴身卡住不能无限等待，实际第 ${recalledAt} 帧`);
+  assert.deepEqual(run.actor.position,{x:32,y:0});
+});
+
+test('a summon idling beside its owner never recalls',()=>{
+  const run=setup();run.actor.position={x:16,y:0};run.allowRecall();run.advance(220,false);
+  assert.equal(run.recalls(),0);
 });
 
 test('proven unreachable follow goals retain their evidence across repeated budgeted searches',()=>{

@@ -26,7 +26,7 @@ export function newestFirstSlots(read:(slot:number)=>SlotReading<unknown>):numbe
  * 只画背景、返回钮和按各自的绘制过程画槽按钮）。
  */
 export const SAVE_BOARD = {
-  panelWidth:668, panelHeight:530,
+  panelWidth:668,
   rowWidth:634, rowHeight:150, rowStep:166, rowInset:17,
   frameWidth:668, frameHeight:184
 } as const;
@@ -68,7 +68,7 @@ export interface SaveBoardRow<World> {
 export interface SaveBoardAssets { frame:string; empty:string }
 
 /** 面板左上角在当前画布里的位置。菜单画布 1024 宽 → 178（= 内容区 32 + 960 空间里的 146）。 */
-export function saveBoardOrigin(width:number, _height:number):{x:number; y:number} {
+export function saveBoardOrigin(width:number):{x:number; y:number} {
   return { x:Math.round((width-SAVE_BOARD.panelWidth)/2), y:SAVE_BOARD_LAYOUT.autoTop };
 }
 
