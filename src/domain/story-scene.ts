@@ -24,12 +24,42 @@ function actorFrom(member: StoryCastMember, id: string): SceneActorState {
     visible: member.visible, unpositioned: member.unpositioned };
 }
 
+/**
+ * 队员默认跟随主角的显隐。原版的队伍跟随逻辑以主角为锚点：主角被移出/
+ * 隐藏时，队员不会单独留在画面上；主角重新出现时，队员恢复各自的可见性
+ * （阵亡队员仍然不可见）。
+ *
+ * 剧情显式 `appear`／`leave`／`show` 过的队员会先关掉 `followsPlayer`，
+ * 之后的显隐由脚本负责，不再被这层联动覆盖。
+ */
+function syncPartyFollowers(snapshot: StoryStageSnapshot, player: SceneActorState): void {
+  for (const actor of snapshot.scene.actors) {
+    if (!actor.followsPlayer || actor.removed) continue;
+    if (player.visible) {
+      if (actor.followVisibility === undefined) continue;
+      actor.visible = actor.followVisibility;
+      delete actor.followVisibility;
+    } else if (actor.visible) {
+      actor.followVisibility = actor.visible;
+      actor.visible = false;
+    }
+  }
+}
+
+/** 剧情点名控制这名队员的显隐后，把它从「跟随主角」的默认规则里摘出去。 */
+function controlIndependently(actor: SceneActorState): void {
+  if (!actor.memberId || actor.memberId === 'player') return;
+  actor.followsPlayer = false;
+  delete actor.followVisibility;
+}
+
 /** 把别名的读回值和玩家落点同步到完整场景；场景对象本身只存一份。 */
 export function syncStoryScene(snapshot: StoryStageSnapshot): StoryStageSnapshot {
   const bindings = new Map(snapshot.bindings);
   const player = snapshot.scene.actors.find(actor => actor.id === bindings.get('player'));
   if (!player) throw new Error('剧情场景缺少主角');
   snapshot.x = player.x; snapshot.y = player.y; snapshot.facing = player.facing; snapshot.playerVisible = player.visible;
+  syncPartyFollowers(snapshot, player);
   snapshot.cast = snapshot.cast.map(member => {
     const actor = snapshot.scene.actors.find(actor => actor.id === bindings.get(member.id));
     if (!actor) throw new Error(`剧情演员绑定失效：${member.id}`);
@@ -63,6 +93,11 @@ export function resolveStoryScene(declaration: StoryStage, source: SceneSnapshot
     } else if (member.binding !== 'world' && !member.inheritPosition) {
       Object.assign(actor, { x: member.x, y: member.y, facing: member.facing, visible: member.visible,
         unpositioned: member.unpositioned,clip:`idle-${member.facing}`,animationProgress:0,animationPlaying:true });
+    }
+    if (actor.memberId && actor.memberId !== 'player') {
+      // 舞台点名了这名队员：初始显隐按声明来，之后由脚本动作负责。
+      controlIndependently(actor);
+      actor.visible = member.visible;
     }
     bindings.push([member.id, actor.id]);
   }
@@ -107,13 +142,17 @@ export function applyStorySceneAction(previous: StoryStageSnapshot, action: Perf
         facing: entity.facing ?? actor.facing, visible: entity.visible !== false, unpositioned: false, removed:false });
       actor.clip=`idle-${actor.facing}`;actor.animationProgress=0;actor.animationPlaying=true;
       if(appearanceChanged)delete actor.appearance;
+      controlIndependently(actor);
       if (action.target) bind(state, action.target, actor);
     } else if (command.kind === 'remove-character') {
       if ((command.mapFromStage ? state.map : command.map) !== state.map) return state;
       const matches = state.scene.actors.filter(actor => actor.characterId === command.characterId && !actor.unpositioned && !actor.removed);
-      for (const actor of command.all ? matches : matches.slice(0, 1)) {actor.visible = false;actor.removed=true;}
+      for (const actor of command.all ? matches : matches.slice(0, 1)) {
+        controlIndependently(actor);actor.visible = false;actor.removed=true;
+      }
     } else {
       for (const actor of state.scene.actors) if (actor.worldEntityId === command.id) {
+        controlIndependently(actor);
         actor.visible = command.kind === 'show';actor.removed=command.kind==='remove';
       }
     }
@@ -136,8 +175,13 @@ export function applyStorySceneAction(previous: StoryStageSnapshot, action: Perf
     if(action.worldEntityId)actor.worldEntityId=action.worldEntityId;
     Object.assign(actor, { x: action.x, y: action.y, facing: action.facing, visible: true, unpositioned: false, removed:false });
     actor.clip=`idle-${actor.facing}`;actor.animationProgress=0;actor.animationPlaying=true;
-  } else if (action.type === 'leave') actor.visible = false;
-  else if (action.type === 'show') { if (!actor.unpositioned && !actor.removed) actor.visible = true; }
+    controlIndependently(actor);
+  } else if (action.type === 'leave') {
+    controlIndependently(actor);
+    actor.visible = false;
+  } else if (action.type === 'show') {
+    if (!actor.unpositioned && !actor.removed) { controlIndependently(actor); actor.visible = true; }
+  }
   else if (action.type === 'face' && !actor.removed) {
     actor.facing = action.facing;actor.clip=`idle-${actor.facing}`;actor.animationProgress=0;actor.animationPlaying=true;
   }

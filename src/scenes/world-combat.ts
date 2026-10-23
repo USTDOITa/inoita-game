@@ -380,7 +380,7 @@ captureStoryVisit():Pick<PreparedSceneVisit,'roster'|'breakableRolls'> {
 captureStoryActors():SceneActorState[] {
     const allies:SceneActorState[]=this.allies.map(ally=>{
       const animation=characterAnimationState(ally.visual);
-      return {id:`member:${ally.id}`,actor:ally.member.definition.actor,memberId:ally.id,
+      return {id:`member:${ally.id}`,actor:ally.member.definition.actor,memberId:ally.id,followsPlayer:true,
         ...this.movement.position(ally.visual),facing:ally.facing,visible:ally.member.alive,
         flip:ally.visual.entity.flip,appearance:structuredClone(ally.visual.actor),
         clip:ally.visual.clipName??undefined,alpha:ally.visual.container.alpha,

@@ -70,7 +70,7 @@ export function prepareSceneVisit(inputs:SceneVisitInputs,map:WorldMap,player:Sc
     const appearance=previous?.appearance??world.actors[member.definition.actor];
     if(!appearance)throw new Error(`剧情地图队员外观缺失：${id}`);
     const position=choosePartyLanding(navigation,appearance,hero)??hero;
-    const actor:SceneActorState={id:`member:${id}`,memberId:id,actor:member.definition.actor,
+    const actor:SceneActorState={id:`member:${id}`,memberId:id,followsPlayer:true,actor:member.definition.actor,
       x:position.x,y:position.y,facing:'south',visible:member.alive,appearance:structuredClone(appearance)};
     actors.push(actor);register(actor,'party');
   }

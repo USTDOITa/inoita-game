@@ -15,6 +15,10 @@ export interface SceneActorState {
   y: number;
   facing: Facing;
   visible: boolean;
+  /** 队伍跟随者：主角不可见时默认一并隐藏；被剧情显式显隐后不再跟随。 */
+  followsPlayer?: boolean;
+  /** 主角隐藏期间暂存的自身可见性，主角重新出现时恢复（阵亡队员仍是不可见）。 */
+  followVisibility?: boolean;
   removed?: boolean;
   flip?: boolean;
   appearance?: ActorDefinition;

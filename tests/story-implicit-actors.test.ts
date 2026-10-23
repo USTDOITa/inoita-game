@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {registerHooks} from 'node:module';
 import {parseCampaign} from '../src/application/content-validation.ts';
 import type {StoryStage} from '../src/domain/story-performance.ts';
-import {resolveStoryScene} from '../src/domain/story-scene.ts';
+import {applyStorySceneAction, resolveStoryScene} from '../src/domain/story-scene.ts';
 import {generateMapEntities} from '../src/domain/scene-visit.ts';
 import {stageSnapshot} from './helpers/story-stage.ts';
 import {StoryWorldState} from '../src/domain/story-world.ts';
@@ -214,4 +214,61 @@ test('剧情临时角色只活到本次访问，登记过的圣女跨访问保�
 
   const declaration=firstStage(4);
   assert.equal(declaration.retainPlayerPosition,true,'原版这一段从没摆过主角，他接着自己走进来的位置');
+});
+
+test('party followers follow the player visibility unless the script controls them',()=>{
+  const declaration:StoryStage={type:'stage',map:'camp',x:10,y:20,facing:'south',playerVisible:false,cast:[]};
+  const source={map:'camp',actors:[
+    {id:'player',actor:'hero',memberId:'player',x:10,y:20,facing:'south' as const,visible:true},
+    {id:'member:ally',actor:'ally',memberId:'ally',followsPlayer:true,x:12,y:22,facing:'south' as const,visible:true},
+    {id:'member:dead',actor:'ally',memberId:'dead',followsPlayer:true,x:14,y:24,facing:'south' as const,visible:false},
+    {id:'entity:npc',actor:'npc',x:30,y:40,facing:'south' as const,visible:true}
+  ]};
+  const actor=(snapshot:ReturnType<typeof resolveStoryScene>,id:string)=>snapshot.scene.actors.find(value=>value.id===id)!;
+  const hidden=resolveStoryScene(declaration,source);
+  assert.equal(actor(hidden,'player').visible,false);
+  assert.equal(actor(hidden,'member:ally').visible,false,'主角不在场时佣兵也不单独显示');
+  assert.equal(actor(hidden,'member:ally').followVisibility,true);
+  assert.equal(actor(hidden,'member:dead').visible,false);
+  assert.equal(actor(hidden,'member:dead').followVisibility,undefined,'阵亡队员本来就不显示');
+  assert.equal(actor(hidden,'entity:npc').visible,true,'NPC 不受队伍显隐联动影响');
+
+  const shown=applyStorySceneAction(hidden,{type:'show',target:'player'});
+  assert.equal(actor(shown,'member:ally').visible,true);
+  assert.equal(actor(shown,'member:ally').followVisibility,undefined);
+  assert.equal(actor(shown,'member:dead').visible,false,'阵亡队员不会因主角出现而复活');
+
+  const left=applyStorySceneAction(shown,{type:'leave',target:'player'});
+  assert.equal(actor(left,'member:ally').visible,false);
+  assert.equal(actor(left,'member:ally').followVisibility,true);
+});
+
+test('an explicitly staged companion keeps its own visibility while the player is hidden',()=>{
+  const declaration:StoryStage={type:'stage',map:'camp',x:10,y:20,facing:'south',playerVisible:false,cast:[
+    {id:'olaf',actor:'ally',memberId:'ally',x:12,y:22,facing:'south',visible:true}
+  ]};
+  const source={map:'camp',actors:[
+    {id:'player',actor:'hero',memberId:'player',x:10,y:20,facing:'south' as const,visible:true},
+    {id:'member:ally',actor:'ally',memberId:'ally',followsPlayer:true,x:12,y:22,facing:'south' as const,visible:true}
+  ]};
+  const hidden=resolveStoryScene(declaration,source);
+  const ally=hidden.scene.actors.find(value=>value.memberId==='ally')!;
+  assert.equal(ally.visible,true,'脚本点名了佣兵，他按声明留在场上');
+  assert.equal(ally.followsPlayer,false);
+  assert.equal(hidden.scene.actors.find(value=>value.id==='player')!.visible,false);
+});
+
+test('an explicitly shown companion is not hidden again when the player returns',()=>{
+  const declaration:StoryStage={type:'stage',map:'camp',x:10,y:20,facing:'south',playerVisible:false,cast:[
+    {id:'olaf',actor:'ally',memberId:'ally',x:12,y:22,facing:'south',visible:false}
+  ]};
+  const source={map:'camp',actors:[
+    {id:'player',actor:'hero',memberId:'player',x:10,y:20,facing:'south' as const,visible:true},
+    {id:'member:ally',actor:'ally',memberId:'ally',followsPlayer:true,x:12,y:22,facing:'south' as const,visible:true}
+  ]};
+  const hidden=resolveStoryScene(declaration,source);
+  const olafShown=applyStorySceneAction(hidden,{type:'show',target:'olaf'});
+  assert.equal(olafShown.scene.actors.find(value=>value.memberId==='ally')!.visible,true);
+  const playerShown=applyStorySceneAction(olafShown,{type:'show',target:'player'});
+  assert.equal(playerShown.scene.actors.find(value=>value.memberId==='ally')!.visible,true,'剧情显式 show 过的佣兵不再跟随主角显隐');
 });

@@ -75,7 +75,7 @@ test('native chest rules retain independent one-pass and three-pass drops and mi
   for(const level of [0,-1])assert.throws(()=>rollChestLoot(drops,stats,'ordinary',level,1),/掉落等级/);
 });
 
-test('chest rare chance uses map level, hero level adjustment, and strict random boundary',()=>{
+test('chest rare chance uses map level, caps hero level at the chest level, and keeps the strict random boundary',()=>{
   const data=structuredClone(drops);
   const rule=data.chests.ordinary;
   for(const slot of Object.keys(rule.chances) as (keyof typeof rule.chances)[])rule.chances[slot]=0;
@@ -84,7 +84,8 @@ test('chest rare chance uses map level, hero level adjustment, and strict random
   // floor(2000/(100+100))=10; at equal levels random integer 9 passes and 10 fails.
   assert.equal(rollChestLoot(data,stats,'ordinary',100,100,()=>8/9999).rewards.length,1);
   assert.equal(rollChestLoot(data,stats,'ordinary',100,100,()=>9/9999).rewards.length,0);
-  assert.equal(rollChestLoot(data,stats,'ordinary',1,100,()=>0).rewards.length,0);
+  // 体验版：满级玩家开 1 级宝箱仍按宝箱等级结算，不会被玩家等级压成空箱。
+  assert.equal(rollChestLoot(data,stats,'ordinary',1,100,()=>0).rewards.length,1);
 });
 
 test('drop parser rejects missing chest profiles and invalid mimic references',()=>{

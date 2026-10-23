@@ -35,6 +35,14 @@ test('breakable enemy ids map exactly, without substring matching', () => {
   assert.equal(breakableKindOf('enemy-box-mimic-1'), undefined);
 });
 
+test('breakable loot is not suppressed by an overleveled hero', () => {
+  const data=structuredClone(catalog);
+  const rule=data.breakables!.jar!;
+  for(const slot of Object.keys(rule.chances) as (keyof typeof rule.chances)[])rule.chances[slot]=0;
+  rule.chances.money=9000;rule.uniqueChance.numerator=0;delete rule.spawn;
+  assert.equal(rollBreakableLoot(data,stats,'jar',1,100,()=>0.05).rewards.length,1);
+});
+
 test('breakable loot uses the same rolled result shape as a chest', () => {
   const result = rollBreakableLoot(catalog, stats, 'jar', 5, 10, () => 0, {});
   assert.ok(Array.isArray(result.rewards));

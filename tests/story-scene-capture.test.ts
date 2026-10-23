@@ -8,6 +8,8 @@ import {validateSceneSnapshot, type SceneSnapshot} from '../src/domain/scene-sna
 import type {StoryStageSnapshot} from '../src/domain/story-performance.ts';
 import {prepareSceneVisit,generateMapEntities} from '../src/domain/scene-visit.ts';
 import {Session} from '../src/domain/session.ts';
+import {BattleCharacter, type CharacterStatsCatalog} from '../src/domain/character-stats.ts';
+import type {CompanionCatalog} from '../src/domain/party.ts';
 import {parseDrops} from '../src/domain/drops.ts';
 import {parseSprings} from '../src/domain/springs.ts';
 import {WorldEnemyRoster} from '../src/domain/world-enemies.ts';
@@ -71,6 +73,8 @@ test('live capture includes the physical scene with equipped party, props, enemy
   assert.deepEqual([captured('player').x,captured('player').y,captured('player').facing],[12,18,'north']);
   assert.equal(captured('player').appearance?.clips['idle-south']?.layers[0]?.key,'equipped-sword');
   assert.equal(captured('member:companion-1').appearance?.clips['idle-south']?.layers[0]?.key,'equipped-shield');
+  assert.equal(captured('member:companion-1').followsPlayer,true);
+  assert.equal(captured('member:companion-2').followsPlayer,true,'阵亡队员也登记为跟随者，显隐仍按自己的存活状态');
   assert.deepEqual([captured('player').animationProgress,captured('player').animationPlaying],[.25,true]);
   assert.deepEqual([captured('member:companion-1').animationProgress,captured('member:companion-1').animationPlaying],[1,false]);
   assert.equal(captured('entity:gate-1').animationProgress,undefined,'单帧动画的 NaN 进度不能写进快照');
@@ -129,6 +133,23 @@ test('foreign map preparation isolates session state and formal adoption preserv
   assert.deepEqual(formal.captureState(),snapshot.visit!.roster);
   assert.deepEqual(formal.refresh(),{added:[],removed:[]},'normal refresh must preserve the adopted breakable rolls');
   assert.deepEqual(formal.capturePreparedState().breakableRolls,snapshot.visit!.breakableRolls);
+});
+
+test('prepared party members are marked as followers of the player',()=>{
+  const read=(name:string)=>JSON.parse(readFileSync(new URL(`../public/content/${name}.json`,import.meta.url),'utf8'));
+  const campaign=read('campaign'),world=read('world'),battleCatalog=read('battle'),items=read('items');
+  const stats=read('character-stats') as CharacterStatsCatalog,companionCatalog=read('companions') as CompanionCatalog;
+  const session=new Session(campaign,undefined,undefined,items,new BattleCharacter('assassin',stats,items),undefined,stats,companionCatalog);
+  session.party!.joinStory('mercenary-azad');
+  const map=read('maps/shadow-training-dungeon1-5e8c19b4');
+  const springs=parseSprings(read('springs'));
+  const drops=parseDrops(read('drops'),items,battleCatalog.enemies.map((enemy:{id:string})=>enemy.id));
+  const player={id:'player',actor:campaign.start.actor,x:map.width/2,y:map.height/2,facing:'east' as const,visible:true,
+    appearance:world.actors[campaign.start.actor]};
+  const snapshot=prepareSceneVisit({session,campaign,world,battleCatalog,drops,springs},map,player,()=>0);
+  const member=snapshot.actors.find(actor=>actor.memberId&&actor.memberId!=='player');
+  assert.ok(member,'队伍成员进入预备场景');
+  assert.equal(member!.followsPlayer,true,'预备场景里的队员同样跟随主角');
 });
 
 test('formal cross-map handoff adopts the matching prepared visit only',async()=>{

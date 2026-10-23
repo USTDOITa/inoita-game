@@ -232,6 +232,17 @@ export function rollQuestDrops(catalog:DropCatalog,enemyId:string,quests:readonl
 }
 
 /** 景物掉落和宝箱共用属性目录：装备奖励要写入品级快照，不能只按纯规则返回值。 */
+/**
+ * 容器（宝箱、可破坏物）按自身等级结算。
+ *
+ * 原版公式 `2×基础×容器等级/(容器等级+玩家等级)` 会让高等级玩家开低等级容器时
+ * 把所有槽位压到接近 0，满级角色在早期地图实际只能开出空箱。体验版把参与容器
+ * 结算的玩家等级封顶到容器等级；敌人掉落仍保留原版的等级修正。
+ */
+function containerScaleLevel(level:number,playerLevel:number):number {
+  return level>0?Math.min(playerLevel,level):playerLevel;
+}
+
 export function rollBreakableLoot(catalog:DropCatalog,stats:CharacterStatsCatalog,kind:BreakableKind,level:number,
   playerLevel:number,random:()=>number=Math.random,modifiers:DropModifiers={},options:{equipmentBonus?:number}={}):ChestOpenResult {
   if(!Number.isSafeInteger(level)||level<0||level>255)throw new Error('景物掉落等级无效');
@@ -240,7 +251,7 @@ export function rollBreakableLoot(catalog:DropCatalog,stats:CharacterStatsCatalo
   if(!rule)throw new Error('景物掉落规则缺失');
   const band=chapterBand(catalog,level);
   return rollDropRule(catalog,{...rule,level,chances:{...rule.chances,
-    unique:Math.floor(rule.uniqueChance.numerator/(level+rule.uniqueChance.levelOffset))}},playerLevel,random,rule.spawn,modifiers,
+    unique:Math.floor(rule.uniqueChance.numerator/(level+rule.uniqueChance.levelOffset))}},containerScaleLevel(level,playerLevel),random,rule.spawn,modifiers,
     {stats,profile:profileFor(catalog,band,'normal',rule.minRarity,rule.rarityProfile),maxItemLevel:band?.maxItemLevel,
       equipmentBonus:options.equipmentBonus});
 }
@@ -334,7 +345,7 @@ export function rollChestLoot(catalog:DropCatalog,stats:CharacterStatsCatalog,ki
   const rule=catalog.chests[kind];if(!rule)throw new Error(`宝箱掉落规则缺失：${kind}`);
   const band=chapterBand(catalog,level);
   return rollDropRule(catalog,{...rule,level,chances:{...rule.chances,
-    unique:Math.floor(rule.uniqueChance.numerator/(level+rule.uniqueChance.levelOffset))}},playerLevel,random,rule.spawn,modifiers,
+    unique:Math.floor(rule.uniqueChance.numerator/(level+rule.uniqueChance.levelOffset))}},containerScaleLevel(level,playerLevel),random,rule.spawn,modifiers,
     {stats,profile:profileFor(catalog,band,'normal',rule.minRarity,rule.rarityProfile),maxItemLevel:band?.maxItemLevel,
       equipmentBonus:options.equipmentBonus});
 }
