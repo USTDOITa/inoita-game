@@ -65,7 +65,8 @@ export class MenuScene extends Phaser.Scene {
     label.setInteractive({useHandCursor:true});
     label.on('pointerdown',()=>{
       if(!this.app.ui.ready||this.app.ui.suspended||!this.sys.isActive())return;
-      gm.toggle();this.render();
+      if(gm.toggle())void this.app.loadDebugCatalog?.().then(()=>this.render(),error=>console.error(error));
+      else this.render();
     });
     if(gm.on)view.text('调试：开',8,610,0,18);
   }

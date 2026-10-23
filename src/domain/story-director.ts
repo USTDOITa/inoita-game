@@ -1,7 +1,7 @@
 import { storyCommitCommands } from './story-commit.ts';
 import type { ActorDefinition, ChoiceOption, DialogueLine, EntityPlacement, QuestRewardReceipt, StoryTrigger, TravelDestination } from './content.ts';
 import type { Campaign, CampaignQuest } from './campaign.ts';
-import type { PerformanceAction, StoryPresentationPort, StoryStage } from './story-performance.ts';
+import type { PerformanceAction, StoryPresentationPort, StoryStage, StoryStageSnapshot } from './story-performance.ts';
 import type { Session, SessionState } from './session.ts';
 import { StoryRuntime } from './story-runtime.ts';
 import type { StoryNodeCommit, StoryOccurrence, StoryPlaybackContext } from './story-runtime.ts';
@@ -25,10 +25,10 @@ export interface StoryWorldPort {
   prefetch?(scripts: readonly string[], signal: AbortSignal): void | Promise<void>;
   capture(): unknown;
   restore(snapshot: unknown, signal: AbortSignal): Promise<void>;
-  project(stage: StoryStage | undefined, signal: AbortSignal): Promise<void>;
+  project(stage: StoryStageSnapshot | undefined, signal: AbortSignal): Promise<void>;
   checkpoint(): void;
 }
-interface PlaybackBaseline { session: SessionState; world?: unknown; stage?: StoryStage }
+interface PlaybackBaseline { session: SessionState; world?: unknown; stage?: StoryStageSnapshot }
 
 /** 节点先完成表现，再一次提交状态；场景重建失败可以从已提交节点继续。 */
 export class StoryDirector {
@@ -41,6 +41,8 @@ export class StoryDirector {
   readonly runtime: StoryRuntime;
   private manualBusy = false;
   private manual = new AbortController();
+  private manualSettled: Promise<void> = Promise.resolve();
+  private debugJumpPending = false;
   private skipping = false;
   private choosing = false;
   private confirming = false;
@@ -59,8 +61,10 @@ export class StoryDirector {
   private unsubscribe: () => void;
   private projectionPending = false;
   private rollbackPresentation = false;
-  private projectionStage?: StoryStage;
+  private projectionStage?: StoryStageSnapshot;
   private travelPending?: TravelDestination;
+  /** 转场已经落到正式世界；投影失败重试时只重做投影，不重复建图与切音乐。 */
+  private travelApplied = false;
   private unsubscribeDefeats: () => void;
   /** 本次运行已经交给世界预取过的脚本；换一个 run 重新确认。 */
   private readonly prefetchedScripts = new Set<string>();
@@ -186,7 +190,7 @@ export class StoryDirector {
         try { await this.presentation?.release?.(); }
         finally {
           this.presenting = false;
-          if (!this.runtime.busy && !this.manualBusy) {
+          if (!this.runtime.busy && !this.manualBusy && !this.debugJumpPending) {
             this.context = undefined; this.choosing = false; this.confirming = false;
             this.ui.closeDialogue(); this.setLocked(false);
           }
@@ -197,13 +201,21 @@ export class StoryDirector {
     void this.cleanup.catch(() => {});
   }
   async debugJump<T>(work:()=>Promise<T>):Promise<T> {
-    this.cancel();
-    await this.cleanup;
-    this.recovery=undefined;this.projectionStage=undefined;this.travelPending=undefined;
-    this.prefetchedScripts.clear();this.prefetchedRun=undefined;
+    this.debugJumpPending = true;
+    this.deferredTriggers.length = 0;
     this.setLocked(true);
-    try{return await work();}
-    finally{if(!this.runtime.busy)this.setLocked(false);}
+    try {
+      this.cancel();
+      await this.manualSettled;
+      await this.cleanup;
+      this.context = undefined; this.choosing = false; this.confirming = false;
+      this.recovery=undefined;this.projectionStage=undefined;this.travelPending=undefined;this.travelApplied=false;
+      this.prefetchedScripts.clear();this.prefetchedRun=undefined;
+      return await work();
+    } finally {
+      this.debugJumpPending = false;
+      if(!this.runtime.busy && !this.manualBusy)this.setLocked(false);
+    }
   }
 
   cancel(): void {
@@ -260,8 +272,12 @@ export class StoryDirector {
     signal.throwIfAborted(); if (!this.presentation) throw new Error('剧情演出尚未装配');
     let drawingFirstStage = false;
     if (!this.presenting && action.type !== 'sound' && action.type !== 'music') {
-      const firstStage = action.type === 'stage' && !action.mapFromWorld;
-      await this.presentation.begin(signal, firstStage ? action : undefined,
+      // 首幕一律交给随后的 `execute` 画：继承当前地图时也不该先按正式世界画一遍基线，
+      // 否则同一张图、同一批角色会构建两次，`enterMap` 也会重复切一次音乐。
+      const firstStage = action.type === 'stage';
+      // `mapFromWorld` 的 `map` 只是预览值，不能拿它判断幕布；`begin` 用正式世界现场做基线。
+      const declaredStage = firstStage && !action.mapFromWorld ? action : undefined;
+      await this.presentation.begin(signal, declaredStage,
         action.type === 'fade' && action.opacity === 1 && action.durationMs === 0 ? { opacity: action.opacity, color: action.color } : undefined,
         firstStage);
       this.presenting = true;
@@ -283,7 +299,7 @@ export class StoryDirector {
     this.presentationStarted = true;
     this.onPresentationStarted?.();
   }
-  private async present(node: StoryNode, context: StoryPlaybackContext): Promise<{ choice?: string; stage?: StoryStage }> {
+  private async present(node: StoryNode, context: StoryPlaybackContext): Promise<{ choice?: string; stage?: StoryStageSnapshot }> {
     let value: string | undefined;
     for (const action of node.presentation) {
       context.signal.throwIfAborted();
@@ -293,8 +309,10 @@ export class StoryDirector {
         const option = await this.choice(action.prompt, action.options, action.description, context.signal); value = option.value;
         for (const line of option.lines ?? []) await this.dialogue(line, context.signal);
       } else if (action.type === 'quest-popup') {
-        this.markPresentationStarted();
         const quest = this.session.definition(action.quest); if (!quest) throw new Error(`任务不存在：${action.quest}`);
+        // 隐藏任务不进日志、不挂标记，也不占一次面板；生成的脚本里即使残留面板动作也在这里跳过。
+        if (quest.hidden) continue;
+        this.markPresentationStarted();
         const receipt = action.kind === 'complete' ? this.session.rewardReceiptFor(quest.id) : undefined;
         if (action.kind === 'complete' && !receipt) throw new Error(`任务尚未结算，无法展示奖励：${quest.id}`);
         this.confirming = true;
@@ -311,20 +329,26 @@ export class StoryDirector {
     const explicitTravel=commit.commands.flatMap(command=>command.type==='travel'?[command.destination]
       :command.type==='world'&&command.command.kind==='travel'?[command.command.destination]:[])[0];
     this.session.applyStoryCommands(commands, commit.checkpoint);
+    this.presentation?.committed?.();
     this.projectionStage = stage;
     if (commands.some(command => ['world', 'travel', 'encounter', 'party-join', 'party-leave', 'party-control', 'equip', 'unequip-destroy', 'health', 'mana'].includes(command.type))) this.projectionPending = true;
     if (explicitTravel) {
-      this.travelPending = explicitTravel;
+      this.travelPending = explicitTravel; this.travelApplied = false;
       // The formal travel becomes the new baseline for following nodes.
     }
   }
   private async project(signal: AbortSignal): Promise<void> {
     if (!this.projectionPending && !this.travelPending) return;
     signal.throwIfAborted();
-    if (this.travelPending) await this.onTravel?.(this.travelPending, signal);
+    // `onTravel` 成功之后就记下来：随后 `world.project` 失败时，重试只重做投影。
+    // 否则重试会把同一张图再重建一次，并重复切一次地图音乐。
+    if (this.travelPending && !this.travelApplied) {
+      await this.onTravel?.(this.travelPending, signal);
+      this.travelApplied = true;
+    }
     await this.world?.project(this.projectionStage, signal); signal.throwIfAborted();
     if (this.travelPending && this.presenting) { await this.presentation?.release?.(); this.presenting = false; }
-    this.world?.checkpoint(); this.projectionPending = false; this.travelPending = undefined;
+    this.world?.checkpoint(); this.projectionPending = false; this.travelPending = undefined; this.travelApplied = false;
   }
   private occurrence(source: StoryTriggerSource, key?: string, map?: string, entity?: string): StoryOccurrence {
     const state = this.runtime.snapshot();
@@ -361,6 +385,7 @@ export class StoryDirector {
    * 演出等于在弹窗背后跑完。排到这次手动播放完全收起之后再派发。
    */
   private triggerAfterManual(run: () => void): void {
+    if (this.debugJumpPending) return;
     if (!this.manualBusy) { run(); return; }
     this.deferredTriggers.push(run);
   }
@@ -399,6 +424,8 @@ export class StoryDirector {
   async script(name?: string | null, node?: string): Promise<void> { if (name) await this.request(this.runtime.start(name, undefined, undefined, node)); }
   async run(work: () => Promise<void>): Promise<boolean> {
     if (this.busy || this.disposed) return false;
+    let settled!: () => void;
+    this.manualSettled = new Promise<void>(resolve => { settled = resolve; });
     this.manual = new AbortController(); this.manualBusy = true; this.resetPlayback(); this.setLocked(true);
     try { await work(); this.manual.signal.throwIfAborted(); return true; }
     catch (error) { if (this.manual.signal.aborted || error instanceof DOMException && error.name === 'AbortError') return false; throw error; }
@@ -406,7 +433,7 @@ export class StoryDirector {
       this.manualBusy = false; this.release();
       try { await this.cleanup; }
       // 即使收尾报错，排队的触发也要落地：它的错误走 onError，而不是留一个永远不演的队列。
-      finally { this.flushDeferredTriggers(); }
+      finally { try { this.flushDeferredTriggers(); } finally { settled(); } }
     }
   }
   visitHealer(actor: ActorDefinition, revive: () => void): Promise<boolean> {
@@ -459,6 +486,8 @@ export class StoryDirector {
   }
   /** 剧情脚本之外的接取/交付提示：与 `present()` 的 quest-popup 动作同一套窗口。 */
   private async notice(kind: 'start' | 'complete', quest: CampaignQuest): Promise<void> {
+    // 隐藏任务照常结算，但不弹任务面板；它们本来就不出现在日志和场景标记里。
+    if (quest.hidden) return;
     const signal = this.context?.signal ?? this.manual.signal;
     signal.throwIfAborted();
     this.confirming = true;

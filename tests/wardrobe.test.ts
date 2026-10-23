@@ -67,3 +67,13 @@ test('scene shutdown disposes a pending outfit and rejects further preparation',
   await assert.rejects(run.prepare(),{name:'AbortError'});
   assert.equal(run.snapshots.length,1);
 });
+
+test('explicit outfit disposal cancels pending texture work and removes its scene listener',async t=>{
+  const run=setup(t),pending=run.prepare(),rejected=assert.rejects(pending,{name:'AbortError'});
+  assert.equal(run.events.listenerCount('shutdown'),1);
+  run.wardrobe.destroy();await rejected;
+  assert.equal(run.events.listenerCount('shutdown'),0);
+  assert.equal(run.textures.size,0);
+  run.finish(0);assert.equal(run.textures.size,0);
+  run.wardrobe.destroy();await assert.rejects(run.prepare(),{name:'AbortError'});
+});

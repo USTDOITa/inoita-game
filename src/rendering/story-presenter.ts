@@ -1,12 +1,15 @@
-import { resolveStoryStage, storyStageWorldCast } from '../domain/story-performance.ts';
+import { applyStorySceneAction, resolveStoryScene, syncStoryScene } from '../domain/story-scene.ts';
+import { prepareSceneVisit } from '../domain/scene-visit.ts';
+import { parseDrops } from '../domain/drops.ts';
+import type { SceneSnapshot } from '../domain/scene-snapshot.ts';
 import { SCENE_KEYS } from '../application/scene-keys.ts';
 import Phaser from 'phaser';
 import type { StoryContext } from '../application/ports.ts';
 import type { ActorDefinition, Facing, TravelDestination } from '../domain/content.ts';
-import type { PerformanceAction, PerformancePlayback, StoryCurtain, StoryPresentationPort, StoryStage } from '../domain/story-performance.ts';
+import type { PerformanceAction, PerformancePlayback, StoryCurtain, StoryPresentationPort, StoryStage, StoryStageSnapshot } from '../domain/story-performance.ts';
 import { cameraDuration, mapEffectTone } from '../domain/story-performance.ts';
 import { faceTarget } from '../domain/basic-attack.ts';
-import { createCharacter, setCharacterClip } from './characters.ts';
+import { characterAnimationState, setCharacterClip } from './characters.ts';
 import type { CharacterVisual } from './characters.ts';
 import { createEffect } from './effects.ts';
 import type { WorldScene } from '../scenes/world-scene.ts';
@@ -23,9 +26,11 @@ export class StoryPresenter implements StoryPresentationPort {
   private readonly app: StoryContext;
   private actors = new Map<string, Performer>();
   private appearance?: ActorDefinition;
-  private baseline?: StoryStage;
-  private finalStage?: StoryStage;
-  private dynamicMap = false;
+  private baseline?: StoryStageSnapshot;
+  private finalStage?: StoryStageSnapshot;
+  private state?: StoryStageSnapshot;
+  private scenes = new Map<string, SceneSnapshot>();
+  private committedScenes = new Map<string, SceneSnapshot>();
   private epoch = 0;
   private closing?: Promise<void>;
   private curtain?: Phaser.GameObjects.Rectangle;
@@ -40,36 +45,23 @@ export class StoryPresenter implements StoryPresentationPort {
     this.scene = stage ?? (() => world().scene.get(SCENE_KEYS.storyStage) as StoryStageScene);
   }
   prefetchMap(map: string): void { this.world().prefetchMap(map); }
-  async begin(signal?: AbortSignal, restored?: StoryStage, initialCurtain?: StoryCurtain, deferFirstStage = false): Promise<void> {
+  async begin(signal?: AbortSignal, restored?: StoryStage | StoryStageSnapshot, initialCurtain?: StoryCurtain, deferFirstStage = false): Promise<void> {
     if (!signal) throw new Error('剧情舞台需要导演的取消信号');
     signal.throwIfAborted();
     const world = this.world(), player = world.player;
     if (!player || !world.map) throw new Error('正式地图尚未准备好');
     this.appearance = player.actor;
-    // 演出开始前的真实状态：优先当前舞台画面，其次从正式世界拼一份。
-    const current: StoryStage = this.captureStage() ?? {
-      type: 'stage' as const, map: world.map.id, x: player.container.x, y: player.container.y,
-      facing: world.facing, playerVisible: player.container.visible,
-      cast: world.characters.map(character => ({
-        id: character.entity.id, worldEntityId:character.entity.id, actor: character.actor.id, ...(character.entity.characterId?{characterId:character.entity.characterId}:{}),
-        x: character.container.x, y: character.container.y,
-        facing: character.clipName?.split('-').at(-1) as Facing || 'south', visible: character.container.visible
-      }))
-    };
-    const stage: StoryStage = restored ?? current;
-    // `deferFirstStage` 时 `restored` 是即将绘制的首幕声明，不是演出前的状态。
-    // 拿它当 baseline，首幕的 `inheritPosition` 会从自己的占位 cast 继承，
-    // 结果是该显形的人留在哨兵坐标、`retainPlayerPosition` 也接到声明里的兜底锚点。
-    this.baseline = structuredClone(deferFirstStage ? current : stage); this.finalStage = undefined;
-    // 首幕在另一张图上时，先把正式世界遮住：舞台场景建场和画图要几帧，
-    // 这段时间露出脚下这张图，玩家就会先看到当前地图、再看到别处的演出。
-    // 同图首幕不遮，入场淡入仍然直接看着脚下的地图。
+    const source = world.captureStoryScene();
+    const current = this.captureStage() ?? resolveStoryScene({
+      type: 'stage', map: source.map, x: player.container.x, y: player.container.y,
+      facing: world.facing, playerVisible: source.actors.find(actor => actor.id === 'player')!.visible, retainPlayerPosition: true, cast: []
+    }, source);
+    const stage = restored ?? current;
+    this.baseline = structuredClone(current); this.finalStage = undefined;
+    this.rememberScene(current.scene);
     const curtain = initialCurtain ?? (stage.map !== world.map.id ? { opacity: 1, color: 0 } : undefined);
     if (curtain) { this.opacity = curtain.opacity; this.color = curtain.color; }
     await this.ready(signal, curtain);
-    // 导演把这一幕的首个舞台动作传进来时，画面由紧随其后的 `execute(action)` 一次画出。
-    // 这里再画一遍会让同一张舞台图重建两次（贴图、人物、音频各释放一次再建一次），
-    // 就是原版演出开始前那一闪的多余画面。
     if (deferFirstStage) return;
     await this.stage(stage, signal);
     const camera = this.scene().cameras.main;
@@ -90,37 +82,74 @@ export class StoryPresenter implements StoryPresentationPort {
       this.world().scene.moveAbove('world', 'story-stage');
     });
   }
-  captureStage(): StoryStage | undefined {
-    const scene = this.scene(), player = this.actors.get('player');
-    if (!scene.map || !player) return this.finalStage ? structuredClone(this.finalStage) : undefined;
+  captureStage(): StoryStageSnapshot | undefined {
+    const scene = this.scene();
+    if (!scene.map || !this.state || !this.actors.has('player')) return this.finalStage ? structuredClone(this.finalStage) : undefined;
+    const snapshot = structuredClone(this.state);
+    for (const actor of snapshot.scene.actors) {
+      const performer = this.actors.get(actor.id);
+      if (!performer) continue;
+      const visual = performer.visual;
+      const position = scene.movement?.position?.(visual) ?? visual.container;
+      Object.assign(actor, { x: position.x, y: position.y, facing: performer.facing,
+        visible: visual.container.visible, unpositioned: performer.unpositioned,
+        clip: visual.clipName ?? undefined, alpha: visual.container.alpha, appearance: structuredClone(visual.actor) });
+      const animation = visual.layers[0]?.anims;
+      if (animation?.currentAnim) {
+        const state = characterAnimationState(visual);
+        // 单帧动画的 Phaser 进度是 NaN，快照只保存有限值。
+        actor.animationProgress = state.progress;
+        actor.animationPlaying = state.playing;
+      }
+    }
     const camera = scene.cameras.main;
-    const center = { x: camera.scrollX + camera.width / camera.zoom / 2, y: camera.scrollY + camera.height / camera.zoom / 2 };
-    const position = (visual: CharacterVisual) => scene.movement?.position?.(visual) ?? visual.container;
-    const point = position(player.visual);
-    return {
-      type: 'stage', map: scene.map.id, x: point.x, y: point.y,
-      facing: player.facing, playerVisible: player.visual.container.visible,
-      ...(Number.isFinite(center.x) && Number.isFinite(center.y) ? { camera: center } : {}),
-      curtain: { opacity: this.opacity, color: this.color },
-      ...(this.app.audio ? { audio: this.app.audio.captureStoryAudio() } : {}),
-      cast: [...this.actors].filter(([id]) => id !== 'player').map(([id, actor]) => ({
-        id, actor: actor.visual.entity.actor, ...(actor.visual.entity.characterId?{characterId:actor.visual.entity.characterId}:{}), worldEntityId: actor.worldEntityId,
-        x: position(actor.visual).x, y: position(actor.visual).y, facing: actor.facing, visible: actor.visual.container.visible,
-        ...(actor.unpositioned?{unpositioned:true}:{})
-      }))
-    };
+    // Phaser 的镜头中点就是 `scrollX + width / 2`，与 zoom 无关（BaseCamera.centerOnX 与
+    // Camera.preRender 都不除 zoom）；多除一次会在 zoom != 1 时把恢复的镜头甩到地图边缘。
+    const center = { x: camera.scrollX + camera.width / 2, y: camera.scrollY + camera.height / 2 };
+    if (Number.isFinite(center.x) && Number.isFinite(center.y)) snapshot.camera = center;
+    snapshot.curtain = { opacity: this.opacity, color: this.color };
+    if (this.app.audio) snapshot.audio = this.app.audio.captureStoryAudio();
+    snapshot.scenes = [...this.scenes.values()].filter(visited => visited.map !== snapshot.map).map(visited => structuredClone(visited));
+    return syncStoryScene(snapshot);
   }
-  getStageState(): StoryStage | undefined { return this.captureStage(); }
+  getStageState(): StoryStageSnapshot | undefined { return this.captureStage(); }
   getWorldChanges(): readonly StoryEntityState[] {
-    const stage = this.captureStage();
-    return stage?.cast.filter(actor => !!actor.worldEntityId).map(actor => ({
-      id: actor.worldEntityId!, map: stage.map, actor: actor.actor, ...(actor.characterId?{characterId:actor.characterId}:{}),
-      x: actor.x, y: actor.y, facing: actor.facing, visible: actor.visible
-    })) ?? [];
+    const current = this.captureStage();
+    if (current) this.scenes.set(current.map, current.scene);
+    const changes: StoryEntityState[] = [];
+    for (const [map, scene] of this.scenes) {
+      const before = this.committedScenes.get(map);
+      for (const actor of scene.actors) {
+        if (!actor.worldEntityId || actor.unpositioned) continue;
+        const original = before?.actors.find(previous => previous.id === actor.id);
+        if (original && original.worldEntityId === actor.worldEntityId && original.actor === actor.actor
+          && original.x === actor.x && original.y === actor.y && original.facing === actor.facing
+          && original.visible === actor.visible) continue;
+        changes.push({ id: actor.worldEntityId, map, actor: actor.actor,
+          ...(actor.characterId ? { characterId: actor.characterId } : {}),
+          x: actor.x, y: actor.y, facing: actor.facing, visible: actor.visible });
+      }
+    }
+    return changes;
   }
-  async restoreStage(stage: StoryStage, signal: AbortSignal): Promise<void> { await this.ready(signal); await this.stage(stage, signal); }
+  committed(): void {
+    const current = this.captureStage();
+    if (current) this.scenes.set(current.map, current.scene);
+    this.committedScenes = new Map([...this.scenes].map(([map, scene]) => [map, structuredClone(scene)]));
+  }
+  private rememberScene(scene: SceneSnapshot): void {
+    this.scenes.set(scene.map, structuredClone(scene));
+    if (!this.committedScenes.has(scene.map)) this.committedScenes.set(scene.map, structuredClone(scene));
+  }
+  async restoreStage(stage: StoryStageSnapshot, signal: AbortSignal): Promise<void> {
+    await this.ready(signal);
+    await this.stage(stage, signal);
+    this.scenes = new Map((stage.scenes ?? []).map(scene => [scene.map, structuredClone(scene)]));
+    this.scenes.set(stage.map, structuredClone(stage.scene));
+  }
   private actor(id: string): Performer {
-    const actor = this.actors.get(id);
+    const canonical = this.state?.bindings.find(([alias]) => alias === id)?.[1] ?? id;
+    const actor = this.actors.get(canonical);
     if (!actor) throw new Error('剧情人物未出场：' + id);
     return actor;
   }
@@ -133,15 +162,11 @@ export class StoryPresenter implements StoryPresentationPort {
    * 所以这条只挡「真的还没到场」的人。
    */
   private present(id: string): Performer | undefined {
-    const actor = this.actors.get(id);
+    const canonical = this.state?.bindings.find(([alias]) => alias === id)?.[1] ?? id;
+    const actor = this.actors.get(canonical);
     return actor?.unpositioned ? undefined : actor;
   }
   private resetActors(preserveCurtain = false): void {
-    for (const [id, actor] of this.actors) {
-      this.scene().movement?.stop(actor.visual);
-      if (id !== 'player') { this.scene().movement?.remove(actor.visual); if (actor.visual.container.scene) actor.visual.container.destroy(); }
-      else this.scene().movement?.setGhost(actor.visual, false);
-    }
     this.actors.clear();
     for (const effect of this.effects) if (effect.scene) effect.destroy();
     this.effects.clear();
@@ -169,97 +194,62 @@ export class StoryPresenter implements StoryPresentationPort {
     }
     this.toneFilter.setActive(enabled);
   }
-  private async stage(stage: StoryStage, signal: AbortSignal): Promise<void> {
+  private async stage(declaration: StoryStage | StoryStageSnapshot, signal: AbortSignal): Promise<void> {
     const epoch = ++this.epoch;
-    this.dynamicMap = stage.mapFromWorld === true;
-    // 舞台收尾会把这张图写回正式世界；提前让世界场景预热，减少静默重建的等待。
-    if (stage.map && stage.map !== this.world().map?.id) this.prefetchMap(stage.map);
-    if (stage.mapFromWorld || stage.cast.some(member=>member.inheritPosition||member.characterId)) {
-      const current = this.captureStage() ?? this.baseline;
-      if (!current) throw new Error('当前剧情场景尚未准备好');
-      let arrival:StoryStage['cast']=[];
-      // `inheritPosition` 的角色也可能不在当前舞台的 cast 里（重播、上一幕收起）；同一张图
-      // 也要准备到达投影，`resolveStoryStage` 才能从世界状态把人接回来。
-      if (!stage.mapFromWorld && (stage.resetActors || stage.map!==current.map || stage.cast.some(member=>member.inheritPosition))) {
-        const needsMap=stage.resetActors||stage.map!==current.map;
-        const reference=this.app.world?.maps?.find(map=>map.id===stage.map);
-        if(!reference&&needsMap)throw new Error('这片区域的资源尚未准备好');
-        if(reference){
-          const map=await this.app.content.map(reference.file,signal);
-          arrival=storyStageWorldCast(map,this.app.campaign.placements,this.app.session.storyWorld,
-            condition=>this.app.session.evaluateCondition(condition),stage.resetActors);
-        }
-      }
-      stage = resolveStoryStage(stage, current, arrival);
+    const current = this.captureStage() ?? this.baseline;
+    if (current) this.scenes.set(current.map, structuredClone(current.scene));
+    const map = declaration.mapFromWorld ? current?.map ?? this.world().map!.id : declaration.map;
+    if (map !== this.world().map?.id) this.prefetchMap(map);
+    let snapshot: StoryStageSnapshot;
+    if ('scene' in declaration) {
+      snapshot = structuredClone(declaration);
+      for (const visited of snapshot.scenes ?? []) this.rememberScene(visited);
+      this.rememberScene(snapshot.scene);
     }
-    if (stage.retainPlayerPosition) {
-      const retained = this.retainedPlayer(stage.map);
-      if (retained) stage = { ...stage, ...retained };
+    else {
+      let source = !declaration.resetActors ? this.scenes.get(map) : undefined;
+      if (declaration.retainPlayerPosition && map === this.world().map?.id && this.scene().map?.id !== map && !declaration.resetActors)
+        source = this.world().captureStoryScene();
+      if (!source && map === this.world().map?.id && !declaration.resetActors) source = this.world().captureStoryScene();
+      if (!source) {
+        const reference = this.app.world.maps.find(reference => reference.id === map);
+        if (!reference) throw new Error('这片区域的资源尚未准备好');
+        const [worldMap, drops, springs] = await Promise.all([
+          this.app.content.map(reference.file, signal), this.app.content.drops(), this.app.content.springs()
+        ]);
+        signal.throwIfAborted();
+        const player = current?.scene.actors.find(actor => actor.id === 'player')
+          ?? this.world().captureStoryScene().actors.find(actor => actor.id === 'player');
+        if (!player) throw new Error('剧情玩家尚未准备好');
+        source = prepareSceneVisit({ session: this.app.session, campaign: this.app.campaign, world: this.app.world,
+          battleCatalog: this.app.battleCatalog, drops: parseDrops(drops, this.app.items, this.app.battleCatalog.enemies.map(enemy => enemy.id)), springs, partyActors: current?.scene.actors },
+          worldMap, { ...player, x: declaration.x, y: declaration.y, facing: declaration.facing });
+      }
+      this.rememberScene(source);
+      snapshot = resolveStoryScene({ ...declaration, map }, source);
     }
     if (!this.appearance) throw new Error('剧情玩家外观尚未准备好');
-    const identities=new Map(stage.cast.map(member=>[member.id,member.actor]));
-    stage={...stage,cast:stage.cast.map(member=>({...member,actor:this.app.session.storyWorld.actorAppearance(member.actor)}))};
-    await this.scene().showStage(stage, signal, this.appearance);
+    await this.scene().showStage(snapshot, signal, this.appearance);
     signal.throwIfAborted();
     if (epoch !== this.epoch) throw new DOMException('演出实例已更新', 'AbortError');
-    // 舞台地图已经画好、相机底色也已盖住正式世界；首幕的遮罩到这里交还给演出。
-    // 已被新舞台取代的那一次不能清掉别人的遮罩。
     this.scene().clearEarlyCurtain();
     this.resetActors(true);
+    this.state = snapshot;
     const scene = this.scene();
     scene.cameras.main.stopFollow();
-    this.actors.set('player', { visual: scene.player!, facing: stage.facing });
-    // 演出走位按脚本执行：角色只受地形约束，不被机关或其他单位挡住。
-    scene.movement!.setGhost(scene.player!, true);
-    this.face(this.actors.get('player')!, stage.facing);
-    for (const member of stage.cast) {
-      const visual = createCharacter(scene, this.app.world.actors[member.actor], { ...member,actor:identities.get(member.id)! });
-      visual.container.setVisible(member.visible);
-      scene.movement!.register(visual, false); scene.movement!.setEnabled(visual, member.visible);
-      scene.movement!.setGhost(visual, true);
-      const actor = { visual, facing: member.facing, worldEntityId: member.worldEntityId,unpositioned:member.unpositioned };
-      this.actors.set(member.id, actor); this.face(actor, member.facing);
+    for (const actor of snapshot.scene.actors) {
+      const visual = scene.characters.get(actor.id);
+      if (!visual) throw new Error('剧情场景对象未绘制：' + actor.id);
+      this.actors.set(actor.id, { visual, facing: actor.facing,
+        worldEntityId: actor.worldEntityId, unpositioned: actor.unpositioned });
     }
-    const placements = [...this.actors].map(([id, actor]) => ({ visual: actor.visual, position: id === 'player' ? {x:stage.x,y:stage.y} : {x:actor.visual.container.x,y:actor.visual.container.y}, enabled: actor.visual.container.visible }));
-    if (this.dynamicMap && scene.movement!.navigation) {
-      const movement=scene.movement!, navigation=movement.navigation;
-      for (const placement of placements) movement.setEnabled(placement.visual,false);
-      const settled:import('../domain/navigation-world.ts').Placement[]=[];
-      for (const placement of placements) {
-        if (!placement.enabled) continue;
-        const actor=movement.actor(placement.visual);
-        placement.position=navigation.nearest(actor.shape(),placement.position,actor,settled);
-        settled.push({actor,position:placement.position,enabled:true});
-      }
-    }
-    scene.movement!.placeAll(placements);
-    if (stage.camera) scene.cameras.main.centerOn(stage.camera.x, stage.camera.y);
-    if (stage.curtain) { this.opacity = stage.curtain.opacity; this.color = stage.curtain.color; }
-    if (stage.audio) this.app.audio?.restoreStoryAudio(stage.audio);
+    if (snapshot.camera) scene.cameras.main.centerOn(snapshot.camera.x, snapshot.camera.y);
+    if (snapshot.curtain) { this.opacity = snapshot.curtain.opacity; this.color = snapshot.curtain.color; }
+    if (snapshot.audio) this.app.audio?.restoreStoryAudio(snapshot.audio);
     this.drawCurtain();
   }
   async travel(destination: TravelDestination, signal: AbortSignal): Promise<void> {
     await this.stage({ type: 'stage', ...destination, playerVisible: true, cast: [] }, signal);
-  }
-  /**
-   * `retainPlayerPosition` 的落点：接着上一镜的主角位置。舞台正在放这张图就用舞台上的位置；
-   * 这一镜是本段演出的第一镜（舞台还没放过任何一张图）就用正式世界里的位置。
-   *
-   * 两处都取**脚底**坐标（`movement.position`），与 `captureStage` 写进舞台的 x/y 同一套坐标；
-   * 早先读的是容器的绘制坐标，两者差一个碰撞偏移，演出结束把主角写回世界时就会偏一截。
-   */
-  private retainedPlayer(map: string): { x: number; y: number; facing: Facing } | undefined {
-    const scene = this.scene();
-    // 本段演出还没画出任何一幕时，舞台里残留的是上一段演出的最后一帧；主角的实际
-    // 位置以正式世界为准。已经画过舞台后，才接着舞台上的位置走。
-    if (this.actors.has('player') && scene.map?.id === map && scene.player) {
-      const position = scene.movement?.position?.(scene.player) ?? scene.player.container;
-      return { x: position.x, y: position.y, facing: scene.facing };
-    }
-    const world = this.world();
-    if (!world.map || world.map.id !== map || !world.player) return undefined;
-    const position = world.movement?.position?.(world.player) ?? world.player.container;
-    return { x: position.x, y: position.y, facing: world.facing };
   }
   private face(actor: Performer, facing: Facing): void {
     actor.facing = facing;
@@ -358,18 +348,54 @@ export class StoryPresenter implements StoryPresentationPort {
   }
   async parallel(actions: PerformanceAction[], playback: PerformancePlayback): Promise<void> {
     const flatten = (action: PerformanceAction): VisualAction[] => action.type === 'parallel' ? action.actions.flatMap(flatten) : [action];
-    const flat = actions.flatMap(flatten), scene = this.scene(), movement = scene.movement!;
+    const flat = actions.flatMap(flatten);
+    await Promise.all(flat.map(action => this.executeAction(action, playback)));
+    // 每个动作结束时只按当时的位置单独落位；整组走完后再按最终站位统一落一次，
+    // 让同时移动的角色作为一组互相校验，而不是按到达先后各自占位。
+    const movement = this.scene().movement;
+    if (!movement) return;
     const placements = flat.flatMap(action => {
       if (action.type !== 'walk' && action.type !== 'appear' && action.type !== 'leave') return [];
-      if(action.type==='walk'&&this.actor(action.target).unpositioned)return [];
-      const visual = this.actor(action.target).visual;
-      return [{ visual, position: action.type === 'leave' ? movement.position(visual) : { x: action.x, y: action.y }, enabled: action.type === 'appear' || (action.type === 'walk' && visual.container.visible) }];
+      const bound = this.state?.bindings.find(([alias]) => alias === action.target)?.[1];
+      const performer = this.actors.get(bound ?? action.target);
+      if (!performer || action.type === 'walk' && performer.unpositioned) return [];
+      return [{ visual: performer.visual,
+        position: action.type === 'leave' ? movement.position(performer.visual) : { x: action.x, y: action.y },
+        enabled: action.type === 'appear' || action.type === 'walk' && performer.visual.container.visible }];
     });
-    const settle = () => movement.placeAll(placements);
-    if (playback.skipSignal.aborted) settle();
-    else movement.placeAll(placements.filter(p => flat.some(a => (a.type === 'appear' || a.type === 'leave') && this.actor(a.target).visual === p.visual)));
-    await Promise.all(flat.map(action => this.executeAction(action, playback, true)));
-    if (playback.skipSignal.aborted) settle();
+    if (placements.length) movement.placeAll(placements);
+  }
+  private applySceneAction(action: PerformanceAction): void {
+    const previous = this.captureStage();
+    if (!previous) throw new Error('剧情场景尚未准备好');
+    const next = applyStorySceneAction(previous, action);
+    const scene = this.scene();
+    scene.ensureActors(next);
+    this.state = next;
+    // `appear` 在朝向没变时也要重设一次待机姿态。这里用新状态里的别名绑定查目标实例，
+    // 不经过 `this.actor()`：`create` 刚追加的实例还没在本轮循环里登记进 `this.actors`。
+    const appearing = action.type === 'appear'
+      ? next.bindings.find(([alias]) => alias === action.target)?.[1] : undefined;
+    const placements: {visual: CharacterVisual; position: {x:number;y:number}; enabled: boolean}[] = [];
+    for (const actor of next.scene.actors) {
+      const visual = scene.characters.get(actor.id);
+      if (!visual) throw new Error('剧情场景对象未绘制：' + actor.id);
+      const before = previous.scene.actors.find(candidate => candidate.id === actor.id);
+      let performer = this.actors.get(actor.id);
+      if (!performer || performer.visual !== visual) {
+        performer = {visual, facing:actor.facing,worldEntityId:actor.worldEntityId,unpositioned:actor.unpositioned};
+        this.actors.set(actor.id, performer);
+      }
+      performer.worldEntityId = actor.worldEntityId; performer.unpositioned = actor.unpositioned;
+      if (!before || actor.x !== before.x || actor.y !== before.y || actor.visible !== before.visible) {
+        placements.push({visual, position:actor, enabled:actor.visible && !actor.unpositioned});
+        visual.container.setVisible(actor.visible && !actor.unpositioned);
+      }
+      if (!before || actor.facing !== before.facing || actor.id === appearing) this.face(performer, actor.facing);
+    }
+    if (action.type === 'world-object') {
+      for (const placement of placements) scene.movement!.placeContent(placement.visual, placement.position, placement.enabled);
+    } else if (placements.length) scene.movement!.placeAll(placements);
   }
   async execute(action: VisualAction, playback: PerformancePlayback): Promise<void> { await this.executeAction(action, playback); }
   private async executeAction(action: VisualAction, playback: PerformancePlayback, batch = false): Promise<void> {
@@ -377,22 +403,27 @@ export class StoryPresenter implements StoryPresentationPort {
     const scene = this.scene();
     switch (action.type) {
       case 'instant-message': this.app.ui.showInstant(action.text);return;
-      case 'refresh-appearance': {const stage=this.captureStage();if(stage)await this.stage(stage,playback.signal);return;}
+      case 'refresh-appearance': {
+        const stage=this.captureStage();
+        if(stage){
+          const changed = new Set((this.app.session.storyWorld.captureState().appearances ?? []).map(([actor]) => actor));
+          for(const actor of stage.scene.actors) if (actor.id === 'player' || actor.memberId || changed.has(actor.actor)) delete actor.appearance;
+          await this.stage(stage,playback.signal);
+        }
+        return;
+      }
       case 'stage': await this.stage(action, playback.signal); return;
+      case 'world-object':
+        if (action.command.kind === 'place') await scene.prepareActorAssets(action.command.entity.actor, playback.signal);
+        playback.signal.throwIfAborted();
+        this.applySceneAction(action); return;
       case 'appear': {
-        const actor = this.actor(action.target);
-        actor.unpositioned=false;
-        if (!batch) scene.movement!.placeAll([{ visual: actor.visual, position: action, enabled: true }]);
-        this.face(actor, action.facing); return;
+        this.applySceneAction(action); return;
       }
       case 'show': {
         // 原版走位前会 `CHARSYSTEM_Revive`：人物已经在台上、只是没画出来。
         // 这里只开显示，不挪位置——位置仍由舞台或之前的走位决定。
-        const actor = this.actor(action.target);
-        if (actor.unpositioned) return;
-        scene.movement!.setEnabled(actor.visual, true);
-        actor.visual.container.setVisible(true);
-        this.face(actor, actor.facing); return;
+        this.applySceneAction(action); return;
       }
       case 'leave': {
         const target = this.actor(action.target).visual.container;
@@ -401,10 +432,16 @@ export class StoryPresenter implements StoryPresentationPort {
           const x = target.x + effect.x, y = target.y + effect.y;
           target.remove(effect); scene.add.existing(effect); effect.setPosition(x, y).setDepth(target.depth + 1);
         }
-        target.setVisible(false); scene.movement!.setEnabled(this.actor(action.target).visual, false); return;
+        this.applySceneAction(action); return;
       }
-      case 'face': this.face(this.actor(action.target), action.facing); return;
-      case 'walk': await this.walk(action, playback, batch); return;
+      case 'face': this.applySceneAction(action); return;
+      case 'walk': {
+        const actor=this.actor(action.target);
+        const facing=faceTarget(scene.movement!.position(actor.visual),action);
+        await this.walk(action, playback, batch);
+        if (!actor.unpositioned) {this.applySceneAction(action);this.face(actor,facing);}
+        return;
+      }
       case 'pose': {
         const actor = this.present(action.target);
         if (!actor) return;
@@ -416,8 +453,14 @@ export class StoryPresenter implements StoryPresentationPort {
           if (action.pose !== 'idle' && !action.hold) actor.visual.layers[0]?.once('animationcomplete', () => {
             if (actor.visual.container.scene && actor.visual.clipName === clip) this.face(actor, actor.facing);
           });
+        }
+        await this.delay(action.durationMs, playback);
+        if (action.hold && action.pose !== 'idle') {
+          const clip = `${action.pose}-${actor.facing}` as const;
+          setCharacterClip(scene, actor.visual, clip);
+          for (const layer of actor.visual.layers) { layer.anims.setProgress(1); layer.anims.stop(); }
         } else this.face(actor, actor.facing);
-        await this.delay(action.durationMs, playback); return;
+        return;
       }
       case 'camera': {
         const actor = this.present(action.target);
@@ -486,6 +529,7 @@ export class StoryPresenter implements StoryPresentationPort {
     if (this.closing) return this.closing;
     this.epoch++;
     this.resetActors(); this.opacity = 0; this.finalStage = undefined; this.baseline = undefined;
+    this.state = undefined; this.scenes.clear(); this.committedScenes.clear();
     this.groundEffects = undefined; this.topEffects = undefined; this.toneFilter = undefined;
     const scene = this.scene();
     if (scene.sys.isActive() || scene.sys.isPaused() || scene.sys.isSleeping?.()) {

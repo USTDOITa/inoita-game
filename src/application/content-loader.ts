@@ -2,7 +2,7 @@ import {parseCrafting} from '../domain/crafting.ts';
 import type { WorldIndex, WorldMap } from '../domain/content.ts';
 import type { Campaign } from '../domain/campaign.ts';
 import type { BattleCatalog } from '../domain/battle.ts';
-import { parseStatusHud, parseCharacterStats, parseMenuPanels, parseBattle, parseCampaign, parseMap, parseWorld, parseStoryInterface, parseControlSkin, parseStoryClasses, parseItemCatalog, parseWardrobe, parseShops, parseCompanions } from './content-validation.ts';
+import { parseStatusHud, parseCharacterStats, parseMenuPanels, parseBattle, parseCampaign, parseMap, parseWorld, parseStoryInterface, parseControlSkin, parseStoryClasses, parseItemCatalog, parseWardrobe, parseShops, parseCompanions, parseStoryDebugCatalog } from './content-validation.ts';
 import type { StoryInterface } from '../domain/story-interface.ts';
 import { parseSprings, type SpringCatalog } from '../domain/springs.ts';
 import { versionedContent } from './asset-version.ts';
@@ -76,6 +76,8 @@ export class ContentLoader {
   controlSkin(signal?:AbortSignal){return this.read('content/control-skin.json',parseControlSkin,signal);}
   world(signal?:AbortSignal):Promise<WorldIndex>{return this.read('content/world.json',parseWorld,signal);}
   campaign(signal?:AbortSignal):Promise<Campaign>{return this.read('content/campaign.json',parseCampaign,signal);}
+  /** GM 现场表按需加载；普通游玩不请求这个文件。 */
+  storyDebug(signal?:AbortSignal){return this.read('content/debug/start.json',parseStoryDebugCatalog,signal);}
   storyInterface(signal?:AbortSignal):Promise<StoryInterface>{return this.read('content/story-interface.json',parseStoryInterface,signal);}
   storyClasses(signal?:AbortSignal){return this.read('content/story-classes.json',parseStoryClasses,signal);}
   battle(signal?:AbortSignal):Promise<BattleCatalog>{return this.read('content/battle.json',parseBattle,signal);}

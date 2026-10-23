@@ -454,17 +454,20 @@ const line={speaker:text,text,actor:nullable(text),portrait:optional(nullable(te
 const dialogue=shape<DialogueAction>({...line,type:oneOf('dialogue')});
 const choice:Check=(v,p)=>{object({type:oneOf('choice'),prompt:text,description:optional(text),options:array(object({label:text,value:text,lines:optional(array(object(line)))}))})(v,p);requireValue((v as {options:unknown[]}).options.length,p,'选项不能为空');};
 const nonnegative:Check=(v,p)=>{number(v,p);requireValue((v as number)>=0,p,'需要非负数');};
-const member=shape<StoryCastMember>({id:text,actor:text,characterId:optional(text),worldEntityId:optional(text),inheritPosition:optional(boolean),unpositioned:optional(boolean),x:number,y:number,facing,visible:boolean});
+const member=shape<StoryCastMember>({id:text,actor:text,characterId:optional(text),enemyId:optional(text),memberId:optional(text),binding:optional(oneOf('world')),worldEntityId:optional(text),inheritPosition:optional(boolean),unpositioned:optional(boolean),x:number,y:number,facing,visible:boolean});
 const performanceChecks:Record<string,Check>={
   'instant-message':object({type:oneOf('instant-message'),text}),
   stage:object({type:oneOf('stage'),mapFromWorld:optional(boolean),resetActors:optional(boolean),map:text,x:number,y:number,facing,playerVisible:boolean,retainPlayerPosition:optional(boolean),cast:array(member),
     camera:optional(object({x:number,y:number})),curtain:optional(object({opacity:(v,p)=>{nonnegative(v,p);requireValue((v as number)<=1,p,'透明度不得大于一');},color:integer})),
     audio:optional(object({music:nullable(text),ambience:nullable(text)}))}),
-  appear:object({type:oneOf('appear'),target:text,x:number,y:number,facing}),
+  appear:object({type:oneOf('appear'),target:text,x:number,y:number,facing,mode:optional(oneOf('reuse','create')),worldEntityId:optional(text)}),
+  'world-object':object({type:oneOf('world-object'),target:optional(text),mode:optional(oneOf('reuse','create')),command:(v,p)=>{
+    worldCommand(v,p);requireValue(['place','show','hide','remove','remove-character'].includes((v as {kind:string}).kind),p,'需要场景物件命令');
+  }}),
   show:object({type:oneOf('show'),target:text}),
   leave:object({type:oneOf('leave'),target:text}),
-  walk:object({type:oneOf('walk'),target:text,x:number,y:number,speedPxPerSecond:positive,followCamera:optional(boolean)}),
-  face:object({type:oneOf('face'),target:text,facing}),
+  walk:object({type:oneOf('walk'),target:text,x:number,y:number,speedPxPerSecond:positive,followCamera:optional(boolean),ensure:optional(boolean)}),
+  face:object({type:oneOf('face'),target:text,facing,ensure:optional(boolean)}),
   pose:object({type:oneOf('pose'),target:text,pose:oneOf('idle','attack',...STORY_POSE_NAMES),durationMs:nonnegative,hold:optional(boolean)}),
   effect:object({type:oneOf('effect'),target:text,effect:text}),
   'location-effect':object({type:oneOf('location-effect'),effect:text,x:number,y:number}),
@@ -610,7 +613,8 @@ const debugAccept=object({event:optional(text),script:optional(text),node:option
 const debugGap=object({quest:text,title:optional(text),kind:text,detail:text,evidence:optional(text),fixHint:optional(text)});
 const debugCoverage=object({eligible:integer,verified:integer,gaps:integer,excludedNoIntake:integer,
   excludedUnreachableEvents:integer,unreachableNodes:integer,byGapKind:record(integer)});
-const debugMeta=object({interpreterVersion:count,semanticsVersion:count,sourceHash:text,generatedAt:text,coverage:debugCoverage});
+const debugMeta=object({generator:optional(text),interpreterVersion:count,semanticsVersion:count,sourceHash:text,
+  generatedAt:text,sources:optional(record(text)),coverage:debugCoverage});
 const debugTask=object({
   quest:text,phase:oneOf('available','active'),
   entry:object({type:oneOf('fixed'),map:text,x:number,y:number,source:text}),
@@ -621,6 +625,10 @@ const debugTask=object({
 });
 const debugStory=object({schema:optional((v,p)=>requireValue(v===1,p,'需要版本 1')),meta:optional(debugMeta),
   tasks:array(debugTask),gaps:optional(array(debugGap))});
+/** 调试现场表是独立产物，只有 GM 模式才加载；形状与旧 `campaign.debugStory` 相同。 */
+export function parseStoryDebugCatalog(value:unknown):import('../domain/story-debug.ts').StoryDebugCatalog{
+  debugStory(value,'debugStory');return value as import('../domain/story-debug.ts').StoryDebugCatalog;
+}
 const campaign=shape<Campaign>({debugStory:optional(debugStory),version:(v,p)=>requireValue(v===2,p,'剧情内容需要版本 2'),contentVersion:count,
   start:object({map:text,x:number,y:number,actor:text,facing,script:text}),
   scripts:record(object({entry:text,nodes:array(object({id:text,presentation:array(presentation),commands:array(storyCommand),stage:optional(performanceChecks.stage),exit:nodeExit}))})),

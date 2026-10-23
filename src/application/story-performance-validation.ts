@@ -12,7 +12,8 @@ export function validateStoryPerformance(world: WorldIndex, campaign: Campaign, 
   }
   for (const name of Object.keys(campaign.scripts)) {
     let mapId = campaign.start.map, dynamicMap = false;
-    const cast = new Map<string, { actor: string; x: number; y: number; visible: boolean; unpositioned?:boolean }>();
+    interface Member { actor:string; x:number; y:number; visible:boolean; unpositioned?:boolean; characterId?:string; worldEntityId?:string; scenery?:boolean }
+    const cast = new Map<string, Member>();
     let navigation: NavigationWorld | undefined;
     const participants = new Map<string, NavigationActor>();
     const ensure = (condition: unknown, message: string): void => { if (!condition) throw new Error(`剧情 ${name}: ${message}`); };
@@ -51,7 +52,7 @@ export function validateStoryPerformance(world: WorldIndex, campaign: Campaign, 
           const map = maps.get(mapId); ensure(map, `地图未载入 ${mapId}`);
           navigation = new NavigationWorld(map!);
           for (const id of cast.keys()) {
-            const actor: NavigationActor = { shape: () => world.actors[cast.get(id)!.actor], position: () => cast.get(id)!, enabled: () => cast.get(id)!.visible };
+            const actor: NavigationActor = { shape: () => world.actors[cast.get(id)!.actor], position: () => cast.get(id)!, enabled: () => cast.get(id)!.visible && !cast.get(id)!.scenery };
             participants.set(id, actor); navigation.register(actor);
           }
           validatePositions();
@@ -60,6 +61,11 @@ export function validateStoryPerformance(world: WorldIndex, campaign: Campaign, 
       }
       if (action.type === 'location-effect') { ensure(!!world.storyEffects?.[action.effect]?.clips.default, `特效缺失 ${action.effect}`); return; }
       if (action.type === 'map-effect') { ensure(typeof action.enabled === 'boolean', '地图效果开关状态无效'); return; }
+      if (action.type === 'world-object') {
+        if (action.command.kind === 'place') ensure(world.actors[action.command.entity.actor], `人物资源缺失 ${action.command.entity.actor}`);
+        if (action.target) ensure(cast.has(action.target), `人物未出场 ${action.target}`);
+        updatePosition(action); return;
+      }
       if (!('target' in action)) return;
       const target = cast.get(action.target);
       ensure(target, `人物未出场 ${action.target}`);
@@ -77,6 +83,24 @@ export function validateStoryPerformance(world: WorldIndex, campaign: Campaign, 
       if (validateEnd) validatePositions();
     };
     const updatePosition = (action: Exclude<PerformanceAction, {type:'parallel'}>): void => {
+      if (action.type === 'world-object') {
+        const command = action.command;
+        if (command.kind === 'place' && action.target) {
+          const target = cast.get(action.target);
+          if (target) cast.set(action.target, {...target,...command.entity,worldEntityId:command.entity.id,
+            visible:command.entity.visible !== false,unpositioned:false,scenery:true});
+        } else {
+          for (const [id,target] of cast) {
+            const matches = command.kind === 'remove-character' ? target.characterId === command.characterId
+              : 'id' in command && target.worldEntityId === command.id;
+            if (matches) {
+              cast.set(id,{...target,visible:command.kind === 'show'});
+              if (command.kind === 'remove-character' && !command.all) break;
+            }
+          }
+        }
+        return;
+      }
       if (!('target' in action)) return;
       const target = cast.get(action.target); if (!target) return;
       if (action.type === 'walk' && target.unpositioned) return;
@@ -87,13 +111,13 @@ export function validateStoryPerformance(world: WorldIndex, campaign: Campaign, 
     };
     const validatePositions = (): void => {
       if (!navigation) return;
-      const placements: Placement[] = [...participants].map(([id, actor]) => ({ actor, position: cast.get(id)!, enabled: cast.get(id)!.visible }));
+      const placements: Placement[] = [...participants].map(([id, actor]) => ({ actor, position: cast.get(id)!, enabled: cast.get(id)!.visible && !cast.get(id)!.scenery }));
       for (const [id, actor] of participants) {
         const member = cast.get(id)!;
-        ensure(!member.visible || navigation.canPlace(actor.shape(), member, actor, placements), `人物落位被地形或其他人物阻挡 ${id} (${member.x},${member.y})`);
+        ensure(member.scenery || !member.visible || navigation.canPlace(actor.shape(), member, actor, placements), `人物落位被地形或其他人物阻挡 ${id} (${member.x},${member.y})`);
       }
     };
-    interface StageState { dynamicMap: boolean; map: string; members: [string, { actor: string; x: number; y: number; visible: boolean;unpositioned?:boolean }][] }
+    interface StageState { dynamicMap: boolean; map: string; members: [string, Member][] }
     const snapshot = (): StageState => ({ dynamicMap, map: mapId, members: [...cast].map(([id, member]) => [id, { ...member }]) });
     const restore = (state: StageState): void => {
       dynamicMap = state.dynamicMap; mapId = state.map; cast.clear(); participants.clear(); navigation = undefined;
@@ -102,7 +126,7 @@ export function validateStoryPerformance(world: WorldIndex, campaign: Campaign, 
         const map = maps.get(mapId); ensure(map, `地图未载入 ${mapId}`);
         navigation = new NavigationWorld(map!);
         for (const id of cast.keys()) {
-          const actor: NavigationActor = { shape: () => world.actors[cast.get(id)!.actor], position: () => cast.get(id)!, enabled: () => cast.get(id)!.visible };
+          const actor: NavigationActor = { shape: () => world.actors[cast.get(id)!.actor], position: () => cast.get(id)!, enabled: () => cast.get(id)!.visible && !cast.get(id)!.scenery };
           participants.set(id, actor); navigation.register(actor);
         }
       }
@@ -127,7 +151,11 @@ export function validateStoryPerformance(world: WorldIndex, campaign: Campaign, 
       for (const action of node.presentation) {
         if (action.type === 'dialogue') validateLine(action);
         else if (action.type === 'choice') action.options.flatMap(option => option.lines ?? []).forEach(validateLine);
-        else if (action.type !== 'quest-popup') visit(action);
+        else if (action.type === 'quest-popup') {
+          // 隐藏任务不进日志、不挂标记，也不该在脚本里占一次面板。
+          const quest = campaign.quests.find(quest => quest.id === action.quest);
+          ensure(!quest?.hidden, `隐藏任务不应有任务面板 ${action.quest}`);
+        } else visit(action);
       }
       const after = snapshot();
       if (node.exit.type === 'call') {

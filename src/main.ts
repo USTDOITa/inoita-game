@@ -182,6 +182,9 @@ function prepareStory(signal: AbortSignal): Promise<void> {
       app.content.statusHud(signal), app.content.controlSkin(signal), app.content.characterStats(signal), app.content.shops(signal), app.content.companions(signal), app.content.crafting(signal)
     ]);
     signal.throwIfAborted();
+    // 调试现场表是独立产物：只有 GM 会话加载，普通游玩不请求 1.35MB 的调试数据。
+    if (gmOn()) campaign.debugStory = await app.content.storyDebug(signal);
+    signal.throwIfAborted();
     validateMenuClasses(panels, battle);
     validateWardrobe(wardrobe, items, battle);
     validateItemSkills(items, battle);
@@ -295,7 +298,7 @@ async function resumeSlot(slot:SaveSlotRef,signal?:AbortSignal):Promise<void> {
         // 自动槽不是玩家手动选择的槽，所以这里留空。
         app.saveSlot=slot===AUTO_SAVE_SLOT?undefined:slot;
         game.scene.start(SCENE_KEYS.world,{map:location.map,x:location.x,y:location.y,facing:location.facing,
-          initialEntry:true,suppressEntry:true,resumeStory:true,signal:lifetime.signal,checkpoint:world.world,generatedEntities:world.generatedEntities,
+          initialEntry:true,suppressEntry:true,resumeStory:true,signal:lifetime.signal,checkpoint:world.world,generatedEntities:world.generatedEntities,preparedScene:world.scene,
           onReady:()=>{if(!lifetime.signal.aborted&&world.audio)app.audio?.restoreStoryAudio(world.audio);}});
       },
     },signal);

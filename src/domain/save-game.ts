@@ -6,7 +6,7 @@ export const MANUAL_SAVE_SLOT_COUNT = 10;
  * 存档格式版本。记录结构或校验口径变了就加一，旧档会被当成不可读取（见 AGENTS.md 的
  * 「存档不做兼容」）：开发阶段不写迁移，玩家下次保存时覆盖掉旧档。
  */
-export const SAVE_FORMAT = 33;
+export const SAVE_FORMAT = 34;
 
 /** 存档写给谁：手动槽用序号（0..9），唯一的自动槽用 `'auto'`。 */
 export type SaveSlotRef = number | typeof AUTO_SAVE_SLOT;

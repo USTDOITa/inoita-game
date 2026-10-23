@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import type Phaser from 'phaser';
-import { loadSceneAssets, missingSceneAssets } from '../src/rendering/scene-assets.ts';
+import { loadSceneAssets, missingSceneAssets, retainLoadedSceneAssets } from '../src/rendering/scene-assets.ts';
 import type { PendingAsset } from '../src/rendering/scene-assets.ts';
 
 const asset: PendingAsset = { kind: 'spritesheet', key: 'skill-effect', file: 'assets/effect.png', config: { frameWidth: 8, frameHeight: 8, endFrame: 2 } };
@@ -136,4 +136,15 @@ test('network failure and shutdown clean up loading listeners and ownership', as
   await assert.rejects(pending, { name: 'AbortError' });
   assert.deepEqual(cancelled.load.eventNames(), []);
   assert.equal(cancelled.events.listenerCount('shutdown'), 0);
+});
+
+test('retaining assets verifies textures and frames before taking a lease', () => {
+  const run = setup();
+  assert.throws(() => retainLoadedSceneAssets(run.scene, [asset]), /常驻资源尚未就绪：skill-effect/);
+  run.frames.set(asset.key, new Set([0, 2]));
+  assert.throws(() => retainLoadedSceneAssets(run.scene, [asset]), /缺少帧 1/);
+  run.frames.set(asset.key, new Set([0, 1, 2]));
+  const lease = retainLoadedSceneAssets(run.scene, [asset]);
+  lease.release();
+  assert.deepEqual(run.removed, [asset.key]);
 });

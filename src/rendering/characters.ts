@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import type { ActorDefinition, AnimationClip, ClipName, EntityPlacement, Facing } from '../domain/content.ts';
 import { STORY_POSE_NAMES } from '../domain/content.ts';
 import { idlePoseFrame } from '../domain/basic-attack.ts';
-import type { PendingAsset } from './scene-assets.ts';
 import { blendModeOf } from './blend-modes.ts';
 import { applyCharacterVisibility } from './character-visibility.ts';
 
@@ -17,17 +16,28 @@ export interface CharacterVisual {
   flipped?: boolean;
 }
 
-export function characterAssets(actor: ActorDefinition): PendingAsset[] {
-  return Object.values(actor.clips).flatMap(clip => clip ? clip.layers.map(layer => ({
-    kind: 'spritesheet' as const, key: layer.key, file: layer.file,
-    config: { frameWidth: clip.frameWidth, frameHeight: clip.frameHeight, endFrame: clip.frames - 1 }
-  })) : []);
+export { characterAssets } from './combat-asset-descriptors.ts';
+
+/**
+ * 角色当前动画的进度与播放状态，供剧情场景快照保存。
+ *
+ * Phaser 对单帧动画的 `getProgress()` 返回 NaN（帧进度按 `1/(帧数-1)` 计算），
+ * 而快照只接受 0..1 的有限值，所以这里统一收敛：非有限值直接省略。
+ */
+export function characterAnimationState(character: CharacterVisual): { progress?: number; playing?: boolean } {
+  const animation = character.layers[0]?.anims;
+  if (!animation?.currentAnim) return {};
+  const progress = animation.getProgress();
+  return {
+    ...(Number.isFinite(progress) ? { progress: Math.min(1, Math.max(0, progress)) } : {}),
+    playing: animation.isPlaying
+  };
 }
 
 export function createCharacter(scene: Phaser.Scene, actor: ActorDefinition, entity: EntityPlacement): CharacterVisual {
   const character: CharacterVisual = { entity, actor, container: scene.add.container(entity.x, entity.y).setDepth(entity.y + .5), layers: [], clipName: null };
-  setCharacterClip(scene, character, 'idle-south');
-  return character;
+  try { setCharacterClip(scene, character, 'idle-south'); return character; }
+  catch (error) { character.container.destroy(); throw error; }
 }
 
 /**

@@ -40,6 +40,11 @@ class Display extends EventEmitter {
 
 function setup(){
   const nodes:Display[]=[],animations=new Map<string,Animation>(),textures=new Map<string,Set<number>>(),removed:string[]=[],queued:PendingAsset[]=[];
+  // 战斗视觉资源是会话常驻包：夹具按真实内容预置全部特效纹理与完整帧。
+  for(const effect of Object.values(catalog.attackEffects))
+    for(const clip of Object.values(effect.clips))
+      for(const layer of clip.layers)
+        textures.set(layer.key,new Set(Array.from({length:clip.frames},(_,index)=>index)));
   const make=(x=0,y=0)=>{const value=new Display();value.x=x;value.y=y;nodes.push(value);return value;};
   const load=Object.assign(new EventEmitter(),{
     spritesheet:(key:string,file:string,config:Phaser.Types.Loader.FileTypes.ImageFrameConfig)=>queued.push({kind:'spritesheet',key,file,config}),

@@ -1,15 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { stageSnapshot } from './helpers/story-stage.ts';
 import { storyCommitCommands } from '../src/domain/story-commit.ts';
 import { StoryWorldState, type StoryWorldSnapshot } from '../src/domain/story-world.ts';
 import type { StoryNodeCommit, StoryRuntimeSnapshot } from '../src/domain/story-runtime.ts';
-import type { StoryCommand } from '../src/domain/story-graph.ts';
+import type { StoryCommand, StoryScript } from '../src/domain/story-graph.ts';
+import { applyStorySceneAction, resolveStoryScene } from '../src/domain/story-scene.ts';
+import type { StoryStage } from '../src/domain/story-performance.ts';
 
-/**
- * 隐式舞台绑定（每次提交都把当前舞台的角色名单写回世界）与脚本显式移除的关系。
- * event-57 的 done 节点正是靠这条路径把 scene-1 刚移除的路障写回来的。
- */
-const runtime: StoryRuntimeSnapshot = { version: 1, sequence: 0, runs: [], completedEvents: [],
+/** 演出差量写回与脚本显式落位、移除的提交规则。 */
+const runtime: StoryRuntimeSnapshot = { version: 2, sequence: 0, runs: [], completedEvents: [],
   handledOccurrences: [], encounterResults: [], pendingOccurrences: [], occurrenceSequences: [] };
 const ENTITY = { id: 'quest-npc-located-npc-121', map: 'castle02', actor: 'barricade-307ed4dd',
   characterId: 'npc-121', x: 568, y: 216, facing: 'south' as const, visible: true };
@@ -67,7 +68,7 @@ test('bindings still skip entities registered on another map', () => {
   assert.equal(state.entity(ENTITY.id)!.map, 'castle01');
 });
 
-const caveStage = (x: number, y: number, facing: 'south' | 'east' = 'south'): NonNullable<StoryNodeCommit['stage']> => ({
+const caveStage = (x: number, y: number, facing: 'south' | 'east' = 'south'): NonNullable<StoryNodeCommit['stage']> => stageSnapshot({
   type: 'stage', map: 'silent-cave-depths', x, y, facing, playerVisible: true,
   retainPlayerPosition: true, cast: []
 });
@@ -100,4 +101,99 @@ test('a retained stage that leaves the player standing still does not submit a m
   const node: StoryNodeCommit = { commands: [], checkpoint: committedRun(performed), node: { script: 'event-4', node: 'scene-1' }, runId: 'run', stage: performed };
   const commands = storyCommitCommands(node, atEntrance(), []);
   assert.equal(commands.some(command => command.type === 'travel'), false);
+});
+
+test('an explicit reuse replaces the old world binding without duplicating its static instance',()=>{
+  const state=world();
+  const destination={...ENTITY,id:'new-binding',x:300};
+  const performed=stageSnapshot({type:'stage',map:ENTITY.map,x:1,y:2,facing:'south',playerVisible:true,cast:[]});
+  performed.scene.actors.push({id:`entity:${ENTITY.id}`,worldEntityId:destination.id,actor:ENTITY.actor,
+    characterId:ENTITY.characterId,x:300,y:ENTITY.y,facing:'south',visible:true});
+  const commands=storyCommitCommands(commit([{type:'world',command:{kind:'place',entity:destination}}],performed),state,[]);
+  assert.deepEqual(commands.slice(0,2),[
+    {type:'world',command:{kind:'remove',id:ENTITY.id}},
+    {type:'world',command:{kind:'place',entity:destination}}
+  ]);
+  for(const command of commands)if(command.type==='world')state.apply(command.command);
+  assert.equal(state.entity(ENTITY.id)?.removed,true);
+  const projected=state.projectEntities(ENTITY.map,[ENTITY]);
+  assert.deepEqual(projected.map(entity=>entity.id),[destination.id]);
+});
+
+test('explicit create and a re-registered actor on another map preserve unrelated old instances',()=>{
+  for(const [canonical,map] of [[`story:new`,ENTITY.map],[`entity:${ENTITY.id}`,'other-map']]){
+    const state=world();
+    state.apply({kind:'place',entity:{...ENTITY,map}});
+    const destination={...ENTITY,id:'new-binding'};
+    const performed=stageSnapshot({type:'stage',map:ENTITY.map,x:1,y:2,facing:'south',playerVisible:true,cast:[]});
+    performed.scene.actors.push({id:canonical,worldEntityId:destination.id,actor:ENTITY.actor,
+      x:ENTITY.x,y:ENTITY.y,facing:'south',visible:true});
+    const commands=storyCommitCommands(commit([{type:'world',command:{kind:'place',entity:destination}}],performed),state,[]);
+    assert.equal(commands.some(command=>command.type==='world'&&command.command.kind==='remove'),false);
+    for(const command of commands)if(command.type==='world')state.apply(command.command);
+    assert.equal(state.entity(ENTITY.id)?.removed,false);
+  }
+});
+
+for (const [scriptId, nodeId, entityId, expected] of [
+  ['event-145', 'scene-1', 'story-character-145-8', [488, 328]],
+  ['event-141', 'scene-5', 'story-character-npc-69', [136, 296]],
+  ['event-141', 'scene-5', 'story-character-npc-70', [168, 296]],
+] as const) test(`${scriptId}/${nodeId} commits each instance at its performed final position`, () => {
+  const campaign = JSON.parse(readFileSync(new URL('../public/content/campaign.json', import.meta.url), 'utf8')) as { scripts: Record<string, StoryScript> };
+  const script = campaign.scripts[scriptId]!;
+  const node = script.nodes.find(node => node.id === nodeId)!;
+  let declaration: StoryStage | undefined;
+  for (const candidate of script.nodes) {
+    for (const action of candidate.presentation) if (action.type === 'stage') declaration = action;
+    if (candidate === node) break;
+  }
+  assert.ok(declaration);
+  let stage = resolveStoryScene(declaration, { map: declaration.map, actors: [{ id: 'player', actor: 'kiyan',
+    x: declaration.x, y: declaration.y, facing: declaration.facing, visible: true }] });
+  for (const action of node.presentation) {
+    if (action.type === 'stage') stage = resolveStoryScene(action, stage.scene);
+    else if (action.type !== 'dialogue' && action.type !== 'choice' && action.type !== 'quest-popup') stage = applyStorySceneAction(stage, action);
+  }
+  const finalActor = stage.scene.actors.find(actor => actor.worldEntityId === entityId)!;
+  assert.deepEqual([finalActor.x, finalActor.y], expected);
+  const changes = stage.scene.actors.filter(actor => actor.worldEntityId && !actor.unpositioned && !actor.removed)
+    .map(actor => ({ id: actor.worldEntityId!, actor: actor.actor, characterId: actor.characterId, map: stage.map,
+      x: actor.x, y: actor.y, facing: actor.facing, visible: actor.visible }));
+  const state = world({ entities: [], location: { map: stage.map, x: stage.x, y: stage.y, facing: stage.facing } });
+  const original = structuredClone(node.commands);
+  const commands = storyCommitCommands(commit(node.commands, stage), state, changes);
+  for (const command of commands) if (command.type === 'world') state.apply(command.command);
+  const placed = state.entity(entityId)!;
+  assert.deepEqual([placed.x, placed.y], expected, '节点原始 place 不应覆盖独立实例的演出最终站位');
+  assert.equal(placed.facing, finalActor.facing);
+  assert.equal(placed.visible, finalActor.visible);
+  assert.equal(placed.mapVisit, state.visit, '原 place 的 visit 生命周期必须保留');
+  assert.deepEqual(node.commands, original, '提交投影不能改写源内容');
+});
+
+test('final pose merging preserves the order of subsequent removal and cross-map registration', () => {
+  for (const ending of ['remove', 'migrate'] as const) {
+    const state = world();
+    const final = { ...ENTITY, x: 600, y: 240, facing: 'east' as const, visible: false };
+    const stage = stageSnapshot({ type: 'stage', map: ENTITY.map, x: 1, y: 2, facing: 'south', playerVisible: true, cast: [] });
+    stage.scene.actors.push({ ...final, id: `entity:${ENTITY.id}`, worldEntityId: ENTITY.id });
+    const terminal: StoryCommand = ending === 'remove'
+      ? { type: 'world', command: { kind: 'remove', id: ENTITY.id } }
+      : { type: 'world', command: { kind: 'place', entity: { ...ENTITY, map: 'castle01', x: 80 } } };
+    const source: StoryCommand[] = [
+      { type: 'world', command: { kind: 'place', scope: 'visit', entity: ENTITY } },
+      { type: 'world', command: { kind: 'place', scope: 'visit', entity: { ...ENTITY, x: 580 } } }, terminal,
+    ];
+    const commands = storyCommitCommands(commit(source, stage), state, [final]);
+    assert.deepEqual(commands.at(-1), terminal, '后续显式删除或跨图注册保持原义');
+    assert.deepEqual(commands[1], source[0], '只合并本图最后一次落位');
+    assert.deepEqual(commands[2], { type: 'world', command: { kind: 'place', scope: 'visit', entity: final } });
+    for (const command of commands) if (command.type === 'world') state.apply(command.command);
+    assert.equal(state.entity(ENTITY.id)!.removed, ending === 'remove');
+    if (ending === 'migrate') {
+      assert.equal(state.entity(ENTITY.id)!.map, 'castle01');
+      assert.equal(state.entity(ENTITY.id)!.x, 80);
+    }
+  }
 });

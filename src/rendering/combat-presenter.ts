@@ -1,11 +1,10 @@
 import Phaser from 'phaser';
 import {LOGIC_FRAME_MS} from '../domain/battle.ts';
-import type {BasicAttackDefinition,AttackEffectDefinition,AttackPlacement,BattleCatalog,BattleClass,ResolvedBasicAttack,SkillVisualEffect,SkillEffectCue} from '../domain/battle.ts';
+import type {AttackPlacement,BattleCatalog,SkillVisualEffect,SkillEffectCue} from '../domain/battle.ts';
 import type {ActionPlayback,Combatant,SkillUnitHit} from '../domain/combat.ts';
 import type {SkillUnitOutcome} from '../domain/skill-unit-sequence.ts';
 import type {FlightEvent} from '../domain/combat-runtime.ts';
-import {skillEffectNames,skillRepeatSkippedFrames,skillSequence} from '../domain/skill-action.ts';
-import {skillReactionEffects} from '../domain/skill-reactions.ts';
+import {skillRepeatSkippedFrames,skillSequence} from '../domain/skill-action.ts';
 import {attackSequence} from '../domain/basic-attack.ts';
 import {attackCycleFrames} from '../domain/combat-tempo.ts';
 import type {ClipName} from '../domain/content.ts';
@@ -14,29 +13,7 @@ import {isCurrentLayers,playCharacterSequence,setCharacterClip,showIdlePose,type
 import {createEffect,setEffectClip} from './effects.ts';
 import {CombatEffects} from './combat-effects.ts';
 export type {ActionDispatchRunner} from '../domain/combat-action-dispatcher.ts';
-
-/** 玩家和怪物共用的普攻资源收集。 */
-export function basicAttackEffects(catalog: BattleCatalog, attack: BasicAttackDefinition): Record<string, AttackEffectDefinition> {
-  const names = new Set([...attack.swings, ...attack.impacts, ...(attack.targetEffects ?? []).map(effect => effect.effect)]);
-  for(const effect of attack.dispatch?.casterEffects??[])names.add(effect.effect);
-  if (attack.projectile) names.add(attack.projectile.effect);
-  if (attack.transition?.effect) names.add(attack.transition.effect);
-  if (attack.transition?.actionEffect) names.add(attack.transition.actionEffect);
-  return Object.fromEntries([...names].map(name => [name, catalog.attackEffects[name]]));
-}
-
-/** 当前职业可能用到的特效，含未装进快捷栏的技能；普攻部分读装配时的解析结果。 */
-export function classEffects(catalog: BattleCatalog, character: BattleClass, attack: ResolvedBasicAttack): Record<string, AttackEffectDefinition> {
-  const names = new Set(Object.keys(basicAttackEffects(catalog, attack)));
-  if(catalog.attackEffects['life-drain'])names.add('life-drain');
-  for (const id of character.skills) {
-    const skill=catalog.skills[id];
-    for(const name of skillReactionEffects(skill))names.add(name);
-    const action = skill.action; if (!action) continue;
-    for (const name of skillEffectNames(action)) names.add(name);
-  }
-  return Object.fromEntries([...names].map(name => [name, catalog.attackEffects[name]]));
-}
+export { basicAttackEffects, classEffects } from './combat-asset-descriptors.ts';
 
 /** Phaser 动作表现适配器。实体身份由场景解析，规则不保存 Sprite 或 DOM。 */
 export class CombatPresenter {

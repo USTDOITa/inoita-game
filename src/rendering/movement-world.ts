@@ -115,6 +115,17 @@ export class MovementWorld {
    * 角色就近让开，而不是让整组落位失败；`displaceable` 额外声明目标角色里权威性较低的
    * （如主角），它们被压住时同样让位。默认严格模式仍用于演出走位，重叠即报错。
    */
+  /** 场景机关按内容坐标摆放；门可以占据阻挡格，不参与人物落脚点修正。 */
+  placeContent(visual: CharacterVisual, position: Point, enabled: boolean): void {
+    this.restorePositions();
+    this.stop(visual);
+    this.body(visual).reset(position.x, position.y);
+    this.body(visual).updateFromGameObject();
+    visual.container.setVisible(enabled);
+    this.setEnabled(visual, enabled);
+    this.interpolation.reset(visual.container);
+    visual.container.setDepth(position.y + .5);
+  }
   placeAll(placements: { visual: CharacterVisual; position: Point; enabled?: boolean }[], options: { evictOccupied?: boolean; displaceable?: readonly CharacterVisual[] } = {}): void {
     this.restorePositions();
     let settled = placements;

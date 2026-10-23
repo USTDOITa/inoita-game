@@ -38,7 +38,7 @@ export async function loadEntryPlan(plan: EntryPlan, ports: EntryLoadingPorts, o
   let currentLease: AssetLease | undefined;
   try {
     report(label, 0);
-    currentLease = await ports.load([...plan.shared, ...plan.current.assets, ...(plan.mercenaries ?? [])], value => report(label, value * 0.88));
+    currentLease = await ports.load([...plan.shared, ...plan.current.assets, ...(plan.residentCombat ?? [])], value => report(label, value * 0.88));
     signal.throwIfAborted();
 
     report('正在准备剧情画面…', 0.88);

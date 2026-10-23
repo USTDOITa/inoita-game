@@ -1,28 +1,35 @@
 import type Phaser from 'phaser';
-import type { ActorDefinition, EntityPlacement, WorldMap } from '../domain/content.ts';
-import { createCharacter, type CharacterVisual } from './characters.ts';
+import type { ActorDefinition, WorldMap } from '../domain/content.ts';
+import type { SceneActorState } from '../domain/scene-snapshot.ts';
+import { createCharacter, setCharacterClip, type CharacterVisual } from './characters.ts';
 import { drawMapLayers } from './map-layers.ts';
 
-/** 舞台背景里要画出的地图人物；由调用方按剧情投影算好，视图不判断剧情可见性。 */
-export interface StoryMapCharacter {
-  entity: EntityPlacement;
-  actor: ActorDefinition;
+/** 地图图层与完整对象名单分别构造，共同由舞台接管寿命。 */
+export function drawStoryMap(scene: Phaser.Scene, map: WorldMap): () => void {
+  const layers = drawMapLayers(scene, map, { keyPrefix: 'story-dodge' });
+  return () => layers.destroy();
 }
 
-/** 演出地图绘制背景与调用方给定的地图人物；宝箱、泉水和舞台演员由调用方排除。 */
-export function drawStoryMap(scene: Phaser.Scene, map: WorldMap, characters: readonly StoryMapCharacter[] = []): () => void {
-  const visuals: CharacterVisual[] = [];
-  const layers = drawMapLayers(scene, map, { keyPrefix: 'story-dodge' });
-  const destroyCharacters = () => {
-    for (const character of visuals) if (character.container.scene) character.container.destroy();
-    visuals.length = 0;
-  };
+export function drawStoryCharacters(scene: Phaser.Scene, actors: readonly SceneActorState[],
+  appearances: ReadonlyMap<string, ActorDefinition>): Map<string, CharacterVisual> {
+  const characters = new Map<string, CharacterVisual>();
   try {
-    for (const { entity, actor } of characters) visuals.push(createCharacter(scene, actor, entity));
+    for (const actor of actors) {
+      const appearance = appearances.get(actor.id);
+      if (!appearance) throw new Error('角色资源缺失：' + actor.actor);
+      const visual = createCharacter(scene, appearance, { id: actor.id, actor: actor.actor,
+        characterId: actor.characterId, x: actor.x, y: actor.y, flip: actor.flip });
+      characters.set(actor.id, visual);
+      setCharacterClip(scene, visual, actor.clip ?? `idle-${actor.facing}`);
+      for (const layer of visual.layers) {
+        if (actor.animationProgress !== undefined) layer.anims.setProgress(actor.animationProgress);
+        if (actor.animationPlaying === false) layer.anims.stop();
+      }
+      visual.container.setVisible(actor.visible).setAlpha(actor.alpha ?? 1);
+    }
+    return characters;
   } catch (error) {
-    destroyCharacters();
-    layers.destroy();
+    for (const visual of characters.values()) if (visual.container.scene) visual.container.destroy();
     throw error;
   }
-  return () => { destroyCharacters(); layers.destroy(); };
 }

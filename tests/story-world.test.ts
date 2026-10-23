@@ -27,6 +27,17 @@ test('visit-scoped story actors expire with the map visit while registered locat
   assert.deepEqual(world.projectEntities('cave',[]).map(entity=>entity.id),['quest-npc-located-npc-2']);
 });
 
+test('a later persistent registration clears the visit lifetime left by a temporary one',()=>{
+  const world=new StoryWorldState(),at=(map:string)=>({map,x:8,y:8,facing:'south' as const});
+  world.apply({kind:'travel',destination:at('cave')});
+  world.apply({kind:'place',scope:'visit',entity:{id:'guide',map:'cave',actor:'npc',characterId:'npc-598',x:24,y:8}});
+  world.apply({kind:'place',entity:{id:'guide',map:'cave',actor:'npc',characterId:'npc-598',x:32,y:8}});
+  assert.equal(world.entity('guide')?.mapVisit,undefined,'常驻登记会清掉旧的访问寿命');
+  world.apply({kind:'travel',destination:at('forest')});
+  world.apply({kind:'travel',destination:at('cave')});
+  assert.deepEqual(world.projectEntities('cave',[]).map(entity=>entity.id),['guide']);
+});
+
 test('a story-placed treasure chest persists across map visits',()=>{
   const world=new StoryWorldState(),at=(map:string)=>({map,x:8,y:8,facing:'south' as const});
   world.apply({kind:'travel',destination:at('boss-room')});

@@ -1,6 +1,6 @@
 import type { EntityPlacement, WorldMap } from '../domain/content.ts';
 import { localStoryScripts, storyReachableScripts } from '../domain/story-entry.ts';
-import { mercenaryCombatAssets } from '../rendering/combat-assets.ts';
+import { residentCombatAssets } from '../rendering/resident-combat-assets.ts';
 import { planMapCombat, planMapVisuals, potentialMapEnemyIds, sharedEntryAssets, storyPresentationAssets, type MapVisualPlan, type WorldAssetInputs } from '../rendering/map-assets.ts';
 import type { PendingAsset } from '../rendering/scene-assets.ts';
 
@@ -19,8 +19,8 @@ export interface MapEntryPlan {
 export interface EntryPlan {
   current: MapEntryPlan;
   shared: PendingAsset[];
-  /** 首次进入世界时与主入口一起加载的佣兵候选素材；已常驻后不再出现。 */
-  mercenaries?: PendingAsset[];
+  /** 首次进入世界时与主入口一起加载的玩家侧战斗资源；常驻后不再出现。 */
+  residentCombat?: PendingAsset[];
   portraits: string[];
   sounds: string[];
   /**
@@ -42,8 +42,8 @@ export interface EntryPlanInput {
   /** 读档/失败恢复时运行中的剧情游标，必须一起计入当前图闭包。 */
   activeScripts?: Iterable<string>;
   checkpoint?: { roster: { enemies: readonly { enemyId: string }[] } };
-  /** 首次进入世界时把全部佣兵候选素材并入第一次 load；已常驻时传 false。 */
-  includeMercenaries?: boolean;
+  /** 首次进入世界时把玩家侧战斗资源并入第一次 load；已常驻时传 false。 */
+  includeResidentCombat?: boolean;
 }
 
 function mapPlan(map: WorldMap, input: EntryPlanInput, scripts: readonly string[]): MapEntryPlan {
@@ -78,8 +78,11 @@ export function buildEntryPlan(input: EntryPlanInput): EntryPlan {
   return {
     current: mapPlan(input.currentMap, input, scripts),
     shared: sharedEntryAssets(input.inputs),
-    ...(input.includeMercenaries ? {
-      mercenaries: mercenaryCombatAssets(input.inputs.battle, input.inputs.wardrobe, input.inputs.companions, input.inputs.world)
+    ...(input.includeResidentCombat ? {
+      residentCombat: residentCombatAssets({
+        battle: input.inputs.battle, wardrobe: input.inputs.wardrobe,
+        world: input.inputs.world, companions: input.inputs.companions
+      }).assets
     } : {}),
     portraits: presentation.portraits,
     sounds: presentation.sounds,

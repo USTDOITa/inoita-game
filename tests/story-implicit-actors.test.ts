@@ -3,7 +3,10 @@ import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import {registerHooks} from 'node:module';
 import {parseCampaign} from '../src/application/content-validation.ts';
-import {resolveStoryStage,storyStageWorldCast,type StoryStage} from '../src/domain/story-performance.ts';
+import type {StoryStage} from '../src/domain/story-performance.ts';
+import {resolveStoryScene} from '../src/domain/story-scene.ts';
+import {generateMapEntities} from '../src/domain/scene-visit.ts';
+import {stageSnapshot} from './helpers/story-stage.ts';
 import {StoryWorldState} from '../src/domain/story-world.ts';
 import type {WorldMap} from '../src/domain/content.ts';
 import {Session} from '../src/domain/session.ts';
@@ -19,12 +22,21 @@ const register=(state:StoryWorldState,event:number)=>{
     if(command.type==='world'&&command.command.kind==='place'&&command.command.entity.id.startsWith('quest-npc-located-'))state.apply(command.command);
 };
 const stage=(map:string,cast:StoryStage['cast']=[]):StoryStage=>({type:'stage',map,x:232,y:232,facing:'south',playerVisible:true,cast});
-const arrival=(state:StoryWorldState,map:string)=>storyStageWorldCast(read('maps/'+map) as WorldMap,campaign.placements,state,()=>true);
+const projected=(state:StoryWorldState,map:WorldMap,reset=false):StoryStage['cast']=>{
+  const visit=state.visit+(reset||state.currentLocation?.map!==map.id?1:0);
+  const base=generateMapEntities(map,campaign,read('springs'),1,()=>0);
+  return state.projectEntities(map.id,base,campaign.placements,visit).filter(entity=>state.visible(entity.id,visit))
+    .map(entity=>({id:entity.id,worldEntityId:entity.id,actor:entity.actor,characterId:entity.characterId,x:entity.x,y:entity.y,
+      facing:'south',visible:true}));
+};
+const arrival=(state:StoryWorldState,map:string)=>projected(state,read('maps/'+map) as WorldMap);
+const resolve=(declaration:StoryStage,current:StoryStage,arrived?:StoryStage['cast'])=>resolveStoryScene(declaration,
+  stageSnapshot(arrived?{...current,map:declaration.map,cast:arrived}:current).scene);
 
 test('287 registration supplies distinct NPC identities to event 290 without inventing positions',()=>{
   const state=new StoryWorldState();register(state,287);
   const declaration=firstStage(290),actors=arrival(state,declaration.map);
-  const resolved=resolveStoryStage(declaration,stage('shadow-camp'),actors);
+  const resolved=resolve(declaration,stage('shadow-camp'),actors);
   for(const [id,x,y] of [['npc-57',88,472],['npc-396',136,472],['npc-66',120,568],['npc-67',168,568]] as const){
     const member=resolved.cast.find(member=>member.characterId===id)!;
     assert.deepEqual([member.x,member.y,member.visible,member.unpositioned],[x,y,true,undefined]);
@@ -37,20 +49,21 @@ test('385→386 inherits the actual Ivan in this map; map loading uses its own p
   const declaration=firstStage(386),ivan=declaration.cast.find(member=>member.characterId==='npc-451')!;
   assert.deepEqual([ivan.x,ivan.y,ivan.visible,ivan.unpositioned],[2048,2048,false,true]);
   const current=stage(declaration.map,[{...ivan,x:224,y:192,facing:'east',visible:true,unpositioned:undefined}]);
-  const live=resolveStoryStage(declaration,current).cast.find(member=>member.characterId==='npc-451')!;
+  const live=resolve(declaration,current).cast.find(member=>member.characterId==='npc-451')!;
   assert.deepEqual([live.x,live.y,live.facing,live.visible,live.unpositioned],[224,192,'east',true,undefined]);
-  const reloaded=resolveStoryStage({...declaration,resetActors:true},current,arrival(state,declaration.map));
+  const reloaded=resolve({...declaration,resetActors:true},current,arrival(state,declaration.map));
   assert.deepEqual(reloaded.cast.filter(member=>member.characterId==='npc-451').map(member=>[member.x,member.y]),[[216,184]]);
 });
 
 test('a missing NPC stays offstage after a map change and its checkpoint flag survives JSON content parsing',()=>{
   const declaration=firstStage(386),ivan=declaration.cast.find(member=>member.characterId==='npc-451')!;
   const old=stage('shadow-camp',[{...ivan,x:24,y:40,visible:true,unpositioned:undefined}]);
-  const resolved=resolveStoryStage({...declaration,resetActors:true},old,[]);
+  const resolved=resolve({...declaration,resetActors:true},old,[]);
   const member=resolved.cast.find(member=>member.characterId==='npc-451')!;
   assert.deepEqual([member.x,member.y,member.visible,member.unpositioned],[2048,2048,false,true]);
+  const {scene: _scene,bindings: _bindings,...authored}=resolved;
   const restored=parseCampaign(JSON.parse(JSON.stringify({...campaign,scripts:{...campaign.scripts,
-    'implicit-checkpoint':{entry:'end',nodes:[{id:'end',presentation:[resolved],commands:[],exit:{type:'end'}}]}}})));
+    'implicit-checkpoint':{entry:'end',nodes:[{id:'end',presentation:[authored],commands:[],exit:{type:'end'}}]}}})));
   const saved=restored.scripts['implicit-checkpoint'].nodes[0].presentation[0];
   assert.equal(saved.type,'stage');if(saved.type==='stage')assert.equal(saved.cast.find(member=>member.characterId==='npc-451')?.unpositioned,true);
 });
@@ -59,10 +72,10 @@ test('the presenter never moves an unpositioned actor into the map, including sk
   const placements:unknown[]=[];
   const visual={container:{x:2048,y:2048,visible:false}};
   const performer={visual,unpositioned:true,facing:'south'};
-  const movement={placeAll(values:unknown[]){placements.push(...values);},place(){throw new Error('offstage walk must not place');},
+  const movement={position(){return {x:2048,y:2048};},placeAll(values:unknown[]){placements.push(...values);},place(){throw new Error('offstage walk must not place');},
     walkTo(){throw new Error('offstage walk must not navigate');}};
   const presenter=new StoryPresenter({} as never,()=>({} as never),()=>({movement} as never));
-  Object.assign(presenter,{actors:new Map([['ivan',performer]])});
+  Object.assign(presenter,{actors:new Map([['entity:ivan',performer]]),state:{bindings:[['ivan','entity:ivan']]}});
   const signal=new AbortController().signal,skip=new AbortController();skip.abort();
   const action={type:'walk' as const,target:'ivan',x:216,y:184,speedPxPerSecond:100};
   await presenter.execute(action,{signal,skipSignal:signal});
@@ -77,7 +90,7 @@ test('explicit healer placement binds NPC 478 independently of inheriting its po
   const healer=declaration.cast.find(member=>member.characterId==='npc-478')!;
   assert.notEqual(healer.inheritPosition,true);
   const existing={...healer,id:'quest-npc-located-npc-478',worldEntityId:'quest-npc-located-npc-478',x:120,y:136};
-  const resolved=resolveStoryStage(declaration,stage('shadow-camp'),[existing]);
+  const resolved=resolve(declaration,stage('shadow-camp'),[existing]);
   const bound=resolved.cast.find(member=>member.characterId==='npc-478')!;
   assert.equal(bound.worldEntityId,existing.id);
   assert.deepEqual([bound.x,bound.y],[healer.x,healer.y]);
@@ -125,11 +138,11 @@ test('arrival projection reads the next visit without mutating the formal map an
   state.apply({kind:'travel',destination:{map:'shadow-camp',x:24,y:24,facing:'south'}});
   state.apply({kind:'place',scope:'visit',entity:{id:'arrival-ivan',map:map.id,actor:'ivan-451',characterId:'npc-451',x:216,y:184}});
   const before=state.captureState();
-  assert.ok(storyStageWorldCast(map,campaign.placements,state,()=>true).some(member=>member.id==='arrival-ivan'));
+  assert.ok(projected(state,map).some(member=>member.id==='arrival-ivan'));
   assert.deepEqual(state.captureState(),before);
   state.apply({kind:'travel',destination:{map:map.id,x:24,y:24,facing:'south'}});
-  assert.ok(storyStageWorldCast(map,campaign.placements,state,()=>true).some(member=>member.id==='arrival-ivan'));
-  assert.ok(!storyStageWorldCast(map,campaign.placements,state,()=>true,true).some(member=>member.id==='arrival-ivan'));
+  assert.ok(projected(state,map).some(member=>member.id==='arrival-ivan'));
+  assert.ok(!projected(state,map,true).some(member=>member.id==='arrival-ivan'));
 });
 
 test('reloading restores the original map NPC underneath expired visit overrides and locations',()=>{
@@ -140,7 +153,7 @@ test('reloading restores the original map NPC underneath expired visit overrides
   state.apply({kind:'place',scope:'visit',entity:{...base,id:'quest-npc-located-transient-door',map:map.id,x:504,y:184}});
   const hidden=map.entities.find(entity=>entity.id!==base.id)!;
   state.apply({kind:'hide',id:hidden.id});
-  const reset=storyStageWorldCast(map,campaign.placements,state,()=>true,true);
+  const reset=projected(state,map,true);
   assert.ok(!reset.some(member=>member.id===hidden.id),'persistent hide still applies');
   assert.deepEqual(reset.filter(member=>member.characterId==='npc-611').map(member=>[member.id,member.x,member.y]),[[base.id,base.x,base.y]]);
 });
@@ -153,7 +166,7 @@ test('event 4 inherits the saint from the arrival map when the current stage cas
   const declaration=firstStage(4);
   // 同一张图的舞台没有带上她（重播、上一幕收起）时，必须回到到达地图的世界投影找人，
   // 不能因为 current.cast 缺人就把圣女判成不在场。
-  const resolved=resolveStoryStage(declaration,stage('silent-cave-depths',[]),arrival(state,'silent-cave-depths'));
+  const resolved=resolve(declaration,stage('silent-cave-depths',[]),arrival(state,'silent-cave-depths'));
   const saint=resolved.cast.find(member=>member.characterId==='npc-79')!;
   assert.deepEqual([saint.x,saint.y,saint.visible,saint.unpositioned],[360,136,true,undefined]);
   assert.equal(saint.worldEntityId,'quest-npc-located-npc-79');
@@ -173,7 +186,7 @@ test('开场士兵写回他走到营地的位置，而不是出口旁的放置�
 test('剧情临时角色只活到本次访问，登记过的圣女跨访问保留而临时角色被清掉',()=>{
   const state=new StoryWorldState(),map=read('maps/silent-cave-depths') as WorldMap;
   const apply=(event:number)=>{for(const node of campaign.scripts['event-'+event].nodes)for(const command of node.commands)if(command.type==='world')state.apply(command.command);};
-  const actors=()=>storyStageWorldCast(map,campaign.placements,state,()=>true);
+  const actors=()=>projected(state,map);
   state.apply({kind:'travel',destination:{map:'silent-cave-depths',x:200,y:232,facing:'south'}});
 
   apply(2);

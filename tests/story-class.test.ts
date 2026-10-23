@@ -20,12 +20,33 @@ test('each story class supplies its own equipment and stats without changing sto
   for (const entry of catalog.classes) {
     const session = newStorySession(campaign, hero, entry);
     assert.equal(session.character?.classId, entry.id);
-    assert.equal(session.character?.appearance.id, hero.id);
-    assert.equal(session.character?.appearance.portrait, hero.portrait);
-    assert.equal(session.character?.appearance.clips, entry.playerActor.clips);
-    assert.notEqual(session.character?.appearance.clips, entry.previewActor.clips);
+    const appearance = session.character!.appearance;
+    assert.equal(appearance.id, hero.id);
+    assert.equal(appearance.portrait, hero.portrait);
+    // 职业动作覆盖战斗动作，但动作表本身是新的合成结果，不再是职业外观的引用。
+    assert.notEqual(appearance.clips, entry.playerActor.clips);
+    for (const [name, clip] of Object.entries(entry.playerActor.clips))
+      assert.equal(appearance.clips[name as keyof typeof appearance.clips], clip, `职业动作 ${name}`);
+    assert.equal(appearance.clips['lie-side-south'], hero.clips['lie-side-south'], '主角剧情姿态保留');
+    assert.notEqual(appearance.clips, entry.previewActor.clips);
     assert.deepEqual(session.player, entry.player);
     assert.notEqual(session.player, entry.player);
+  }
+});
+
+test('every story pose used on the player survives the class appearance composition', () => {
+  const poses = new Set<string>();
+  for (const script of Object.values(campaign.scripts))
+    for (const node of script.nodes)
+      for (const action of node.presentation)
+        if (action.type === 'pose' && action.target === 'player') poses.add(action.pose);
+  assert.ok(poses.has('lie-side'), '内容里确实对玩家使用 lie-side');
+  for (const entry of catalog.classes) {
+    const appearance = newStorySession(campaign, hero, entry).character!.appearance;
+    for (const pose of poses) for (const facing of ['north', 'south', 'east', 'west'] as const) {
+      const name = `${pose}-${facing}` as keyof typeof appearance.clips;
+      assert.ok(appearance.clips[name], `${entry.id} 缺少 ${pose}-${facing}`);
+    }
   }
 });
 

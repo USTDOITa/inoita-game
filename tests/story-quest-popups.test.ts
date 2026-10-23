@@ -55,6 +55,18 @@ test('the original forest quest popup observes committed acceptance and direct r
   assert.deepEqual(h.session.questBook.captureState(),before);
 });
 
+test('hidden quests settle through dialogue without opening a panel',async()=>{
+  const popups:string[]=[];
+  const h=harness(async(kind,quest)=>{popups.push(`${kind}:${quest.id}`);});
+  assert.equal(h.session.accept('quest-61'),true);
+  assert.equal(h.session.status('quest-61'),'ready');
+  const entity={id:'barricade-221',actor:'barricade-221',characterId:'npc-221',x:88,y:408};
+  const actor={id:'barricade-221',name:'路障'};
+  await h.director.interact(entity as never,actor as never);
+  assert.equal(h.session.status('quest-61'),'completed');
+  assert.deepEqual(popups,[],'隐藏任务交付不弹面板');
+});
+
 test('cancelling a native completion popup keeps its reward and retry only confirms the settled quest',async()=>{
   let pending=false,confirm=false,completionPopups=0;
   const h=harness(async(kind,quest,reward,signal)=>{

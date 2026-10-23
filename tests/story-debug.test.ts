@@ -148,6 +148,7 @@ test('a failed jump leaves the original session and records no mark',async()=>{
 test('every exported quest or task place stands on its own map',()=>{
  const read=(name:string)=>JSON.parse(readFileSync(new URL(`../public/content/${name}.json`,import.meta.url),'utf8'));
  const campaign=read('campaign'),world=read('world');
+ campaign.debugStory=read('debug/start');
  const places:{owner:string;map:string;x:number;y:number}[]=[];
  const collect=(place:StoryPlace,owner:string)=>{
   if(place.type==='fixed')places.push({owner,map:place.map,x:place.x,y:place.y});

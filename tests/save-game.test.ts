@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { stageSnapshot } from './helpers/story-stage.ts';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { BattleCharacter, type CharacterStatsCatalog } from '../src/domain/character-stats.ts';
@@ -154,4 +155,26 @@ test('a debug-pinned quest is stripped from the player save and restores at its 
   const loaded=createSession();
   restoreSaveGame(loaded,saved);
   assert.equal(loaded.status('quest-197'),'ready','读回来是正常任务模型的状态');
+});
+
+test('current saves preserve complete story scenes and reject actor-only scene checkpoints',()=>{
+  const session=createSession(),script=Object.keys(campaign.scripts)[0],definition=campaign.scripts[script];
+  const stage=stageSnapshot({type:'stage',...campaign.start,facing:'south',playerVisible:true,cast:[]},[
+    {id:'entity:portal',actor:'portal',x:48,y:64,facing:'south',visible:true},
+    {id:'entity:spring',actor:'spring-empty',x:80,y:64,facing:'south',visible:true},
+  ]);
+  stage.scenes=[{map:'training-dungeon-one',actors:[
+    {id:'player',actor:'player',x:80,y:88,facing:'east',visible:true},
+    {id:'entity:random-chest',actor:'chest',x:104,y:120,facing:'south',visible:false},
+  ]}];
+  const runtime=session.runtimeState;
+  runtime.runs=[{id:'story:1',script,occurrence:'fixture',cursor:{script,node:definition.entry},status:'running',stage}];
+  runtime.sequence=1;session.runtimeState=runtime;
+  const slots=new SaveSlots<World>(memory());slots.write(0,record(session));
+  const saved=slots.inspect(0);assert.equal(saved.kind,'ok');if(saved.kind!=='ok')return;
+  assert.equal(saved.game.format,34);assert.equal(saved.game.session.runtime.version,2);
+  const restored=createSession();restoreSaveGame(restored,saved.game);
+  assert.deepEqual(restored.runtimeState.runs[0].stage,stage);
+  delete (saved.game.session.runtime.runs[0].stage as Partial<typeof stage>).scene;
+  assert.throws(()=>restoreSaveGame(createSession(),saved.game),/场景快照/);
 });

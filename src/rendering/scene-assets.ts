@@ -10,9 +10,35 @@ const pools = new WeakMap<Phaser.Textures.TextureManager, AssetPool>();
 /** 队列按纹理管理器排队：同一份纹理库只有一个 loader 能写，跨场景并发会重复注册同一纹理键。 */
 const textureQueues = new WeakMap<Phaser.Textures.TextureManager, Promise<void>>();
 
-/** 已生成的效果继续使用已加载资源，直至自身动画结束。 */
-export function retainLoadedSceneAssets(scene:Phaser.Scene,keys:Iterable<string>):AssetLease {
-  return pools.get(scene.textures)?.acquire(keys)??{release:()=>{}};
+function poolFor(scene: Phaser.Scene): AssetPool {
+  let pool = pools.get(scene.textures);
+  if (!pool) {
+    pool = new AssetPool(key => removeTexture(scene, key));
+    pools.set(scene.textures, pool);
+  }
+  return pool;
+}
+
+/**
+ * 已就绪的贴图再取一份租约，用于常驻资源与已生成的特效。
+ *
+ * 只接受**已经通过验收**的资源：缺纹理或缺帧时直接抛错。所有调用点都在加载完成之后，
+ * 因此这里失败说明资源契约被破坏，应在加载期暴露，而不是等到播放动画时。
+ */
+export function retainLoadedSceneAssets(scene: Phaser.Scene,
+  assets: Iterable<PendingAsset | string>): AssetLease {
+  const keys: string[] = [];
+  for (const asset of assets) {
+    if (typeof asset === 'string') {
+      if (!scene.textures.exists(asset)) throw new Error(`常驻资源尚未就绪：${asset}`);
+      keys.push(asset);
+      continue;
+    }
+    const gap = assetGap(scene, asset);
+    if (gap) throw new Error(`常驻资源尚未就绪：${asset.key}（${gap === 'texture' ? '纹理未加载' : `缺少帧 ${gap.slice('frame:'.length)}`}）`);
+    keys.push(asset.key);
+  }
+  return poolFor(scene).acquire(keys);
 }
 
 async function inTextureQueue<T>(scene: Phaser.Scene, work: () => Promise<T>): Promise<T> {
@@ -60,10 +86,7 @@ function verifyAssets(scene: Phaser.Scene, assets: PendingAsset[]): void {
 }
 
 export async function loadSceneAssets(scene: Phaser.Scene, assets: PendingAsset[], progress: (value: number) => void, retain=false): Promise<AssetLease> {
-  let pool = pools.get(scene.textures);
-  if (!pool) {
-    pool = new AssetPool(key => removeTexture(scene, key)); pools.set(scene.textures,pool);
-  }
+  const pool = poolFor(scene);
   const byKey = new Map<string, PendingAsset>();
   for (const asset of assets) {
     const previous = byKey.get(asset.key);

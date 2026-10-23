@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { stageSnapshot } from './helpers/story-stage.ts';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import type { Campaign } from '../src/domain/campaign.ts';
@@ -33,6 +34,53 @@ test('director preserves a settled quest and resumes the popup after its present
   assert.equal(h.session.flags.has('demo-event'),true);assert.deepEqual(h.locks,[true,false,true,false]);
 });
 
+test('a failed world projection retries only the projection after travel was applied',async()=>{
+  const travel={map:'shadow-camp',x:1,y:2,facing:'south' as const};
+  const play=node('play',[{type:'travel',destination:travel}],{type:'end'});
+  let travels=0,projects=0,fail=true;
+  const h=harness([play],undefined,{
+    capture:()=>undefined,
+    restore:async()=>{},
+    checkpoint:()=>{},
+    project:async()=>{if(fail){fail=false;throw new Error('project failed');}projects++;}
+  });
+  h.director.onTravel=async()=>{travels++;};
+  await assert.rejects(h.director.start(),/project failed/);
+  assert.equal(travels,1);
+  assert.equal(await h.director.retry(),false);
+  assert.equal(travels,1,'重试只重做投影，不再重复转场');
+  assert.equal(projects,1);
+});
+
+test('a first stage inheriting the current map is drawn by execute instead of begin',async()=>{
+  const play=node('play');
+  play.presentation=[
+    {type:'stage',mapFromWorld:true,map:base.start.map,x:base.start.x,y:base.start.y,facing:'south',playerVisible:true,cast:[]},
+    {type:'wait',durationMs:0}
+  ];
+  const order:string[]=[];
+  const h=harness([play],{
+    begin(_signal,_stage,_curtain,defer){order.push('begin:'+!!defer);},
+    async execute(action){order.push('execute:'+action.type);},
+    async finish(){}
+  });
+  await h.director.start();
+  assert.deepEqual(order,['begin:true','execute:stage','execute:wait'],'首幕只由 execute 画一次');
+});
+
+test('a hidden quest popup action is skipped without blocking the node',async()=>{
+  const popup=node('popup',[],{type:'next',target:{script:'demo',node:'after'}});
+  popup.presentation=[{type:'quest-popup',kind:'complete',quest:'quest-61'}];
+  const h=harness([popup,node('after')]);
+  assert.equal(h.session.accept('quest-61'),true);
+  assert.equal(h.session.complete('quest-61'),true);
+  assert.ok(h.session.rewardReceiptFor('quest-61'));
+  let shown=0;h.ui.questPopup=async()=>{shown++;};
+  assert.equal(await h.director.start(),true);
+  assert.equal(shown,0,'隐藏任务面板不显示');
+  assert.equal(h.director.runtime.eventStatus('demo-event'),'completed');
+});
+
 test('a quest completion popup finishes before the follow-up story starts',async()=>{
   const session=new Session(base);
   session.accept('grafton-mission');
@@ -48,7 +96,7 @@ test('a quest completion popup finishes before the follow-up story starts',async
   };
   const stage:StoryStage={type:'stage',map:'shadow-camp',x:392,y:328,facing:'south',playerVisible:true,cast:[]};
   const director=new StoryDirector(base,session,ui,()=>{},{begin(){log.push('begin');},async execute(action){log.push('execute:'+action.type);},
-    getStageState(){return stage;},getWorldChanges(){return [];},async finish(){log.push('finish');},async release(){log.push('release');}});
+    getStageState(){return stageSnapshot(stage);},getWorldChanges(){return [];},async finish(){log.push('finish');},async release(){log.push('release');}});
   const errors:unknown[]=[];director.onError=error=>errors.push(error);
   // 交付时 Session.complete 会立刻发出会话变化；后续事件必须等这次手动播放收好再开演。
   const running=director.interact({id:'quest-npc-located-npc-40',actor:'darius',characterId:'npc-40',x:392,y:328},worldBase.actors.darius);
@@ -66,7 +114,7 @@ test('a quest completion popup finishes before the follow-up story starts',async
 test('the presentation-start hook fires once, after the first stage is drawn',async()=>{
   const play=node('play');play.presentation=[stage,{type:'wait',durationMs:0}];
   const order:string[]=[];
-  const h=harness([play],{begin(){order.push('begin');},async execute(action){order.push(action.type);},async finish(){order.push('finish');},getStageState(){return stage;}});
+  const h=harness([play],{begin(){order.push('begin');},async execute(action){order.push(action.type);},async finish(){order.push('finish');},getStageState(){return stageSnapshot(stage);}});
   h.director.onPresentationStarted=()=>order.push('started');
   await h.director.start();
   assert.equal(order.filter(value=>value==='started').length,1,'只回落一次');
@@ -86,7 +134,7 @@ test('a dialogue-only entrance ends the loading wait at its first line',async()=
 test('a failed finish commits neither actor placement nor event completion',async()=>{
   const play=node('play',[{type:'flag',flag:'changed'}]);play.presentation=[stage];
   let fail=true;
-  const h=harness([play],{begin(){},async execute(){},getStageState(){return stage;},
+  const h=harness([play],{begin(){},async execute(){},getStageState(){return stageSnapshot(stage);},
     getWorldChanges(){return [{id:'actor-instance',map:stage.map,actor:'darius',x:80,y:90}];},
     async finish(completed){if(completed&&fail)throw new Error('finish failed');},async release(){}});
   await assert.rejects(h.director.start(),/finish failed/);
@@ -140,7 +188,7 @@ test('cleanup failures release the input lease and do not prevent a later recove
 test('cancelling an in-flight performance rolls the session back to that playback baseline',async()=>{
   const play=node('play',[{type:'flag',flag:'published'}]);play.presentation=[stage];
   let release!:()=>void,held=true;
-  const h=harness([play],{begin(){},async execute(){},getStageState(){return stage;},
+  const h=harness([play],{begin(){},async execute(){},getStageState(){return stageSnapshot(stage);},
     async finish(completed){if(completed&&held)await new Promise<void>(resolve=>{release=resolve;});},async release(){}});
   h.session.gainMoney(10);
   const started=h.director.start();await tick();
@@ -153,7 +201,7 @@ test('a checkpoint restored mid-performance keeps its state under either cancel 
   const build=()=>{
     const play=node('play',[{type:'flag',flag:'published'}]);play.presentation=[stage];
     let release!:()=>void,held=true;
-    const h=harness([play],{begin(){},async execute(){},getStageState(){return stage;},
+    const h=harness([play],{begin(){},async execute(){},getStageState(){return stageSnapshot(stage);},
       async finish(completed){if(completed&&held)await new Promise<void>(resolve=>{release=resolve;});},async release(){}});
     h.session.gainMoney(10);
     const checkpoint=h.session.captureState();
@@ -177,7 +225,7 @@ test('a cross-map performance that waits for an encounter commits travel and ope
   battle.presentation=[battleStage];
   const after=node('after');
   const projections:unknown[]=[];
-  const h=harness([battle,after],{begin(){},async execute(){},getStageState(){return battleStage;},async finish(){},async release(){}},
+  const h=harness([battle,after],{begin(){},async execute(){},getStageState(){return stageSnapshot(battleStage);},async finish(){},async release(){}},
     {capture(){return {};},async restore(){},async project(stage){projections.push(stage);},checkpoint(){}});
   await h.director.start();
   const run=h.director.runtime.snapshot().runs.find(candidate=>candidate.status==='waiting');
@@ -207,7 +255,7 @@ test('director waits for the world to prepare story assets before beginning the 
   const play=node('play');play.presentation=[stage];
   const calls:string[]=[];let release!:()=>void;
   const gate=new Promise<void>(resolve=>{release=resolve;});
-  const h=harness([play],{begin(){calls.push('begin');},async execute(){},getStageState(){return stage;},async finish(){},async release(){}},
+  const h=harness([play],{begin(){calls.push('begin');},async execute(){},getStageState(){return stageSnapshot(stage);},async finish(){},async release(){}},
     {capture(){return {};},async restore(){},async project(){},checkpoint(){},async prefetch(){calls.push('prefetch');await gate;}});
   const started=h.director.start();
   await tick();
@@ -215,4 +263,36 @@ test('director waits for the world to prepare story assets before beginning the 
   release();
   await started;
   assert.ok(calls.indexOf('begin')>0);
+});
+
+test('director recovers the full scene baseline after a failed node without recomputing its background',async()=>{
+  const first=node('first',[],{type:'next',target:{script:'demo',node:'second'}});first.presentation=[stage];
+  const second=node('second');second.presentation=[{type:'wait',durationMs:1}];
+  const stable=stageSnapshot(stage,[
+    {id:'entity:portal',actor:'portal',x:12,y:24,facing:'south',visible:true},
+    {id:'entity:spring',actor:'spring-empty',x:32,y:24,facing:'south',visible:true},
+  ]);
+  let visible=structuredClone(stable),fail=true,restores=0,acknowledged=0;
+  const h=harness([first,second],{
+    begin(_signal,initial){if(initial&&'scene' in initial)visible=structuredClone(initial);},
+    async execute(action){if(action.type==='wait'&&fail){visible.scene.actors.splice(1);throw new Error('effect unavailable');}},
+    getStageState(){return structuredClone(visible);},
+    async restoreStage(snapshot){restores++;assert.deepEqual(snapshot,stable);visible=structuredClone(snapshot);},
+    committed(){acknowledged++;},async finish(){},release(){},
+  });
+  await assert.rejects(h.director.start(),/effect unavailable/);
+  assert.equal(acknowledged,1);
+  fail=false;await h.director.retry();
+  assert.equal(restores,1);assert.equal(acknowledged,2);
+  assert.deepEqual(visible,stable);
+  assert.equal(h.session.runtimeState.runs[0].stage,undefined);
+});
+
+test('director acknowledges scene changes only after the command batch commits',async()=>{
+  const play=node('play',[{type:'money-take',amount:1}]);play.presentation=[stage];
+  let acknowledged=0;
+  const h=harness([play],{begin(){},async execute(){},getStageState(){return stageSnapshot(stage);},
+    committed(){acknowledged++;},async finish(){},release(){}});
+  await assert.rejects(h.director.start());assert.equal(acknowledged,0);
+  h.session.gainMoney(1);await h.director.retry();assert.equal(acknowledged,1);
 });

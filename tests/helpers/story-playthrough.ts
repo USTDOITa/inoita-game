@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { parseBattle, parseCampaign, parseCharacterStats, parseCompanions, parseItemCatalog, parseStoryClasses, parseWorld } from '../../src/application/content-validation.ts';
+import { parseBattle, parseCampaign, parseCharacterStats, parseCompanions, parseItemCatalog, parseStoryClasses, parseStoryDebugCatalog, parseWorld } from '../../src/application/content-validation.ts';
 import type { EntityPlacement, MapExit, WorldMap } from '../../src/domain/content.ts';
 import { registerHooks } from 'node:module';
 import { NavigationWorld } from '../../src/domain/navigation-world.ts';
@@ -9,7 +9,11 @@ import { ExitTrigger, overlapsFootRect, within, type Point } from '../../src/dom
 import { nearInteractive } from '../../src/domain/chests.ts';
 import { newStorySession } from '../../src/domain/story-class.ts';
 import { StoryDirector, type StoryUI } from '../../src/domain/story-director.ts';
-import { resolveStoryStage, storyStageWorldCast, type PerformanceAction, type StoryPresentationPort, type StoryStage } from '../../src/domain/story-performance.ts';
+import { type PerformanceAction, type StoryPresentationPort, type StoryStage, type StoryStageSnapshot } from '../../src/domain/story-performance.ts';
+import { resolveStoryScene, applyStorySceneAction } from '../../src/domain/story-scene.ts';
+import { prepareSceneVisit } from '../../src/domain/scene-visit.ts';
+import { parseSprings } from '../../src/domain/springs.ts';
+import type { SceneSnapshot } from '../../src/domain/scene-snapshot.ts';
 import { WorldEnemyRoster } from '../../src/domain/world-enemies.ts';
 import { QuestEnemyWatch } from '../../src/domain/quest-enemies.ts';
 import { parseDrops, rollQuestDrops } from '../../src/domain/drops.ts';
@@ -27,9 +31,12 @@ const {WorldScene}=await import('../../src/scenes/world-scene.ts');phaserHook.de
 
 const read=(name:string)=>JSON.parse(readFileSync(new URL('../../public/content/'+name+'.json',import.meta.url),'utf8'));
 const campaign=parseCampaign(read('campaign')),world=parseWorld(read('world'));
+// 调试现场表是独立产物；测试与 GM 一样显式挂载，普通游玩不会加载它。
+campaign.debugStory=parseStoryDebugCatalog(read('debug/start'));
 const items=parseItemCatalog(read('items')),stats=parseCharacterStats(read('character-stats')),battle=parseBattle(read('battle'));
 const classes=parseStoryClasses(read('story-classes')),companions=parseCompanions(read('companions'));
 const drops=parseDrops(read('drops'),items,battle.enemies.map(enemy=>enemy.id));
+const springs=parseSprings(read('springs'));
 const maps=new Map(world.maps.map(ref=>[ref.id,read('maps/'+ref.id) as WorldMap]));
 const tick=()=>new Promise<void>(resolve=>setImmediate(resolve));
 
@@ -38,7 +45,9 @@ export function playthrough(saved?:SessionState){
   const session=newStorySession(campaign,world.actors[campaign.start.actor],classes.classes[0],items,stats,battle,companions);
   if(saved)session.restoreState(saved);
   const questEnemies=new QuestEnemyWatch(session,drops.questItems);
-  let stage:StoryStage|undefined,choiceQueue:string[]=['option-3'],worldNeedsLanding=false;
+  let stage:StoryStageSnapshot|undefined,choiceQueue:string[]=['option-3'],worldNeedsLanding=false;
+  const scenes=new Map<string,SceneSnapshot>(),committedScenes=new Map<string,SceneSnapshot>();
+  const remember=()=>{if(stage)scenes.set(stage.map,structuredClone(stage.scene));};
   const lines:string[]=[],popups:string[]=[],actions:PerformanceAction[]=[],errors:unknown[]=[];
   const entities=():EntityPlacement[]=>{
     const map=maps.get(session.storyWorld.currentLocation!.map)!;
@@ -47,41 +56,57 @@ export function playthrough(saved?:SessionState){
     return session.storyWorld.projectEntities(map.id,[...base,...authored],campaign.placements)
       .filter(entity=>session.storyWorld.visible(entity.id)&&(!('condition' in entity)||session.evaluateCondition(entity.condition as import('../../src/domain/story-condition.ts').StoryCondition)));
   };
-  const capture=():StoryStage=>{
+  const capture=(declaration?:StoryStage):SceneSnapshot=>{
     const location=session.storyWorld.currentLocation!;
-    return {type:'stage',...location,playerVisible:true,cast:entities().map(entity=>({id:entity.id,worldEntityId:entity.id,actor:entity.actor,characterId:entity.characterId,
-      x:entity.x,y:entity.y,facing:'south',visible:true}))};
+    const map=declaration&&!declaration.mapFromWorld?declaration.map:location.map;
+    const player=map===location.map?location:declaration!;
+    return prepareSceneVisit({session,campaign,world,battleCatalog:battle,drops,springs},maps.get(map)!,
+      {id:'player',actor:campaign.start.actor,x:player.x,y:player.y,facing:player.facing,visible:true},()=>0.5);
+  };
+  const resolve=(declaration:StoryStage):StoryStageSnapshot=>{
+    remember();
+    const sameMap=stage&&(declaration.mapFromWorld||declaration.map===stage.map)&&!declaration.resetActors;
+    const map=declaration.mapFromWorld?stage?.map??session.storyWorld.currentLocation!.map:declaration.map;
+    const scene=sameMap?stage!.scene:!declaration.resetActors&&scenes.has(map)?scenes.get(map)!:capture(declaration);
+    if(!committedScenes.has(map)||declaration.resetActors)committedScenes.set(map,structuredClone(scene));
+    return resolveStoryScene(declaration,scene);
   };
   const presentation:StoryPresentationPort={
-    begin(_signal,restored){stage=structuredClone(restored??capture());},
+    begin(_signal,restored){
+      stage=undefined;scenes.clear();committedScenes.clear();
+      stage=restored&&'scene' in restored?structuredClone(restored):resolve(restored??{
+        type:'stage',...session.storyWorld.currentLocation!,playerVisible:true,cast:[]});
+      remember();committedScenes.set(stage.map,structuredClone(stage.scene));
+    },
     async execute(action){
       actions.push(action);
-      if(action.type==='stage'){
-        const current=stage??capture();
-        const arrival=storyStageWorldCast(maps.get(action.map)!,campaign.placements,session.storyWorld,
-          condition=>session.evaluateCondition(condition),action.resetActors);
-        stage=structuredClone(resolveStoryStage(action,current,arrival));
-        if(action.retainPlayerPosition&&stage.map===current.map)Object.assign(stage,{x:current.x,y:current.y,facing:current.facing});
-        return;
-      }
-      if(!stage)return;
-      if('target' in action){
-        const target=action.target==='player'?stage:stage.cast.find(member=>member.id===action.target);
-        if(!target)return;
-        if(action.type==='walk'&&target!==stage&&(target as StoryStage['cast'][number]).unpositioned)return;
-        if(action.type==='walk'||action.type==='appear')Object.assign(target,{x:action.x,y:action.y});
-        if(action.type==='appear'&&target!==stage)(target as StoryStage['cast'][number]).unpositioned=false;
-        if(action.type==='face'||action.type==='appear')target.facing=action.facing;
-        if(action.type==='appear'||action.type==='leave'){
-          if(target===stage)stage.playerVisible=action.type==='appear';
-          else (target as StoryStage['cast'][number]).visible=action.type==='appear';
-        }
-      }
+      if(action.type==='stage'){stage=resolve(action);return;}
+      if(stage)stage=applyStorySceneAction(stage,action);
+    },
+    // 失败重试与读档恢复共用这条入口：与真实 presenter 一样，用快照重建已访问地图清单，
+    // 而不是只把演员名单塞回去。以前缺少这一项，重试会静默跳过场景恢复。
+    async restoreStage(saved){
+      stage=structuredClone(saved);
+      scenes.clear();
+      for(const scene of saved.scenes??[])scenes.set(scene.map,structuredClone(scene));
+      scenes.set(saved.map,structuredClone(saved.scene));
+      committedScenes.clear();
+      for(const [map,scene] of scenes)committedScenes.set(map,structuredClone(scene));
     },
     getStageState(){return stage?structuredClone(stage):undefined;},
-    getWorldChanges(){return stage?.cast.filter(member=>member.worldEntityId).map(member=>({id:member.worldEntityId!,map:stage!.map,
-      actor:member.actor,characterId:member.characterId,x:member.x,y:member.y,facing:member.facing,visible:member.visible}))??[];},
-    async finish(){},release(){worldNeedsLanding=!!stage;stage=undefined;}
+    getWorldChanges(){
+      remember();
+      return [...scenes].flatMap(([map,scene])=>scene.actors.flatMap(actor=>{
+        if(!actor.worldEntityId||actor.unpositioned)return [];
+        const previous=committedScenes.get(map)?.actors.find(value=>value.id===actor.id);
+        if(previous&&previous.worldEntityId===actor.worldEntityId&&previous.actor===actor.actor
+          &&previous.x===actor.x&&previous.y===actor.y&&previous.facing===actor.facing&&previous.visible===actor.visible)return [];
+        return [{id:actor.worldEntityId,map,actor:actor.actor,characterId:actor.characterId,
+          x:actor.x,y:actor.y,facing:actor.facing,visible:actor.visible}];
+      }));
+    },
+    committed(){remember();committedScenes.clear();for(const [map,scene] of scenes)committedScenes.set(map,structuredClone(scene));},
+    async finish(){},release(){worldNeedsLanding=!!stage;stage=undefined;scenes.clear();committedScenes.clear();}
   };
   const ui:StoryUI={async dialogue(line){lines.push(line.text);},async choice(_prompt,options){
     // 排队的值命中某个选项时优先用它：跟一个 NPC 说话时菜单项是任务号，这样才能指名接哪一条。

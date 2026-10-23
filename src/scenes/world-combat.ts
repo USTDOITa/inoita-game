@@ -1,4 +1,5 @@
 import {applyStoryEnemyRemovals} from '../domain/world-enemies.ts';
+import type {PreparedSceneVisit,SceneActorState} from '../domain/scene-snapshot.ts';
 import {combatFollowUp,type CombatFollowUpPort} from '../domain/combat-follow-ups.ts';
 import {combatActor,refreshCombatActors} from '../domain/combat-actor-lookup.ts';
 import {prepareCombatRestore,type WorldCombatState} from '../domain/combat-snapshot.ts';
@@ -76,10 +77,10 @@ import { CombatEffects } from '../rendering/combat-effects.ts';
 import { setCharacterStealth } from '../rendering/character-visibility.ts';
 import { StatusColorRenderer } from '../rendering/status-color.ts';
 import { OverheadStatus } from '../rendering/overhead-status.ts';
-import { createCharacter, PLAYER_MOVE_SPEED, setCharacterClip, type CharacterVisual } from '../rendering/characters.ts';
+import { characterAnimationState, createCharacter, PLAYER_MOVE_SPEED, setCharacterClip, type CharacterVisual } from '../rendering/characters.ts';
 import { isBodyWalking } from '../rendering/arcade-movement.ts';
 import { effectAssets } from '../rendering/effects.ts';
-import { loadSceneAssets } from '../rendering/scene-assets.ts';
+import { loadSceneAssets, retainLoadedSceneAssets } from '../rendering/scene-assets.ts';
 import { WorldEnemyRoster } from '../domain/world-enemies.ts';
 import { breakableKindOf, firstBossGuarantee, rollBreakableLoot, rollEnemyLoot, rollQuestDrops, type DropCatalog } from '../domain/drops.ts';
 import { PendingEnemyDefeats } from '../domain/combat-outcomes.ts';
@@ -333,6 +334,8 @@ export class WorldCombat {
       party: this.activeParty.map(member),
       enemies: this.arena.map(enemy => ({
         id: enemy.key, enemy: enemy.definition.id,
+        // 与 `enemy` 不相等说明场上实例和名册身份已经错开，伤害与目标血条会一起失效。
+        rosterEnemy: this.roster.enemies.find(candidate => candidate.key === enemy.key)?.enemyId ?? null,
         state: enemy.controller?.snapshot().state ?? null,
         position: this.movement.position(enemy.visual),
         health: this.roster.enemySnapshot(enemy.key, enemy.definition, this.hero.level)?.health ?? null,
@@ -350,6 +353,51 @@ export class WorldCombat {
       [...this.partyControllers.values()].every(controller=>controller.snapshot().state==='idle')&&
       this.arena.every(enemy=>!this.pendingDefeats.has(enemy.key)&&(!enemy.controller||enemy.controller.snapshot().state==='idle'||enemy.controller.snapshot().state==='wandering'));
   }
+adoptStoryPositions(actors:readonly SceneActorState[]):void {
+    const placements:{visual:CharacterVisual;position:{x:number;y:number};enabled:boolean}[]=[];
+    for(const actor of actors){
+      if(actor.removed||actor.unpositioned)continue;
+      const ally=actor.memberId&&this.allies.find(ally=>ally.id===actor.memberId);
+      const enemy=actor.enemyKey&&this.arena.find(enemy=>enemy.key===actor.enemyKey);
+      const visual=ally?ally.visual:enemy?enemy.visual:undefined;
+      if(!visual)continue;
+      if(ally&&!ally.member.alive||enemy&&(!this.isActorAlive(enemy.key)||this.pendingDefeats.has(enemy.key)))continue;
+      if(ally)ally.facing=actor.facing;if(enemy)enemy.facing=actor.facing;
+      setCharacterClip(this.scene,visual,`idle-${actor.facing}`);
+      placements.push({visual,position:{x:actor.x,y:actor.y},enabled:actor.visible&&!this.performanceHidden});
+    }
+    this.movement.placeAll(placements,{evictOccupied:true,displaceable:[this.player]});
+  }
+
+captureStoryVisit():Pick<PreparedSceneVisit,'roster'|'breakableRolls'> {
+    const state=this.roster.capturePreparedState();
+    for(const enemy of state.roster.enemies){
+      const visual=this.visualOf(enemy.key);if(visual)Object.assign(enemy,this.movement.position(visual));
+    }
+    return state;
+  }
+
+captureStoryActors():SceneActorState[] {
+    const allies:SceneActorState[]=this.allies.map(ally=>{
+      const animation=characterAnimationState(ally.visual);
+      return {id:`member:${ally.id}`,actor:ally.member.definition.actor,memberId:ally.id,
+        ...this.movement.position(ally.visual),facing:ally.facing,visible:ally.member.alive,
+        flip:ally.visual.entity.flip,appearance:structuredClone(ally.visual.actor),
+        clip:ally.visual.clipName??undefined,alpha:ally.visual.container.alpha,
+        animationProgress:animation.progress,animationPlaying:animation.playing};
+    });
+    const enemies:SceneActorState[]=this.arena.map(enemy=>{
+      const animation=characterAnimationState(enemy.visual);
+      return {id:`enemy:${enemy.key}`,actor:enemy.definition.actor.id,enemyKey:enemy.key,enemyId:enemy.definition.id,
+        summonedBy:enemy.summonedBy,...this.movement.position(enemy.visual),facing:enemy.facing,
+        visible:this.isActorAlive(enemy.key)&&!this.pendingDefeats.has(enemy.key),
+        flip:enemy.visual.entity.flip,appearance:structuredClone(enemy.visual.actor),
+        clip:enemy.visual.clipName??undefined,alpha:enemy.visual.container.alpha,
+        animationProgress:animation.progress,animationPlaying:animation.playing};
+    });
+    return [...allies,...enemies];
+  }
+
   captureState():WorldCombatState {
     const roster=this.roster.captureState();
     for(const enemy of roster.enemies){const visual=this.visualOf(enemy.key);if(visual)Object.assign(enemy,this.movement.position(visual));}
@@ -446,7 +494,9 @@ export class WorldCombat {
     const faction = friendly ? 'party' : 'hostile';
     const body = this.movement!.register(visual, definition.behavior.canMove, friendly && definition.behavior.canMove, faction);
     const presenter = new CombatPresenter(this.scene, this.app.battleCatalog, id => this.visualOf(id), () => this.combatants(), this.combatEffects);
-    const enemy: MapEnemy = { key: placed.key, definition, visual, body, facing: 'south', presenter, assets: lease,summonedBy:placed.summonedBy,
+    // 生成前就锁定这只敌人用到的全部纹理；缺任何一项都在这里失败，而不是等到播放动画时。
+    const assets = lease ?? retainLoadedSceneAssets(this.scene, this.enemyAssets(definition));
+    const enemy: MapEnemy = { key: placed.key, definition, visual, body, facing: 'south', presenter, assets,summonedBy:placed.summonedBy,
       summonTauntChance:placed.summonTauntChance,summonedBySkill:placed.summonedBySkill };
     if (position.x !== placed.x || position.y !== placed.y) this.roster.moveEnemy(placed.key, position.x, position.y);
     const skills=enemySkills(definition);
@@ -1692,20 +1742,37 @@ export class WorldCombat {
   }
 
 
+  /** 游戏行为驱动的移除：场景实例和名册条目一起删。 */
   removeEnemy(key: string): void {
     if(this.pendingDefeats.has(key)){this.pendingDefeats.complete(key,false);return;}
     for(const child of this.arena.filter(enemy=>enemy.summonedBy===key))this.removeEnemy(child.key);
+    if(!this.removeEnemyVisual(key))return;
+    this.roster.removeEnemy(key);
+  }
+  /**
+   * 只销毁场上的场景实例，不动名册。
+   *
+   * `WorldEnemyRoster.refresh()` 返回的 diff 表示名册已经改完；消费端只能把场景
+   * 投影同步过去。若这里再调 `roster.removeEnemy`，会把 refresh 刚换好的新条目删掉，
+   * 下一帧名册和实例的 `key + enemyId` 就永久对不上。
+   */
+  private removeEnemyVisual(key:string):boolean{
+    if(this.pendingDefeats.has(key)){this.pendingDefeats.complete(key,false);return false;}
     const index = this.arena.findIndex(enemy => enemy.key === key);
-    if (index < 0) return;
+    if (index < 0) return false;
     const [enemy] = this.arena.splice(index, 1);refreshCombatActors(this.arena);
     this.destroyEnemy(enemy);
     this.conditions.remove(key);
     for(const group of this.summonGroups.values())group.delete(key);
     this.summonGroups.delete(key);
-    this.roster.removeEnemy(key);
     for(const controller of this.partyControllers.values())controller.targetRemoved(key);
     if(this.focusTargetId===key)this.focusTargetId=undefined;
     this.scene.refreshCombatTarget();
+    return true;
+  }
+  private consumeRosterChanges(changes:{added:PlacedEnemy[];removed:string[]}):void{
+    for(const key of changes.removed)this.removeEnemyVisual(key);
+    for(const placed of changes.added)this.spawnEnemy(placed);
   }
 
   /** 施法者自己的活动召唤（有受命动作的才算）。 */
@@ -1915,14 +1982,17 @@ export class WorldCombat {
   async start():Promise<void>{
     const catalog=this.app.battleCatalog;
     const attack=this.equipmentAttack(this.player.actor);
+    // 玩家侧素材已由入口常驻包持有，这里再取同一批是幂等的；敌人按进图预取的同一份超集加载，
+    // 包含可破坏物掉落怪、剧情遭遇、泉水与宝箱怪，运行时刷怪不会再遇到未加载的纹理。
+    const enemyIds=new Set([...this.scene.combatEnemyIds(),...this.roster.spawns.map(spawn=>spawn.enemyId),
+      ...this.scene.entities.flatMap(entity=>{
+        const kind=this.app.world.actors[entity.actor]?.chest;
+        const spawn=kind?this.drops.chests[kind]?.spawn:undefined;
+        return spawn?[spawn.enemyId]:[];
+      })]);
     const needed=[...playerCombatAssets({catalog,wardrobe:this.app.wardrobe,items:this.app.items,hero:this.hero,actor:this.player.actor}),
       ...sharedCombatAssets(catalog,this.app.wardrobe),
-      ...[...new Set([...this.roster.spawns.map(spawn=>spawn.enemyId),
-        ...this.scene.entities.flatMap(entity=>{
-          const kind=this.app.world.actors[entity.actor]?.chest;
-          const spawn=kind?this.drops.chests[kind]?.spawn:undefined;
-          return spawn?[spawn.enemyId]:[];
-        })])].flatMap(id=>{
+      ...[...enemyIds].flatMap(id=>{
         const definition=catalog.enemies.find(enemy=>enemy.id===id);
         if(!definition)throw new Error(`敌人定义缺失：${id}`);
         return this.enemyAssets(definition);
@@ -1997,9 +2067,7 @@ export class WorldCombat {
     this.arena.push(this.buildEnemy(placed,definition));refreshCombatActors(this.arena);
   }
   syncChestEnemies():void {
-    const changes=this.roster.refresh();
-    for(const key of changes.removed)this.removeEnemy(key);
-    for(const placed of changes.added)this.spawnEnemy(placed);
+    this.consumeRosterChanges(this.roster.refresh());
   }
   /** Load encounter resources before creating physical enemies in the formal map. */
   async projectStoryEnemies(signal:AbortSignal):Promise<void>{
@@ -2326,9 +2394,7 @@ export class WorldCombat {
     }
     this.partyActionsSuspended=false;
     this.app.session.advanceGameTime(delta);
-    const changes=this.roster.refresh();
-    for(const key of changes.removed)this.removeEnemy(key);
-    for(const placed of changes.added)this.spawnEnemy(placed);
+    this.consumeRosterChanges(this.roster.refresh());
     if(this.scene.time.now>=this.nextPartySyncAt&&this.app.session.party?.activeIds.join('|')!==this.partySignature)
       void this.syncAllies().catch(error=>this.app.ui.toast((error as Error).message));
     if(this.controlledId!==this.syncedControlledId&&this.partyControllers.has(this.controlledId))this.syncControlled();

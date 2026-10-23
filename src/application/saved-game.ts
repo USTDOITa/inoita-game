@@ -8,6 +8,7 @@ import type {CharacterStatsCatalog} from '../domain/character-stats.ts';
 import type {BattleCatalog} from '../domain/battle.ts';
 import type {CompanionCatalog} from '../domain/party.ts';
 import type {StoryWorldViewSnapshot} from '../scenes/world-scene.ts';
+import {validateSceneSnapshot} from '../domain/scene-snapshot.ts';
 
 export interface SavedGameContent {
   campaign:Campaign;world:WorldIndex;storyClasses:StoryClassCatalog;items:ItemCatalog;
@@ -23,6 +24,10 @@ export function prepareSavedGame(game:SaveGame<StoryWorldViewSnapshot>,content:S
     !['north','south','east','west'].includes(location.facing))throw new Error('存档记录的地图或位置无效');
   if(!Array.isArray(world.generatedEntities)||new Set(world.generatedEntities.map(entity=>entity.id)).size!==world.generatedEntities.length||
     world.generatedEntities.some(entity=>!content.world.actors[entity.actor]||!Number.isFinite(entity.x)||!Number.isFinite(entity.y)))throw new Error('存档记录的地图人物无效');
+  validateSceneSnapshot(world.scene);
+  const player=world.scene.actors.find(actor=>actor.id==='player');
+  if(world.scene.map!==location.map||!player||player.x!==location.x||player.y!==location.y||player.facing!==location.facing)
+    throw new Error('存档场景与主角位置不一致');
   const session=newStorySession(content.campaign,content.world.actors[content.campaign.start.actor],selected,
     content.items,content.characterStats,content.battleCatalog,content.companions);
   restoreSaveGame(session,game);

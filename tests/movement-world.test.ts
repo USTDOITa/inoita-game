@@ -102,6 +102,14 @@ test('content actors placed on blocked terrain are never relocated by physics',t
   assert.equal(movement.state(visual)!.wallRecoveries,0,'原地写回不算一次回退');
   // projectStoryWorld 会拿内容坐标重建整组落位；这条必须继续被跳过而不是校验失败。
   assert.equal(navigation.canSettleAll([{actor:movement.actor(visual),position:{x:40,y:88},enabled:true}]),true);
+  movement.placeContent(visual,{x:72,y:88},true);
+  assert.deepEqual(movement.position(visual),{x:72,y:88},'机关按脚本移到另一阻挡格，坐标不能被人物落位规则修正');
+  body.update(.016);
+  (movement as unknown as {settleStep(delta:number):void}).settleStep(16);
+  assert.deepEqual(movement.position(visual),{x:72,y:88});
+  movement.placeContent(visual,{x:72,y:88},false);
+  assert.equal(body.enable,false);
+  assert.equal(visual.container.visible,false);
 });
 
 test('a movable actor without terrain recovery is not relocated when its start is illegal',t=>{

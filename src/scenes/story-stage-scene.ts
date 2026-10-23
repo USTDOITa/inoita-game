@@ -3,14 +3,13 @@ import Phaser from 'phaser';
 import type { StoryContext } from '../application/ports.ts';
 import type { AssetLease } from '../application/assets.ts';
 import type { ActorDefinition, Facing, WorldMap } from '../domain/content.ts';
-import type { StoryCurtain, StoryStage } from '../domain/story-performance.ts';
+import { validateStoryStageSnapshot, type StoryCurtain, type StoryStageSnapshot } from '../domain/story-performance.ts';
 import { NavigationWorld } from '../domain/navigation-world.ts';
 import { MovementWorld } from '../rendering/movement-world.ts';
-import { characterAssets, createCharacter, setCharacterClip, type CharacterVisual } from '../rendering/characters.ts';
+import { characterAssets, type CharacterVisual } from '../rendering/characters.ts';
 import { effectAssets } from '../rendering/effects.ts';
 import { loadSceneAssets, type PendingAsset } from '../rendering/scene-assets.ts';
-import { drawStoryMap } from '../rendering/story-map-view.ts';
-import { stageBackground } from '../rendering/story-background.ts';
+import { drawStoryCharacters, drawStoryMap } from '../rendering/story-map-view.ts';
 import { mapSurfaceAssets } from '../rendering/map-layers.ts';
 import { worldZoom } from '../ui/viewport.ts';
 import { Wardrobe } from '../rendering/wardrobe.ts';
@@ -41,12 +40,14 @@ export class StoryStageScene extends Phaser.Scene {
   readonly app: StoryContext;
   map?: WorldMap;
   player?: CharacterVisual;
+  readonly characters = new Map<string, CharacterVisual>();
   facing: Facing = 'south';
   movement?: MovementWorld;
   private lease?: AssetLease;
+  private readonly actorLeases = new Set<AssetLease>();
   private clearMap?: () => void;
   private revision = 0;
-  private wardrobe?: Wardrobe;
+  private readonly wardrobes = new Map<string, Wardrobe>();
   private earlyCurtain?: Phaser.GameObjects.Rectangle;
   constructor(app: StoryContext) {
     super({ key: SCENE_KEYS.storyStage, physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 0 }, debug: false } } });
@@ -63,7 +64,7 @@ export class StoryStageScene extends Phaser.Scene {
       this.revision++;
       this.scale.off('resize', this.resizeView, this);
       this.releaseStage();
-      this.wardrobe = undefined;
+      this.wardrobes.clear();
     });
     this.events.once(Phaser.Scenes.Events.CREATE, () => {
       if (!options?.signal?.aborted) options?.onReady?.();
@@ -87,78 +88,87 @@ export class StoryStageScene extends Phaser.Scene {
     this.cameras?.main?.setBackgroundColor(covered ? STAGE_BACKDROP_COLOR : STAGE_TRANSPARENT_COLOR);
   }
   /** 新地图加载完成前保留上一幅画面；迟到的加载只释放自己的租约。 */
-  async showStage(stage: StoryStage, signal: AbortSignal, appearance: ActorDefinition): Promise<void> {
-    signal.throwIfAborted();
+  async showStage(stage: StoryStageSnapshot, signal: AbortSignal, playerAppearance?: ActorDefinition): Promise<void> {
+    signal.throwIfAborted(); validateStoryStageSnapshot(stage);
     const revision = ++this.revision;
     const reference = this.app.world.maps.find(map => map.id === stage.map);
     if (!reference) throw new Error('这片区域的资源尚未准备好');
     const map = this.map?.id === stage.map ? this.map : await this.app.content.map(reference.file, signal);
     signal.throwIfAborted();
-    const needed: PendingAsset[] = [
-      ...mapSurfaceAssets(map, this.app.world.props),
-      ...characterAssets(appearance).filter(asset => asset.file),
-      ...effectAssets(this.app.world.storyEffects ?? {})
-    ];
-    needed.push(...this.app.wardrobe.textures.map(texture => ({ kind: 'image' as const, ...texture })));
-    const background = stageBackground(map, stage, this.app.campaign, this.app.world.actors, this.app.session.storyWorld,
-      condition => this.app.session.evaluateCondition(condition));
-    for (const actorId of background.actorIds) {
-      const actor = this.app.world.actors[actorId];
-      if (actor) needed.push(...characterAssets(actor).filter(asset => asset.file));
+    const appearances = new Map<string, ActorDefinition>();
+    const needed: PendingAsset[] = [...mapSurfaceAssets(map, this.app.world.props), ...effectAssets(this.app.world.storyEffects ?? {})];
+    for (const actor of stage.scene.actors) {
+      const appearance = actor.appearance ?? (actor.id === 'player' ? playerAppearance : undefined)
+        ?? this.app.world.actors[this.app.session.storyWorld.actorAppearance(actor.actor)];
+      if (!appearance) throw new Error('角色资源缺失：' + actor.actor);
+      appearances.set(actor.id, appearance);
+      needed.push(...characterAssets(appearance).filter(asset => asset.file));
     }
     for (const member of stage.cast) {
       const actor = this.app.world.actors[member.actor];
-      if (!actor) throw new Error('角色资源缺失：' + member.actor);
-      needed.push(...characterAssets(actor));
+      if (actor) needed.push(...characterAssets(actor).filter(asset => asset.file));
     }
-    const lease = await cancellable(loadSceneAssets(this, needed, () => {}, true), signal, lease => lease.release());
-    if (signal.aborted || revision !== this.revision || !this.sys.isActive()) {
-      lease.release(); signal.throwIfAborted(); throw new DOMException('演出舞台已更新', 'AbortError');
-    }
-    const character = this.app.session.character;
-    let outfit: Awaited<ReturnType<Wardrobe['prepare']>> | undefined;
-    if (character) {
-      this.wardrobe ??= new Wardrobe(this, this.app.wardrobe, this.app.items);
-      try {
-        outfit = await cancellable(this.wardrobe.prepare(character.appearance, this.app.session.bag.equipmentItems(), character.classId), signal);
-        signal.throwIfAborted();
-        if (revision !== this.revision) throw new DOMException('演出舞台已更新', 'AbortError');
-        appearance = outfit.actor;
-      } catch (error) { lease.release(); throw error; }
-    }
-    // 先把新地图完整构造出来，成功后再替换旧舞台；失败时旧舞台原样保留。
+    needed.push(...this.app.wardrobe.textures.map(texture => ({ kind: 'image' as const, ...texture })));
+    const lease = await cancellable(loadSceneAssets(this, needed, () => {}, true), signal, value => value.release());
+    const guard = () => {
+      signal.throwIfAborted();
+      if (revision !== this.revision || !this.sys.isActive()) throw new DOMException('演出舞台已更新', 'AbortError');
+    };
+    const outfits: { wardrobe: Wardrobe; outfit: Awaited<ReturnType<Wardrobe['prepare']>> }[] = [];
+    const createdWardrobes = new Map<string, Wardrobe>();
     let nextLayers: (() => void) | undefined;
     let nextMovement: MovementWorld | undefined;
-    let nextPlayer: CharacterVisual | undefined;
+    let nextCharacters = new Map<string, CharacterVisual>();
     try {
-      nextLayers = drawStoryMap(this, map, background.characters);
+      guard();
+      for (const actor of stage.scene.actors) {
+        const memberId = actor.id === 'player' ? 'player' : actor.memberId;
+        if (!memberId) continue;
+        const member = memberId === 'player' ? undefined : this.app.session.party?.get(memberId);
+        const character = memberId === 'player' ? this.app.session.character : undefined;
+        const base = character?.appearance ?? (member && this.app.world.actors[member.definition.actor]);
+        if (!base) continue;
+        let wardrobe = createdWardrobes.get(memberId) ?? this.wardrobes.get(memberId);
+        if (!wardrobe) {
+          wardrobe = new Wardrobe(this, this.app.wardrobe, this.app.items);
+          createdWardrobes.set(memberId, wardrobe);
+        }
+        const bag = this.app.session.bag;
+        const equipment = member ? bag.equipmentItems(bag.equipmentFor(memberId)) : bag.equipmentItems();
+        const outfit = await cancellable(wardrobe.prepare(base, equipment, character?.classId ?? member?.classId), signal);
+        guard(); appearances.set(actor.id, outfit.actor); outfits.push({ wardrobe, outfit });
+      }
+      nextLayers = drawStoryMap(this, map);
       nextMovement = new MovementWorld(this, new NavigationWorld(map));
-      nextPlayer = createCharacter(this, appearance, { id: 'player', actor: this.app.campaign.start.actor, x: stage.x, y: stage.y });
-      nextMovement.register(nextPlayer, true, true, 'party');
-      setCharacterClip(this, nextPlayer, `idle-${stage.facing}`);
-      nextPlayer.container.setVisible(stage.playerVisible);
-      nextMovement.setEnabled(nextPlayer, stage.playerVisible);
+      nextCharacters = drawStoryCharacters(this, stage.scene.actors, appearances);
+      const bound = new Set(stage.bindings.map(([, id]) => id));
+      for (const actor of stage.scene.actors) {
+        const visual = nextCharacters.get(actor.id)!;
+        const controlled = bound.has(actor.id);
+        nextMovement.register(visual, controlled, false, actor.id === 'player' || actor.memberId || actor.summonedBy ? 'party' : undefined);
+        nextMovement.setGhost(visual, controlled);
+        nextMovement.setEnabled(visual, actor.visible && !actor.unpositioned);
+      }
+      guard();
     } catch (error) {
-      if (nextPlayer?.container.scene) nextPlayer.container.destroy();
       nextMovement?.destroy();
+      for (const visual of nextCharacters.values()) if (visual.container.scene) visual.container.destroy();
       nextLayers?.();
-      lease.release();
-      throw error;
+      for (const [id, wardrobe] of createdWardrobes) {
+        wardrobe.destroy();
+        if (this.wardrobes.get(id) === wardrobe) this.wardrobes.delete(id);
+      }
+      lease.release(); throw error;
     }
-    if (!nextLayers || !nextMovement || !nextPlayer) throw new Error('演出舞台构造失败');
     this.releaseStage(true);
-    this.lease = lease; this.map = map; this.clearMap = nextLayers;
-    this.movement = nextMovement; this.player = nextPlayer; this.facing = stage.facing;
-    try {
-      if (outfit) this.wardrobe?.activate(outfit);
-      this.resizeView(); this.cameras.main.centerOn(stage.x, stage.y);
-      // 到这里地图已经成功画好，再盖上不透明底色；加载失败/取消时不会提前遮住世界。
-      this.setWorldCovered(true);
-      this.app.audio?.enterMap(stage.map);
-    } catch (error) {
-      this.releaseStage(true);
-      throw error;
-    }
+    this.lease = lease; this.map = map; this.clearMap = nextLayers; this.movement = nextMovement;
+    for (const [id, visual] of nextCharacters) this.characters.set(id, visual);
+    this.player = this.characters.get('player'); this.facing = stage.facing;
+    for (const [id, wardrobe] of createdWardrobes) this.wardrobes.set(id, wardrobe);
+    for (const { wardrobe, outfit } of outfits) wardrobe.activate(outfit);
+    this.resizeView(); this.cameras.main.centerOn(stage.x, stage.y);
+    this.setWorldCovered(true);
+    this.app.audio?.enterMap(stage.map);
   }
   resizeView(): void {
     if (!this.map) return;
@@ -167,15 +177,77 @@ export class StoryStageScene extends Phaser.Scene {
     const width = Math.max(this.map.width, this.scale.width / zoom), height = Math.max(this.map.height, this.scale.height / zoom);
     camera.setBounds((this.map.width - width) / 2, (this.map.height - height) / 2, width, height);
   }
+  /** 无演员声明的物件动作按需准备贴图，租约跟随当前舞台释放。 */
+  async prepareActorAssets(actorId: string, signal: AbortSignal): Promise<void> {
+    signal.throwIfAborted();
+    const revision = this.revision;
+    const actors = [...new Set([actorId, this.app.session.storyWorld.actorAppearance(actorId)])]
+      .map(id => this.app.world.actors[id]);
+    if (actors.some(actor => !actor)) throw new Error('角色资源缺失：' + actorId);
+    const needed = actors.flatMap(actor => characterAssets(actor).filter(asset => asset.file));
+    const lease = await cancellable(loadSceneAssets(this, needed, () => {}, true), signal, value => value.release());
+    if (signal.aborted || revision !== this.revision || !this.sys.isActive()) {
+      lease.release(); signal.throwIfAborted(); throw new DOMException('演出舞台已更新', 'AbortError');
+    }
+    this.actorLeases.add(lease);
+  }
+  /** 动作中新增对象只补对象，不重建地图、镜头或正在播放的动作。 */
+  ensureActors(stage: StoryStageSnapshot): void {
+    if (!this.movement || this.map?.id !== stage.map) throw new Error('演出对象与当前舞台地图不一致');
+    const bound = new Set(stage.bindings.map(([, id]) => id));
+    const created = new Map<string, CharacterVisual>();
+    try {
+      for (const actor of stage.scene.actors) {
+        const existing = this.characters.get(actor.id);
+        const appearance = actor.appearance ?? this.app.world.actors[this.app.session.storyWorld.actorAppearance(actor.actor)];
+        const equipped = actor.id === 'player' || !!actor.memberId;
+        if (existing && existing.entity.actor === actor.actor && (equipped || !appearance
+          || existing.actor.id === appearance.id && JSON.stringify(existing.actor.clips) === JSON.stringify(appearance.clips))) continue;
+        if (!appearance) throw new Error('角色资源缺失：' + actor.actor);
+        const visual = drawStoryCharacters(this, [actor], new Map([[actor.id, appearance]])).get(actor.id)!;
+        created.set(actor.id, visual);
+        const controlled = bound.has(actor.id);
+        this.movement.register(visual, controlled, false, equipped || actor.summonedBy ? 'party' : undefined);
+        this.movement.setGhost(visual, controlled);
+        this.movement.setEnabled(visual, actor.visible && !actor.unpositioned);
+      }
+    } catch (error) {
+      for (const visual of created.values()) {
+        this.movement.remove(visual);
+        if (visual.container.scene) visual.container.destroy();
+      }
+      throw error;
+    }
+    const ids = new Set(stage.scene.actors.map(actor => actor.id));
+    for (const [id, visual] of this.characters) if (!ids.has(id) || created.has(id)) {
+      this.movement.remove(visual);
+      if (visual.container.scene) visual.container.destroy();
+      this.characters.delete(id);
+    }
+    for (const [id, visual] of created) this.characters.set(id, visual);
+    this.player = this.characters.get('player');
+    for (const actor of stage.scene.actors) {
+      const visual = this.characters.get(actor.id)!;
+      this.movement.register(visual, bound.has(actor.id), false, actor.id === 'player' || actor.memberId || actor.summonedBy ? 'party' : undefined);
+      this.movement.setGhost(visual, bound.has(actor.id));
+    }
+  }
   releaseStage(preserveEarlyCurtain = false): void {
     // 先恢复透明：最终释放到场景 stop 之间露出下面已经切换好的世界，避免黑帧。
     this.setWorldCovered(false);
     this.revision++;
     if (!preserveEarlyCurtain) this.clearEarlyCurtain();
     this.movement?.destroy(); this.movement = undefined;
-    if (this.player?.container.scene) this.player.container.destroy();
+    for (const character of this.characters.values()) if (character.container.scene) character.container.destroy();
+    this.characters.clear();
     this.player = undefined;
+    if (!preserveEarlyCurtain) {
+      for (const wardrobe of this.wardrobes.values()) wardrobe.destroy();
+      this.wardrobes.clear();
+    }
     this.clearMap?.(); this.clearMap = undefined;
     this.lease?.release(); this.lease = undefined; this.map = undefined;
+    for (const lease of this.actorLeases) lease.release();
+    this.actorLeases.clear();
   }
 }

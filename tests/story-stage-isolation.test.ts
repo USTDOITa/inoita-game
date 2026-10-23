@@ -4,7 +4,8 @@ import { registerHooks } from 'node:module';
 import test from 'node:test';
 import type { StoryContext } from '../src/application/ports.ts';
 import type { ActorDefinition, WorldMap } from '../src/domain/content.ts';
-import type { StoryStage } from '../src/domain/story-performance.ts';
+import { validateStoryStageSnapshot, type StoryStage, type StoryStageSnapshot } from '../src/domain/story-performance.ts';
+import { stageSnapshot } from './helpers/story-stage.ts';
 import type { WorldScene } from '../src/scenes/world-scene.ts';
 import type { StoryStageScene as StageSceneType } from '../src/scenes/story-stage-scene.ts';
 
@@ -89,7 +90,7 @@ test('the stage backdrop turns opaque only after a map is drawn and transparent 
   MovementWorld.prototype.register = function () { return {} as never; };
   MovementWorld.prototype.setEnabled = function () {};
   MovementWorld.prototype.destroy = function () {};
-  const stage: StoryStage = { type: 'stage', map: 'small', x: 16, y: 16, facing: 'south', playerVisible: true, cast: [] };
+  const stage = stageSnapshot({ type: 'stage', map: 'small', x: 16, y: 16, facing: 'south', playerVisible: true, cast: [] });
   const content = app.content as unknown as { map: (file: string, signal?: AbortSignal) => Promise<WorldMap> };
   try {
     // 首张地图加载失败：舞台仍透明，正式世界应保持可见。
@@ -100,6 +101,16 @@ test('the stage backdrop turns opaque only after a map is drawn and transparent 
     content.map = async () => map;
     await scene.showStage(stage, new AbortController().signal, appearance);
     assert.equal(colors.at(-1), STAGE_BACKDROP_COLOR);
+    const previousPlayer=scene.player;
+    app.world.actors.broken={id:'broken',clips:{'idle-east':{layers:[]}}} as unknown as ActorDefinition;
+    const invalidCast=stageSnapshot({...stage,cast:[{id:'broken',actor:'broken',x:8,y:8,facing:'south',visible:true}]});
+    await assert.rejects(scene.showStage(invalidCast,new AbortController().signal,appearance),/角色动作缺少资源/);
+    assert.equal(scene.player,previousPlayer);assert.equal(scene.characters.size,1);
+    assert.ok(previousPlayer?.container.scene,'下一幕构造失败保留当前角色');
+    previousPlayer!.container.x=99;
+    scene.ensureActors(stageSnapshot({...stage},[{id:'entity:door',actor:'hero',x:24,y:40,facing:'west',visible:true}]));
+    assert.equal(scene.player,previousPlayer);assert.equal(scene.player!.container.x,99,'补充物件不打断既有走位');
+    assert.ok(scene.characters.has('entity:door'));
 
     // 已有舞台时下一张图失败：保留已经画好的遮罩，不能露出世界。
     content.map = async () => { throw new Error('load failed'); };
@@ -119,7 +130,7 @@ test('the stage backdrop turns opaque only after a map is drawn and transparent 
 });
 
 test('a stage map draws static map entities and removes them with the map', async () => {
-  const { drawStoryMap } = await import('../src/rendering/story-map-view.ts');
+  const { drawStoryCharacters } = await import('../src/rendering/story-map-view.ts');
   const containers: { x: number; y: number; depth: number; scene?: unknown; setDepth(value: number): unknown; destroy(): void }[] = [];
   const scene = {
     add: {
@@ -131,9 +142,10 @@ test('a stage map draws static map entities and removes them with the map', asyn
         return value;
       },
       container(x: number, y: number) {
-        const value: { x: number; y: number; depth: number; scene?: unknown; setDepth(next: number): unknown; destroy(): void } = {
+        const value: { x: number; y: number; depth: number; scene?: unknown; setDepth(next: number): unknown; setVisible(): unknown; setAlpha(): unknown; destroy(): void } = {
           x, y, depth: 0, scene: {},
           setDepth(next) { this.depth = next; return this; },
+          setVisible() { return this; }, setAlpha() { return this; },
           destroy() { this.scene = undefined; }
         };
         containers.push(value); return value;
@@ -148,15 +160,14 @@ test('a stage map draws static map entities and removes them with the map', asyn
     { id: 'chest', actor: 'treasure-box-x', x: 8, y: 16 },
     { id: 'spring', actor: 'clear-springs-x', x: 4, y: 8, spring: true }
   ] } as unknown as WorldMap;
-  const characters = map.entities
-    .filter(entity => !entity.actor.startsWith('treasure-box') && !entity.actor.startsWith('clear-springs'))
-    .map(entity => ({ entity, actor: { id: entity.actor, clips: {} } as ActorDefinition }));
-  const cleanup = drawStoryMap(scene as unknown as Parameters<typeof drawStoryMap>[0], map, characters);
-  assert.equal(containers.length, 3, '门、钢门和火把等地图实体都画，宝箱与泉水不画');
+  const actors = map.entities.map(entity => ({...entity, facing:'south' as const, visible:true}));
+  const appearances = new Map(actors.map(actor => [actor.id, {id:actor.actor,clips:{}} as ActorDefinition]));
+  const characters = drawStoryCharacters(scene as unknown as Parameters<typeof drawStoryCharacters>[0], actors, appearances);
+  assert.equal(containers.length, 5, '完整名单中的门、火把、宝箱与泉水全部绘制');
   assert.deepEqual({ x: containers[0]!.x, y: containers[0]!.y, depth: containers[0]!.depth }, { x: 24, y: 48, depth: 48.5 });
   assert.deepEqual({ x: containers[1]!.x, y: containers[1]!.y, depth: containers[1]!.depth }, { x: 30, y: 64, depth: 64.5 });
   assert.deepEqual({ x: containers[2]!.x, y: containers[2]!.y, depth: containers[2]!.depth }, { x: 12, y: 20, depth: 20.5 });
-  cleanup();
+  for(const visual of characters.values())visual.container.destroy();
   assert(containers.every(container => container.scene === undefined), '清理演出地图时一并销毁门');
 });
 
@@ -174,40 +185,69 @@ function harness() {
   const world = { map: { id: 'home' }, player: visual(10, 20), facing: 'south', characters: [],
     cameras: { main: { scrollX: 5, scrollY: 6 } },
     scene: { launch() { throw new Error('active stage must be reused'); }, restart() { throw new Error('formal world must be retained'); } },
+    captureStoryScene(this: WorldScene){return {map:this.map!.id,actors:[
+      {id:'player',actor:'hero',x:this.player!.container.x,y:this.player!.container.y,facing:this.facing,visible:true},
+      ...this.characters.map(visual=>({id:'entity:'+visual.entity.id,worldEntityId:visual.entity.id,actor:visual.entity.actor,
+        characterId:visual.entity.characterId,x:visual.container.x,y:visual.container.y,facing:'south',visible:visual.container.visible}))]};},
     prefetchMap() {}, showStage() { throw new Error('formal world must not prepare cinematics'); }
   } as unknown as WorldScene;
   let released = 0, rendered = 0;
+  const placeAllGroups: number[] = [], audioMaps: string[] = [];
   const movement = {
     stop() {}, remove() {}, register() {}, setEnabled() {}, setGhost() {},
     position(target: ReturnType<typeof visual>) { return { x: target.container.x, y: target.container.y }; },
     actor(target: ReturnType<typeof visual>) { return { enabled: () => target.container.visible !== false }; },
+    body() { return { immovable: true, velocity: { x: 0, y: 0 }, setImmovable(value: boolean) { this.immovable = value; } }; },
+    walkTo(target: ReturnType<typeof visual>, destination: { x: number; y: number }) {
+      this.placeAll([{ visual: target, position: destination, enabled: true }]);
+      return { state: 'arrived' as const };
+    },
     place(target: ReturnType<typeof visual>, position: { x: number; y: number }) {
       this.placeAll([{ visual: target, position, enabled: target.container.visible }]);
     },
+    placeContent(target: ReturnType<typeof visual>, position: { x: number; y: number }, enabled?:boolean) {
+      this.placeAll([{ visual: target, position, enabled }]);
+    },
     placeAll(values: { visual: ReturnType<typeof visual>; position: { x: number; y: number }; enabled?: boolean }[]) {
+      placeAllGroups.push(values.length);
       for (const value of values) { value.visual.container.x = value.position.x; value.visual.container.y = value.position.y;
         if (value.enabled !== undefined) value.visual.container.visible = value.enabled; }
     }
   };
   const events = new EventEmitter();
-  const stage = { map: undefined as { id: string } | undefined, player: visual(10, 20), facing: 'south', movement,
+  const stage = { characters: new Map(), map: undefined as { id: string } | undefined, player: visual(10, 20), facing: 'south', movement,
     cameras: { main: { scrollX: 0, scrollY: 0, width: 960, height: 640, zoom: 1, stopFollow() {},
       setScroll(this: { scrollX: number; scrollY: number }, x: number, y: number) { this.scrollX = x; this.scrollY = y; },
       centerOn(this: { scrollX: number; scrollY: number }, x: number, y: number) { this.scrollX = x - 480; this.scrollY = y - 320; }
     } }, sys: { isActive: () => true, isPaused: () => false },
     add: { container, rectangle: () => container(0, 0) }, scale: { width: 960, height: 640 },
-    async showStage(this: { map?: { id: string }; player: ReturnType<typeof visual> }, value: StoryStage, signal: AbortSignal) {
+    async showStage(this: { map?: { id: string }; player: ReturnType<typeof visual>; characters: Map<string, ReturnType<typeof visual>> }, value: StoryStageSnapshot, signal: AbortSignal) {
       signal.throwIfAborted(); this.map = { id: value.map }; rendered++;
-      this.player.container.visible = value.playerVisible;
-      (this as unknown as { movement: { setEnabled(target: unknown, enabled: boolean): void } }).movement.setEnabled(this.player, value.playerVisible);
+      this.characters.clear();
+      for(const actor of value.scene.actors){
+        const character=visual(actor.x,actor.y);character.entity={id:actor.id,actor:actor.actor,x:actor.x,y:actor.y};
+        character.container.visible=actor.visible;this.characters.set(actor.id,character);
+      }
+      this.player=this.characters.get('player')!;
+      audioMaps.push(value.map);
     },
+    ensureActors(this:{characters:Map<string,ReturnType<typeof visual>>},value:StoryStageSnapshot){
+      for(const actor of value.scene.actors)if(!this.characters.has(actor.id)){
+        const character=visual(actor.x,actor.y);character.entity={id:actor.id,actor:actor.actor,x:actor.x,y:actor.y};
+        character.container.visible=actor.visible;this.characters.set(actor.id,character);
+      }
+    },
+    async prepareActorAssets(){},
     releaseStage(this: { map?: { id: string } }) { released++; this.map = undefined; }, events,
     clearEarlyCurtain() {},
     scene: { stop() { events.emit('shutdown'); } }
   } as unknown as StageSceneType;
   const app = { session:{storyWorld:{actorAppearance:(id:string)=>id}}, world: { actors: { hero: appearance, guard: { ...appearance, id: 'guard' }, saint: { ...appearance, id: 'saint' } } }, campaign: { start: { actor: 'hero' } } } as unknown as StoryContext;
   const presenter = new StoryPresenter(app, () => world, () => stage);
-  return { presenter, stage, world, released: () => released, rendered: () => rendered };
+  const prepared=(presenter as unknown as {scenes:Map<string,unknown>}).scenes;
+  for(const map of ['hall','remote'])prepared.set(map,{map,actors:[{id:'player',actor:'hero',x:10,y:20,facing:'south',visible:true}]});
+  return { presenter, stage, world, released: () => released, rendered: () => rendered,
+    placeAllGroups: () => placeAllGroups, audioMaps: () => audioMaps };
 }
 
 test('cinematic travel retains formal world and only explicit bindings become world changes', async () => {
@@ -225,6 +265,20 @@ test('cinematic travel retains formal world and only explicit bindings become wo
   const saved = run.presenter.captureStage()!; saved.cast[0].x = 999;
   assert.equal(run.presenter.captureStage()!.cast[0].x, 60);
   await run.presenter.release(); assert.equal(run.released(), 1);
+});
+
+test('a single-frame stage animation never writes NaN progress into the captured scene', async () => {
+  const run = harness(), signal = new AbortController().signal;
+  await run.presenter.begin(signal);
+  // 完整外观才能通过快照校验；这里只关心进度字段。
+  run.stage.player!.actor = { id: 'hero', name: 'Hero', description: '', portrait: null, clips: {} };
+  // Phaser 单帧动画的 getProgress() 是 NaN；舞台快照必须把它收敛成 undefined。
+  run.stage.player!.layers.push({ anims: { currentAnim: {}, getProgress: () => NaN, isPlaying: true } } as never);
+  const snapshot = run.presenter.captureStage()!;
+  const player = snapshot.scene.actors.find(actor => actor.id === 'player')!;
+  assert.equal(player.animationProgress, undefined);
+  assert.equal(player.animationPlaying, true);
+  assert.doesNotThrow(() => validateStoryStageSnapshot(snapshot));
 });
 
 test('交还操作权时重新应用正式世界的地图音乐，回菜单后不再应用', async () => {
@@ -286,6 +340,54 @@ test('a stage handed to begin paints once, when the following execute runs', asy
   assert.equal(run.rendered(), 1);
 });
 
+test('appear create registers its new instance before the scene pass resolves the alias', async () => {
+  const run = harness(), signal = new AbortController().signal;
+  await run.presenter.begin(signal);
+  await run.presenter.execute({ type: 'stage', map: 'hall', x: 30, y: 40, facing: 'east', playerVisible: true,
+    cast: [{ id: 'soldier', actor: 'guard', x: 60, y: 70, facing: 'south', visible: false }] }, { signal, skipSignal: signal });
+  await run.presenter.execute({ type: 'appear', target: 'soldier', mode: 'create', worldEntityId: 'created-soldier',
+    x: 80, y: 90, facing: 'north' }, { signal, skipSignal: signal });
+  const member = run.presenter.captureStage()!.cast.find(member => member.id === 'soldier')!;
+  assert.deepEqual([member.worldEntityId, member.x, member.y, member.facing, member.visible],
+    ['created-soldier', 80, 90, 'north', true]);
+});
+
+test('stage snapshot records the Phaser camera midpoint without dividing by zoom', async () => {
+  const run = harness(), signal = new AbortController().signal;
+  await run.presenter.begin(signal);
+  const camera = run.stage.cameras.main;
+  camera.zoom = 2; camera.scrollX = 100; camera.scrollY = 50;
+  assert.deepEqual(run.presenter.captureStage()!.camera, { x: 580, y: 370 });
+});
+
+test('parallel walks settle as one placement group after every actor arrives', async () => {
+  const run = harness(), signal = new AbortController().signal;
+  await run.presenter.begin(signal);
+  await run.presenter.execute({ type: 'stage', map: 'hall', x: 30, y: 40, facing: 'east', playerVisible: true,
+    cast: [{ id: 'guard', actor: 'guard', x: 60, y: 70, facing: 'south', visible: true },
+      { id: 'saint', actor: 'saint', x: 80, y: 90, facing: 'south', visible: true }] }, { signal, skipSignal: signal });
+  run.placeAllGroups().length = 0;
+  await run.presenter.parallel([
+    { type: 'walk', target: 'guard', x: 100, y: 110, speedPxPerSecond: 100 },
+    { type: 'walk', target: 'saint', x: 120, y: 130, speedPxPerSecond: 100 }
+  ], { signal, skipSignal: signal });
+  assert.ok(run.placeAllGroups().some(size => size === 2), '并行走位结束后按整组落位');
+  const snapshot = run.presenter.captureStage()!;
+  const position = (alias: string) => snapshot.cast.find(member => member.id === alias)!;
+  assert.deepEqual([position('guard').x, position('guard').y], [100, 110]);
+  assert.deepEqual([position('saint').x, position('saint').y], [120, 130]);
+});
+
+test('a deferred mapFromWorld first stage draws its map only once', async () => {
+  const run = harness(), signal = new AbortController().signal;
+  await run.presenter.begin(signal, undefined, undefined, true);
+  assert.equal(run.rendered(), 0, '延后的首幕不在 begin 里建图');
+  await run.presenter.execute({ type: 'stage', mapFromWorld: true, map: 'home', x: 10, y: 20,
+    facing: 'south', playerVisible: true, cast: [] }, { signal, skipSignal: signal });
+  assert.equal(run.rendered(), 1);
+  assert.deepEqual(run.audioMaps(), ['home'], '同一张图只切一次音乐');
+});
+
 test('failure restores cinematic baseline with caller signal and leaves formal world intact', async () => {
   const run = harness(), signal = new AbortController().signal;
   await run.presenter.begin(signal);
@@ -317,7 +419,7 @@ test('cancelled or superseded resource loading releases the late lease without r
       textures: { exists: (key: string) => frames.has(key), get: () => ({ has: () => true }), remove: (key: string) => frames.delete(key) },
       anims: { exists: () => false } });
     const abort = new AbortController();
-    const running = scene.showStage({ type: 'stage', map: 'map', x: 1, y: 2, facing: 'south', playerVisible: true, cast: [] }, abort.signal, appearance);
+    const running = scene.showStage(stageSnapshot({ type: 'stage', map: 'map', x: 1, y: 2, facing: 'south', playerVisible: true, cast: [] }), abort.signal, appearance);
     await new Promise(resolve => setImmediate(resolve));
     if (cancellation === 'abort') abort.abort(new DOMException('cancelled', 'AbortError'));
     else scene.releaseStage();
@@ -406,4 +508,118 @@ test('an emote is not drawn for a character that is not on screen', async () => 
   await assert.doesNotReject(run.presenter.execute({ type: 'effect', target: 'hidden', effect: 'story-startle' },
     { signal, skipSignal: signal }));
   await run.presenter.finish(true, signal);
+});
+
+test('failed construction destroys every newly created character before exposing a partial scene',async()=>{
+  const {drawStoryCharacters}=await import('../src/rendering/story-map-view.ts');
+  const containers:{scene?:object;destroy():void}[]=[];
+  const scene={add:{container(){const container={scene:{} as object|undefined,setDepth(){return this;},setVisible(){return this;},setAlpha(){return this;},destroy(){this.scene=undefined;}};
+    containers.push(container);return container;}}};
+  const actors=[{id:'first',actor:'good',x:1,y:2,facing:'south' as const,visible:true},
+    {id:'second',actor:'bad',x:3,y:4,facing:'south' as const,visible:true}];
+  const appearances=new Map([['first',{id:'good',clips:{}} as ActorDefinition],
+    ['second',{id:'bad',clips:{'idle-east':{}}} as ActorDefinition]]);
+  assert.throws(()=>drawStoryCharacters(scene as never,actors,appearances),/角色动作缺少资源/);
+  assert.equal(containers.length,2);assert.ok(containers.every(container=>!container.scene));
+});
+
+test('committed scene changes are acknowledged once and restoring a stable snapshot clears failed changes',async()=>{
+  const run=harness(),signal=new AbortController().signal;
+  await run.presenter.begin(signal);
+  await run.presenter.execute({type:'stage',map:'hall',x:30,y:40,facing:'east',playerVisible:true,
+    cast:[{id:'guard',worldEntityId:'persistent-guard',actor:'guard',x:60,y:70,facing:'west',visible:true}]},{signal,skipSignal:signal});
+  assert.equal(run.presenter.getWorldChanges().length,1);
+  run.presenter.committed();assert.deepEqual(run.presenter.getWorldChanges(),[]);
+  const stable=run.presenter.captureStage()!;
+  await run.presenter.execute({type:'face',target:'guard',facing:'north'},{signal,skipSignal:signal});
+  assert.equal(run.presenter.getWorldChanges()[0].facing,'north');
+  await run.presenter.restoreStage(stable,signal);
+  assert.deepEqual(run.presenter.getWorldChanges(),[]);
+  assert.equal(run.presenter.captureStage()!.cast[0].facing,'west');
+});
+
+test('on-demand object assets retain the original and override textures and discard late cancelled loads',async()=>{
+  for(const cancellation of ['abort','release']){
+    const events=new EventEmitter(),frames=new Set<string>(),pending:string[]=[];
+    const load=Object.assign(new EventEmitter(),{image:(key:string)=>pending.push(key),spritesheet:(key:string)=>pending.push(key),start(){}});
+    const definition=(id:string)=>({id,clips:{'idle-south':{frameWidth:8,frameHeight:8,frames:1,originX:0,originY:0,frameRate:10,mirrorX:false,
+      layers:[{key:id,file:id+'.png',blend:'normal'}]}}} as ActorDefinition);
+    const app={world:{actors:{gate:definition('gate'),glow:definition('glow')}},session:{storyWorld:{actorAppearance:()=> 'glow'}}} as unknown as StoryContext;
+    const scene=new StoryStageScene(app);
+    Object.assign(scene,{events,load,sys:{isActive:()=>true},
+      textures:{exists:(key:string)=>frames.has(key),get:()=>({has:()=>true}),remove:(key:string)=>frames.delete(key)},
+      anims:{exists:()=>false}});
+    const abort=new AbortController(),running=scene.prepareActorAssets('gate',abort.signal);
+    await new Promise(resolve=>setImmediate(resolve));
+    assert.deepEqual(pending.sort(),['gate','glow']);
+    if(cancellation==='abort')abort.abort();else scene.releaseStage();
+    const rejected=assert.rejects(running,{name:'AbortError'});
+    if(cancellation==='abort')await rejected;
+    for(const key of pending)frames.add(key);
+    load.emit('complete');await rejected;await new Promise(resolve=>setImmediate(resolve));
+    assert.equal(frames.size,0);
+  }
+});
+
+test('scene reconstruction restores held animation frames on every character layer',async()=>{
+  const {drawStoryCharacters}=await import('../src/rendering/story-map-view.ts');
+  const clip={frameWidth:8,frameHeight:8,frames:4,originX:0,originY:0,frameRate:10,mirrorX:false,
+    layers:[{key:'body',file:'body.png',blend:'normal'},{key:'weapon',file:'weapon.png',blend:'normal'}]};
+  const appearance={id:'hero',clips:{'idle-south':clip,'die-south':clip}} as ActorDefinition;
+  const scene={anims:{exists:()=>true},add:{
+    container(x:number,y:number){return {x,y,scene:{},setDepth(){return this;},setVisible(){return this;},setAlpha(){return this;},addAt(){},destroy(){}};},
+    sprite(){return {anims:{progress:0,isPlaying:false,timeScale:1,accumulator:0,setProgress(value:number){this.progress=value;},stop(){this.isPlaying=false;}},
+      setOrigin(){return this;},setBlendMode(){return this;},setScale(){return this;},play(){this.anims.isPlaying=true;},destroy(){}};}
+  }};
+  const characters=drawStoryCharacters(scene as never,[{id:'player',actor:'hero',x:10,y:20,facing:'south',visible:true,
+    clip:'die-south',animationProgress:1,animationPlaying:false}],new Map([['player',appearance]]));
+  const visual=characters.get('player')!;
+  assert.equal(visual.clipName,'die-south');assert.equal(visual.layers.length,2);
+  for(const layer of visual.layers){assert.equal((layer.anims as unknown as {progress:number}).progress,1);assert.equal(layer.anims.isPlaying,false);}
+});
+
+test('normal and skipped poses settle on identical held or idle animation frames',async()=>{
+  const {drawStoryCharacters}=await import('../src/rendering/story-map-view.ts');
+  const run=async(skip:boolean,hold:boolean)=>{
+    const clip={frameWidth:8,frameHeight:8,frames:4,originX:0,originY:0,frameRate:10,mirrorX:false,
+      layers:[{key:'body',file:'body.png',blend:'normal'}]};
+    const appearance={id:'guard',clips:{'idle-south':clip,'fall-down-south':clip}} as ActorDefinition;
+    const scene={anims:{exists:()=>true},add:{
+      container(x:number,y:number){return {x,y,scene:{},setDepth(){return this;},setVisible(){return this;},setAlpha(){return this;},addAt(){},destroy(){}};},
+      sprite(){return Object.assign(new EventEmitter(),{anims:{progress:0,isPlaying:false,timeScale:1,accumulator:0,setProgress(value:number){this.progress=value;},stop(){this.isPlaying=false;}},
+        setOrigin(){return this;},setBlendMode(){return this;},setScale(){return this;},play(){this.anims.isPlaying=true;},destroy(){}});}
+    }};
+    const visual=drawStoryCharacters(scene as never,[{id:'entity:guard',actor:'guard',x:10,y:20,facing:'south',visible:true}],new Map([['entity:guard',appearance]])).get('entity:guard')!;
+    const presenter=new StoryPresenter({} as never,()=>({} as never),()=>scene as never);
+    Object.assign(presenter,{delay:async()=>{},state:{bindings:[['guard','entity:guard']]},actors:new Map([['entity:guard',{visual,facing:'south'}]])});
+    const signal=new AbortController().signal,skipping=new AbortController();if(skip)skipping.abort();
+    await presenter.execute({type:'pose',target:'guard',pose:'fall-down',durationMs:100,hold},{signal,skipSignal:skipping.signal});
+    return {clip:visual.clipName,frames:visual.layers.map(layer=>({progress:(layer.anims as unknown as {progress:number}).progress,playing:layer.anims.isPlaying}))};
+  };
+  for(const hold of [false,true]){
+    const normal=await run(false,hold),skipped=await run(true,hold);
+    assert.deepEqual(normal,skipped);
+    assert.deepEqual(normal,{clip:hold?'fall-down-south':'idle-south',frames:[{progress:hold?1:0,playing:!hold}]});
+  }
+});
+
+test('restoring a scene on map B retains prepared map A objects and positions for the return trip',async()=>{
+  const signal=new AbortController().signal,run=harness();
+  const sceneCache=(run.presenter as unknown as {scenes:Map<string,import('../src/domain/scene-snapshot.ts').SceneSnapshot>}).scenes;
+  sceneCache.get('hall')!.actors.push({id:'entity:portal',worldEntityId:'portal',actor:'guard',x:140,y:180,facing:'south',visible:true});
+  await run.presenter.begin(signal);
+  const declaration:StoryStage={type:'stage',map:'hall',x:30,y:40,facing:'east',playerVisible:true,
+    cast:[{id:'guard',worldEntityId:'persistent-guard',actor:'guard',x:60,y:70,facing:'west',visible:true}]};
+  await run.presenter.execute(declaration,{signal,skipSignal:signal});
+  await run.presenter.execute({type:'appear',target:'guard',x:72,y:80,facing:'north',mode:'reuse'},{signal,skipSignal:signal});
+  const sceneA=run.presenter.captureStage()!.scene;
+  await run.presenter.execute({type:'stage',map:'remote',x:10,y:20,facing:'south',playerVisible:true,cast:[]},{signal,skipSignal:signal});
+  const saved=JSON.parse(JSON.stringify(run.presenter.captureStage()!)) as StoryStageSnapshot;
+  assert.ok(saved.scenes?.some(scene=>scene.map==='hall'));
+  const restored=harness();
+  await restored.presenter.begin(signal,saved);
+  await restored.presenter.execute({...declaration,cast:declaration.cast.map(member=>({...member,binding:'world'}))},{signal,skipSignal:signal});
+  const returned=restored.presenter.captureStage()!.scene;
+  const objects=(scene:typeof returned)=>scene.actors.filter(actor=>actor.id!=='player').map(actor=>[actor.id,actor.worldEntityId,actor.x,actor.y,actor.visible]);
+  assert.deepEqual(objects(returned),objects(sceneA));
 });

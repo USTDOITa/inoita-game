@@ -3,7 +3,13 @@ import type { ActorDefinition, AnimationClip, ClipName } from '../domain/content
 import type { EquipmentSlot, ItemCatalog } from '../domain/items.ts';
 import { costumeRecipe, type CostumePart, type CostumePiece, type WardrobeCatalog } from '../domain/wardrobe.ts';
 
-interface Outfit { actor: ActorDefinition; preview: string; textures: string[] }
+interface Outfit {
+  actor: ActorDefinition;
+  preview: string;
+  textures: string[];
+  /** 正在显示这套外观的角色数；只有 0 才能回收纹理。 */
+  users: number;
+}
 let serial = 0;
 
 /** Compile only worn combinations; Phaser owns playback of the resulting frames. */
@@ -15,15 +21,28 @@ export class Wardrobe {
   private preparations = new Map<string,Promise<Outfit>>();
   private preparationRequest = new AbortController();
   private active = true;
+  private readonly onShutdown = () => this.destroy();
   private current?: Outfit;
-  activate(outfit: Outfit): void { this.current=outfit; }
+  /** 切换当前外观：旧外观的引用减一，新外观加一；同一套重复激活不重复计数。 */
+  activate(outfit: Outfit): void {
+    if (this.current === outfit) return;
+    if (this.current) this.current.users = Math.max(0, this.current.users - 1);
+    outfit.users += 1;
+    this.current = outfit;
+  }
   constructor(scene: Phaser.Scene, catalog: WardrobeCatalog, items: ItemCatalog) {
     this.scene=scene;this.catalog=catalog;this.items=items;
     for(const [key,piece]of Object.entries(catalog.sprites)) {
       const texture=scene.textures.get(piece.texture);
       if(!texture.has(key))texture.add(key,0,piece.x,piece.y,piece.width,piece.height);
     }
-    scene.events.once('shutdown',()=>{this.active=false;this.clear();});
+    scene.events.once('shutdown',this.onShutdown);
+  }
+  destroy(): void {
+    if (!this.active) return;
+    this.active = false;
+    this.scene.events.off('shutdown', this.onShutdown);
+    this.clear();
   }
   private dispose(outfit: Outfit): void {
     for(const key of outfit.textures) {
@@ -34,7 +53,8 @@ export class Wardrobe {
   clear(): void {
     this.preparationRequest.abort(new DOMException('人物外观生成已取消','AbortError'));
     this.preparationRequest=new AbortController();this.preparations.clear();
-    for(const outfit of this.cache.values())this.dispose(outfit);
+    // 场景关闭时角色也一起销毁，这里可以强制回收全部外观。
+    for(const outfit of this.cache.values()){outfit.users=0;this.dispose(outfit);}
     this.cache.clear();this.current=undefined;
   }
   async prepare(base: ActorDefinition, equipment: Partial<Record<EquipmentSlot,string>>, classId?:string): Promise<Outfit> {
@@ -112,10 +132,15 @@ export class Wardrobe {
         signal.throwIfAborted();
       }
       signal.throwIfAborted();
-      const outfit={actor:{...base,clips:{...base.clips,...clips}},preview,textures};
+      const outfit={actor:{...base,clips:{...base.clips,...clips}},preview,textures,users:0};
       this.cache.set(signature,outfit);
-      while(this.cache.size>3){const oldest=[...this.cache].find(([,value])=>value!==this.current&&value!==outfit)!;this.dispose(oldest[1]);this.cache.delete(oldest[0]);}
+      // 只回收无人引用的外观：换装后旧外观可能仍被队友或演出角色使用。
+      while(this.cache.size>3){
+        const oldest=[...this.cache].find(([,value])=>value!==this.current&&value!==outfit&&value.users===0);
+        if(!oldest)break;
+        this.dispose(oldest[1]);this.cache.delete(oldest[0]);
+      }
       return outfit;
-    } catch(error){this.dispose({actor:base,preview:'',textures});throw error;}
+    } catch(error){this.dispose({actor:base,preview:'',textures,users:0});throw error;}
   }
 }

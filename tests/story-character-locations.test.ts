@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { stageSnapshot } from './helpers/story-stage.ts';
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import type {Campaign} from '../src/domain/campaign.ts';
@@ -13,7 +14,7 @@ test('the native uniform event registers Gunther at the native location and late
   assert.equal(session.visible(placement),false);
   const runtime=new StoryRuntime({...campaign,events:[]},{async prepare(){},capture:()=>session.captureState(),
     // 生产端口由 presenter 交出解析过地图的舞台（`mapFromStage` 的剧情物件要靠它落图）；桩照它给。
-    async present(node){const stage=node.presentation.find(action=>action.type==='stage');return stage?{stage}:{};},async finish(){},
+    async present(node){const stage=node.presentation.find(action=>action.type==='stage');return stage?{stage:stageSnapshot(stage)}:{};},async finish(){},
     currentMap:()=>session.storyWorld.currentLocation?.map,
     commit:commit=>session.applyStoryCommands(commit.commands,commit.checkpoint),rollback:snapshot=>session.restoreState(snapshot as ReturnType<Session['captureState']>),
     evaluate:(condition,commands)=>session.evaluateCondition(condition,commands)});

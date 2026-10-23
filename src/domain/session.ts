@@ -78,8 +78,12 @@ export class Session {
   /** 掉落保底：按成员记录连续未出装备/稀有，命中后清零。 */
   readonly lootPity = new LootPity();
   partyItemChance = 0;
-  enterMap(map: string, questItemSpawns?:readonly QuestItemSpawn[], boundary?:MapBoundary): void {
+  enterMap(map: string, questItemSpawns?:readonly QuestItemSpawn[], boundary?:MapBoundary,
+    mapSpawns?:readonly EnemySpawn[]): void {
     const entering=this.chests.mapId!==map;
+    // 进入另一张地图视为一次新访问：普通地图怪恢复满血，和原版地图刷新一致。
+    // 永久死亡、任务捕捉、宝箱/遭遇怪不在这份名单里，仍按各自规则保留。
+    if(entering&&mapSpawns)this.resetMapEnemies(mapSpawns);
     for(const [id,enemy] of this.enemyStates)if(enemy.capture&&
       (enemy.capture.map!==map||enemy.capture.visit!==this.storyWorld.visit))this.enemyStates.delete(id);
     if (this.chests.mapId !== map) for (const spawn of this.chests.spawns) this.enemyStates.delete(spawn.id);
@@ -91,6 +95,15 @@ export class Session {
     }
     if(questItemSpawns)this.questItemGenerators.enter(map,this.storyWorld.visit,questItemSpawns,groundLootFor(this));
     if(boundary)this.reviseOutOfBoundsLocation(map,boundary);
+  }
+  /** 新访问重置普通地图怪；永久死亡、任务捕捉和一次性生成点保持不变。 */
+  private resetMapEnemies(spawns:readonly EnemySpawn[]):void{
+    for(const spawn of spawns){
+      if(spawn.respawn===false)continue;
+      const state=this.enemyStates.get(spawn.id);
+      if(!state||state.deadUntil==='permanent'||state.capture)continue;
+      this.enemyStates.delete(spawn.id);
+    }
   }
   /** 越界坐标落到出口格或地图中心：原版 SAVE_ReviseCharacterLocation 的判据与兜底（findings 175）。 */
   private reviseOutOfBoundsLocation(map:string,boundary:MapBoundary): void {
@@ -120,7 +133,7 @@ export class Session {
   readonly campaign: Campaign;
   readonly questBook:QuestBook;
   readonly storyWorld = new StoryWorldState();
-  private runtimeSnapshot:StoryRuntimeSnapshot = {version:1,sequence:0,runs:[],completedEvents:[],handledOccurrences:[],encounterResults:[],pendingOccurrences:[],occurrenceSequences:[]};
+  private runtimeSnapshot:StoryRuntimeSnapshot = {version:2,sequence:0,runs:[],completedEvents:[],handledOccurrences:[],encounterResults:[],pendingOccurrences:[],occurrenceSequences:[]};
   private runtimeValidator?:StoryRuntime;
   private readonly receipts = new Map<string,QuestSettlement>();
   private readonly factSequences = new Map<string,number>();

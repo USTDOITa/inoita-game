@@ -2,11 +2,9 @@ import Phaser from 'phaser';
 import type { BattleCatalog } from '../domain/battle.ts';
 import { COMBAT_OUTCOME_EFFECTS, ENEMY_DEFEAT_FADE_MS, ENEMY_DEFEAT_HOLD_MS } from '../domain/combat-outcomes.ts';
 import type { CharacterVisual } from './characters.ts';
-import { createEffect, effectAssets } from './effects.ts';
+import { createEffect } from './effects.ts';
 
-export function combatOutcomeAssets(catalog: BattleCatalog) {
-  return effectAssets(Object.fromEntries(COMBAT_OUTCOME_EFFECTS.map(name => [name, catalog.attackEffects[name]])));
-}
+export { combatOutcomeAssets } from './combat-asset-descriptors.ts';
 
 /** Scene-owned recovery, death and level-up visuals, independent of attack cancellation. */
 export class CombatOutcomes {

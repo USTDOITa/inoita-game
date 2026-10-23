@@ -73,9 +73,9 @@ export class StoryApp {
   shops!: ShopCatalog;
   crafting!: CraftingCatalog;
   companions!: CompanionCatalog;
-  /** 全部佣兵候选的战斗素材在首次进游戏时加载并常驻，避免入队时现场加载。 */
-  mercenaryAssetsReady=false;
-  mercenaryAssets?: AssetLease;
+  /** 玩家侧全部战斗视觉资源在首次进游戏时加载并常驻，避免战斗与入队时现场加载。 */
+  residentCombatReady=false;
+  residentCombatAssets?: AssetLease;
   wardrobe!: WardrobeCatalog;
   changeEquipment?: (entry: string | undefined, slot: EquipmentSlot, signal?: AbortSignal, memberId?:string) => Promise<string>;
   equipmentPreview?: () => string | undefined;
@@ -98,6 +98,11 @@ export class StoryApp {
   openCrafting:(actorId:string)=>void = () => { throw new Error('合成面板尚未装配'); };
   openShop:(shopId:string,mapId:string)=>void = () => { throw new Error('商店尚未装配'); };
   readonly content = new ContentLoader();
+  /** 标题页临时打开 GM 时补载现场表；普通游玩不会调用。 */
+  async loadDebugCatalog(): Promise<void> {
+    if (!this.campaign || this.campaign.debugStory) return;
+    this.campaign.debugStory = await this.content.storyDebug();
+  }
   get mode() { return this.ui.mode; }
   set mode(value: GameMode) { this.ui.mode=value; }
   battleCatalog!: BattleCatalog;

@@ -2,7 +2,7 @@ import { validateStoryGraph } from './story-graph.ts';
 import { STORY_TRIGGER_SOURCES } from './story-graph.ts';
 import type { StoryCommand, StoryEvent, StoryGraph, StoryNode, StoryNodeRef, StoryTriggerSource } from './story-graph.ts';
 import type { StoryCondition } from './story-condition.ts';
-import type { StoryStage } from './story-performance.ts';
+import { validateStoryStageSnapshot, type StoryStage, type StoryStageSnapshot } from './story-performance.ts';
 
 export interface StoryOccurrence { id: string; sequence: number; source: StoryTriggerSource; key?: string; map?: string; mapVisit?: number; entity?: string }
 interface StoryRun {
@@ -15,12 +15,12 @@ interface StoryRun {
   cursor: StoryNodeRef;
   stack?: StoryNodeRef[];
   status: 'running' | 'waiting' | 'deferred' | 'completed';
-  stage?: StoryStage;
+  stage?: StoryStageSnapshot;
   waiting?: { encounter: string; outcomes: Record<string, StoryNodeRef> };
 }
 interface StoryPendingOccurrence { occurrence: StoryOccurrence; nextEventIndex: number }
 export interface StoryRuntimeSnapshot {
-  version: 1;
+  version: 2;
   sequence: number;
   runs: StoryRun[];
   completedEvents: string[];
@@ -33,7 +33,7 @@ export interface StoryPlaybackContext {
   signal: AbortSignal;
   epoch: number;
   runId: string;
-  stage?: StoryStage;
+  stage?: StoryStage | StoryStageSnapshot;
 }
 export interface StoryNodeCommit {
   commands: StoryCommand[];
@@ -41,14 +41,14 @@ export interface StoryNodeCommit {
   eventId?: string;
   node: StoryNodeRef;
   runId: string;
-  stage?: StoryStage;
+  stage?: StoryStageSnapshot;
 }
 /** commit 同步原子写入领域状态和 checkpoint；prepare 只预备资源，不修改游戏状态。 */
 export interface StoryRuntimePort {
   prepare(node: StoryNode, context: StoryPlaybackContext): Promise<void>;
   capture(): unknown;
   currentMap?():string|undefined;
-  present(node: StoryNode, context: StoryPlaybackContext): Promise<{ choice?: string; stage?: StoryStage }>;
+  present(node: StoryNode, context: StoryPlaybackContext): Promise<{ choice?: string; stage?: StoryStageSnapshot }>;
   finish(context: StoryPlaybackContext): Promise<void>;
   commit(commit: StoryNodeCommit): void;
   afterCommit?(commit: StoryNodeCommit, context: StoryPlaybackContext): Promise<void>;
@@ -60,7 +60,7 @@ export interface StoryRuntimePort {
   onBusy?(busy: boolean): void;
 }
 interface PendingWork { work: (signal: AbortSignal, epoch: number) => Promise<boolean>; resolve: (value: boolean) => void; reject: (error: unknown) => void }
-const emptySnapshot = (): StoryRuntimeSnapshot => ({ version: 1, sequence: 0, runs: [], completedEvents: [], handledOccurrences: [], encounterResults: [], pendingOccurrences: [], occurrenceSequences: [] });
+const emptySnapshot = (): StoryRuntimeSnapshot => ({ version: 2, sequence: 0, runs: [], completedEvents: [], handledOccurrences: [], encounterResults: [], pendingOccurrences: [], occurrenceSequences: [] });
 const clone = <T>(value: T): T => structuredClone(value);
 
 /** 一个前台导演；提交后的节点与等待遭遇都可以独立恢复。 */
@@ -124,7 +124,7 @@ export class StoryRuntime {
   runScript(id: string): string | undefined { return this.state.runs.find(run => run.id === id)?.cursor.script; }
   prepareRestore(snapshot: StoryRuntimeSnapshot): StoryRuntimeSnapshot {
     const result = clone(snapshot);
-    if (result.version !== 1 || !Number.isSafeInteger(result.sequence) || result.sequence < 0) throw new Error('剧情检查点版本或序号无效');
+    if (result.version !== 2 || !Number.isSafeInteger(result.sequence) || result.sequence < 0) throw new Error('剧情检查点版本或序号无效');
     const ids = new Set<string>();
     const activeEvents = new Set<string>();
     for (const run of result.runs) {
@@ -142,16 +142,7 @@ export class StoryRuntime {
         activeEvents.add(run.eventId);
       }
       if (run.occurrenceSequence !== undefined && (!Number.isSafeInteger(run.occurrenceSequence) || run.occurrenceSequence < 0)) throw new Error('剧情运行发生序号无效');
-      if (run.stage) {
-        const stage = run.stage;
-        if (stage.type !== 'stage' || !stage.map || !Number.isFinite(stage.x) || !Number.isFinite(stage.y) || !['north','south','east','west'].includes(stage.facing)
-          || typeof stage.playerVisible !== 'boolean' || new Set(stage.cast.map(member => member.id)).size !== stage.cast.length
-          || stage.cast.some(member => !member.id || !member.actor || !Number.isFinite(member.x) || !Number.isFinite(member.y) || typeof member.visible !== 'boolean'
-            || !['north','south','east','west'].includes(member.facing))) throw new Error('剧情检查点舞台无效');
-        if (stage.camera && (!Number.isFinite(stage.camera.x) || !Number.isFinite(stage.camera.y))
-          || stage.curtain && (!Number.isFinite(stage.curtain.opacity) || stage.curtain.opacity < 0 || stage.curtain.opacity > 1 || !Number.isSafeInteger(stage.curtain.color) || stage.curtain.color < 0 || stage.curtain.color > 0xffffff)
-          || stage.audio && [stage.audio.music,stage.audio.ambience].some(value => value !== null && (typeof value !== 'string' || !value))) throw new Error('剧情检查点镜头或音频无效');
-      }
+      if (run.stage) validateStoryStageSnapshot(run.stage);
       if (run.status === 'waiting' && (!run.waiting || !run.waiting.encounter)) throw new Error('等待战斗的剧情缺少遭遇实例');
       if (run.waiting) {
         if (run.status !== 'waiting' || !Object.keys(run.waiting.outcomes).length) throw new Error('剧情等待状态与结果不一致');
@@ -313,7 +304,8 @@ export class StoryRuntime {
         const result = await this.port.present(node, context); this.guard(epoch, signal);
         await this.port.finish(context); this.guard(epoch, signal);
         const next = clone(this.state), nextRun = next.runs.find(run => run.id === id)!;
-        nextRun.stage = clone(result.stage ?? node.stage ?? run.stage);
+        if (result.stage) validateStoryStageSnapshot(result.stage);
+        nextRun.stage = clone(result.stage ?? run.stage);
         const commands = clone(node.commands);
         for(const command of commands)if(command.type==='world'&&(command.command.kind==='place'||command.command.kind==='remove-character'||command.command.kind==='enemy-location')&&command.command.mapFromStage){
           const map=nextRun.stage?.map??this.port.currentMap?.();
@@ -364,7 +356,7 @@ export class StoryRuntime {
           candidate.id === id || candidate.status === 'running' || candidate.status === 'waiting'
           || (run.eventId ? candidate.eventId !== run.eventId : candidate.eventId !== undefined || candidate.cursor.script !== nextRun.cursor.script));
         const stage = clone(nextRun.stage);
-        if (nextRun.status === 'waiting' || commands.some(command => command.type === 'travel' || command.type === 'world' && command.command.kind === 'travel')) delete nextRun.stage;
+        if (nextRun.status !== 'running' || commands.some(command => command.type === 'travel' || command.type === 'world' && command.command.kind === 'travel')) delete nextRun.stage;
         const commit = { commands, checkpoint: next, eventId: run.eventId, node: clone(run.cursor), runId: id, stage };
         this.publish(commit);
         this.active = undefined; committed = true;

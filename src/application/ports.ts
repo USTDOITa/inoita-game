@@ -54,9 +54,9 @@ export interface StoryContext {
   readonly director: StoryDirector;
   readonly content: Pick<ContentLoader,'map'|'drops'|'springs'>;
   readonly companions: import('../domain/party.ts').CompanionCatalog;
-  /** 全部佣兵候选的战斗素材在首次进游戏时加载并常驻，避免入队时现场加载。 */
-  mercenaryAssetsReady?: boolean;
-  mercenaryAssets?: import('./assets.ts').AssetLease;
+  /** 玩家侧全部战斗视觉资源在首次进游戏时加载并常驻，避免战斗与入队时现场加载。 */
+  residentCombatReady?: boolean;
+  residentCombatAssets?: import('./assets.ts').AssetLease;
   readonly ui: SceneUI & Pick<GameUI,'drawPortrait'|'portrait'|'canSkip'|'loadingState'|'failed'>;
   readonly locked: boolean;
   readonly suspended: boolean;
@@ -108,6 +108,8 @@ export interface MenuContext {
   readonly ui: Pick<GameUI,'setMode'|'loading'|'menuLoaded'|'error'|'ready'|'suspended'>;
   /** GM（调试）开关：标题页的隐藏手势与角落指示读它，见 `docs/debugging.md`。 */
   readonly gmMode?: { readonly on: boolean; toggle(): boolean };
+  /** GM 在菜单里临时打开时补载调试现场表；普通启动不请求。 */
+  loadDebugCatalog?: () => Promise<void>;
   readonly audio?:GameAudio;
   enterGame?:(slot?:number)=>Promise<void>;
   /** 标题页的「开始游戏」使用同一份存档槽。 */

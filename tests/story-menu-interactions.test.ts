@@ -219,6 +219,7 @@ class MenuScene {
 const read = <T>(name: string): T => JSON.parse(readFileSync(new URL(`../public/content/${name}.json`, import.meta.url), 'utf8')) as T;
 const items = read<ItemCatalog>('items'), stats = read<CharacterStatsCatalog>('character-stats'), battle = read<BattleCatalog>('battle');
 const campaign = read<Campaign>('campaign'), companions = read<CompanionCatalog>('companions'), world = read<WorldIndex>('world');
+campaign.debugStory = read<Campaign['debugStory']>('debug/start');
 const panels = read<MenuPanels>('menu-panels'), content = read<StoryInterface>('story-interface');
 interface MenuInternals {
   selectedMemberId: string;
@@ -243,7 +244,8 @@ function fixture(classId = 'dark-knight') {
     setItem: (key, value) => { stored.set(key, value); }, removeItem: key => { stored.delete(key); } });
   const app: StoryUIContext = { controlLayout:new ControlLayoutPreferences(null), ui: controls, battleCatalog: battle, storyClasses: read<StoryClassCatalog>('story-classes'), menuPanels: panels,
     saves, captureSaveWorld: () => ({ map: { id: campaign.start.map, name: '测试地图' },
-      world: { location: { map: campaign.start.map, x: 16, y: 24, facing: 'south' as const }, generatedEntities: [] } }),
+      world: { location: { map: campaign.start.map, x: 16, y: 24, facing: 'south' as const }, generatedEntities: [],
+        scene:{map:campaign.start.map,actors:[{id:'player',actor:campaign.start.actor,memberId:'player',x:16,y:24,facing:'south',visible:true}]} } }),
     crafting:parseCrafting(read('crafting')),controlSkin: read<ControlSkin>('control-skin'), shops: read<ShopCatalog>('shops'), characterStats: stats,
     changeEquipment: async (entry, slot, signal, owner = 'player') => {
       signal?.throwIfAborted(); const member = owner === 'player' ? hero : session.party!.get(owner)!;

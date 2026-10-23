@@ -6,12 +6,19 @@ import type { StoryCondition } from '../domain/story-condition.ts';
 import type { StoryEncounter } from '../domain/story-world.ts';
 import { storyExitId } from '../domain/story-world.ts';
 import { storyActions } from '../domain/story-script.ts';
+import type { StoryCommand } from '../domain/story-graph.ts';
 
 /** Only maps mentioned by authored story content need to be loaded at startup. */
 export function storyReferenceMaps(campaign:Campaign):Set<string>{
   const ids=new Set([campaign.start.map,...[...campaign.placements,...campaign.mapEntryPlacements??[]].map(entity=>entity.map),...campaign.events.flatMap(event=>event.map?[event.map]:[]),
     ...(campaign.exitRules??[]).map(exit=>exit.map),...(campaign.enemyPlacements??[]).map(enemy=>enemy.map)]);
-  for(const action of storyActions(campaign))if(action.type==='stage')ids.add(action.map);
+  for(const action of storyActions(campaign)){
+    if(action.type==='stage')ids.add(action.map);
+    if(action.type==='world-object'){
+      if(action.command.kind==='place')ids.add(action.command.entity.map);
+      if(action.command.kind==='remove-character')ids.add(action.command.map);
+    }
+  }
   for(const script of Object.values(campaign.scripts))for(const node of script.nodes){
     if(node.stage)ids.add(node.stage.map);
     if(node.exit.type==='waitEncounter')ids.add(node.exit.encounter.map);
@@ -45,7 +52,8 @@ export function validateStoryReferences(campaign:Campaign,world:WorldIndex,battl
     ...[...campaign.placements,...campaign.mapEntryPlacements??[]].map(entity=>[entity.id,entity.map] as const)]);
   const actors=new Set(Object.keys(world.actors)),enemies=new Set(battle.enemies.map(enemy=>enemy.id));
   const exits=new Map([...maps.values()].flatMap(map=>map.exits.map(exit=>[storyExitId(map.id,exit),map.id] as const)));
-  const commands=Object.values(campaign.scripts).flatMap(script=>script.nodes.flatMap(node=>node.commands));
+  const commands:StoryCommand[]=[...Object.values(campaign.scripts).flatMap(script=>script.nodes.flatMap(node=>node.commands)),
+    ...storyActions(campaign).flatMap(action=>action.type==='world-object'?[{type:'world' as const,command:action.command}]:[])];
   const characters=new Set([
     ...[...campaign.placements,...campaign.mapEntryPlacements??[]].map(entity=>entity.characterId),
     ...[...maps.values()].flatMap(map=>map.entities.map(entity=>entity.characterId)),
@@ -57,6 +65,8 @@ export function validateStoryReferences(campaign:Campaign,world:WorldIndex,battl
     if(goal?.characterId)characters.add(goal.characterId);
   }
   for(const command of commands)if(command.type==='world'&&command.command.kind==='place')entities.add(command.command.entity.id);
+  for(const action of storyActions(campaign))if(action.type==='appear'&&action.worldEntityId)
+    ensure(entities.has(action.worldEntityId),'出场实体不存在 '+action.worldEntityId);
   const point=(mapId:string,x:number,y:number,owner:string):void=>{const map=maps.get(mapId);ensure(map&&x>=0&&x<map.width&&y>=0&&y<map.height,'位置超出地图 '+owner);};
   const quests=new Set(campaign.quests.map(quest=>quest.id));
   for(const map of maps.values())for(const spawn of map.questItemSpawns??[]){
@@ -110,9 +120,27 @@ export function validateStoryReferences(campaign:Campaign,world:WorldIndex,battl
   for(const rule of campaign.exitRules??[]){ensure(exits.get(rule.id)===rule.map,'出口不存在 '+rule.id);condition(rule.condition);}
   for(const script of Object.values(campaign.scripts))for(const node of script.nodes){
     if(node.exit.type==='branch')condition(node.exit.condition);
-    if(node.exit.type==='waitEncounter')encounter(node.exit.encounter);
+    if(node.exit.type==='waitEncounter'){
+      ensure(!!node.exit.outcomes.won,'遭遇缺少胜利出口 '+node.exit.encounter.id);
+      encounter(node.exit.encounter);
+    }
+    // 舞台绑定的跨图检查已经覆盖 cast；这里补 `appear` 和 `mapFromStage` 摆放：
+    // 它们同样会把一个世界实体写到舞台地图上，跨图时会把原图的 NPC 抹掉。
+    const nodeStage=node.stage??node.presentation.find(action=>action.type==='stage');
+    const nodeStageMap=nodeStage&&!nodeStage.mapFromWorld?nodeStage.map:undefined;
+    if(nodeStageMap)for(const action of node.presentation){
+      if(action.type==='appear'&&action.worldEntityId){
+        const home=entityMaps.get(action.worldEntityId);
+        ensure(home===undefined||home===nodeStageMap,`出场实体跨越地图：${action.worldEntityId} 在 ${home}，舞台在 ${nodeStageMap}`);
+      }
+      if(action.type==='world-object'&&action.command.kind==='place'&&action.command.mapFromStage){
+        const home=entityMaps.get(action.command.entity.id);
+        ensure(home===undefined||home===nodeStageMap,`演出摆放跨越地图：${action.command.entity.id} 在 ${home}，舞台在 ${nodeStageMap}`);
+      }
+    }
     const stages=[...(node.stage?[node.stage]:[]),...node.presentation.filter(action=>action.type==='stage')];
     for(const stage of stages){
+      for(const member of stage.cast)if(member.enemyId)ensure(enemies.has(member.enemyId),'舞台敌人不存在 '+member.enemyId);
       const bindings=stage.cast.flatMap(member=>member.worldEntityId?[member.worldEntityId]:[]);
       ensure(new Set(bindings).size===bindings.length,'同一舞台重复绑定世界实体 '+node.id);
       for(const id of bindings){

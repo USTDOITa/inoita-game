@@ -256,7 +256,7 @@ test('all authored walks complete with actual Arcade collisions, including paral
       if (!f) continue;
       const routes: { route: WalkRoute; entry: ReturnType<typeof f.add>; id: string }[] = [];
       for (const a of flatten(action)) {
-        if (!('target' in a)) continue;
+        if (!('target' in a) || !a.target) continue;
         const entry = cast.get(a.target); if (!entry) continue;
         if (a.type === 'appear') { assert.ok(f.navigation.canPlace(entry.actor.shape(), a, entry.actor), `${script}/${a.target} appear`); entry.body.reset(a.x, a.y); entry.body.updateFromGameObject(); entry.body.enable = true; }
         if (a.type === 'leave') entry.body.enable = false;

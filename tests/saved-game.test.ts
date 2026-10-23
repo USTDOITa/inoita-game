@@ -13,7 +13,8 @@ function record(index=0){
     content.items,content.characterStats,content.battleCatalog,content.companions);
   session.gainMoney(321);session.hero!.setHealth(7);session.hero!.setMana(3);
   const map=content.world.maps.find(entry=>entry.id!==content.campaign.start.map)!;
-  const world:StoryWorldViewSnapshot={location:{map:map.id,x:16,y:24,facing:'west'},generatedEntities:[]};
+  const world:StoryWorldViewSnapshot={location:{map:map.id,x:16,y:24,facing:'west'},generatedEntities:[],scene:{map:map.id,
+    actors:[{id:'player',actor:content.campaign.start.actor,memberId:'player',x:16,y:24,facing:'west',visible:true}]}};
   return captureSaveGame(session,world,saveSummary(session,{id:map.id,name:map.name},{name:character.name,portrait:'assets/ui/menus/character-kiyan.png'}));
 }
 
@@ -34,6 +35,9 @@ test('invalid class, map, position and actors are rejected without changing the 
     (game:ReturnType<typeof record>)=>{game.world.location.map='missing';},
     (game:ReturnType<typeof record>)=>{game.world.location.x=NaN;},
     (game:ReturnType<typeof record>)=>{game.world.generatedEntities.push({id:'ghost',actor:'missing',x:0,y:0});},
+    (game:ReturnType<typeof record>)=>{game.world.scene.map='another-map';},
+    (game:ReturnType<typeof record>)=>{game.world.scene.actors[0]!.x++;},
+    (game:ReturnType<typeof record>)=>{game.world.scene.actors.push({...game.world.scene.actors[0]!});},
   ]){
     const saved=record();change(saved);const before=structuredClone(saved);
     assert.throws(()=>prepareSavedGame(saved,content));assert.deepEqual(saved,before);

@@ -117,7 +117,7 @@ export class StoryWorldState {
       case 'remove-enemy':this.enemyRemovals.push({enemyId:command.enemyId,map:command.map,all:command.all});return;
       case 'enemy-location':{
         if(command.location)this.enemyLocations.set(command.enemyId,{id:'story-located-'+command.enemyId,enemyId:command.enemyId,...command.location,
-          ...(command.scope==='visit'?{mapVisit:this.mapVisit+(command.location.map!==this.location?.map?1:0)}:{}),
+          mapVisit:command.scope==='visit'?this.mapVisit+(command.location.map!==this.location?.map?1:0):undefined,
           ...(command.respawn===false?{respawn:false}:{})});
         else this.enemyLocations.delete(command.enemyId);return;
       }
@@ -126,8 +126,10 @@ export class StoryWorldState {
       case 'place':{
         const entity=command.entity;
         if(!entity.id||!entity.map||!entity.actor||!Number.isFinite(entity.x)||!Number.isFinite(entity.y))throw new Error('剧情角色位置无效');
+        // 常驻登记必须显式清掉旧的访问寿命：同一实例可能先由演出按 visit 登记，
+        // 后续原版命令再把它永久摆出来；只靠对象展开会把旧的 mapVisit 留下来。
         this.entities.set(entity.id,{...this.entities.get(entity.id),...entity,removed:false,
-          ...(command.scope==='visit'?{mapVisit:this.mapVisit+(entity.map!==this.location?.map?1:0)}:{})});
+          mapVisit:command.scope==='visit'?this.mapVisit+(entity.map!==this.location?.map?1:0):undefined});
         // 常驻登记（非访问作用域）把角色明确摆出来时，撤销这张图上「角色不在场」的旧标记：
         // 事件常先 remove-character 再在后面的节点里重新登记（event-162 → event-163 的波西娅）。
         if(command.scope!=='visit'&&entity.visible!==false&&entity.characterId)

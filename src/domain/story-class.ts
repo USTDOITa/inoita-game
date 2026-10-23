@@ -25,9 +25,13 @@ export interface StoryClassCatalog {
   classes: StoryClass[];
 }
 
-/** 职业决定装备与属性；剧情仍通过同一个主角身份引用凯恩。 */
+/** 职业决定装备与属性；剧情仍通过同一个主角身份引用凯恩。
+ *
+ *  职业外观只提供战斗动作（idle/walk/attack）；主角定义里的剧情姿态（lie-side、cry、
+ *  look-around 等）必须保留，否则剧情演出会报「角色动作缺少资源」。
+ */
 export function newStorySession(campaign: Campaign, hero: ActorDefinition, selected: StoryClass, items?: ItemCatalog, stats?:CharacterStatsCatalog, battle?:BattleCatalog, companions?:CompanionCatalog): Session {
-  const appearance = { ...hero, clips: selected.playerActor.clips,
+  const appearance = { ...hero, clips: { ...hero.clips, ...selected.playerActor.clips },
     effectAnchor: selected.playerActor.effectAnchor ?? hero.effectAnchor };
   const fighter=items&&stats?new BattleCharacter(selected.id,stats,items):undefined;
   return new Session(campaign, selected.player, { classId: selected.id, appearance }, items, fighter,battle,stats,companions);

@@ -4,17 +4,34 @@ import type { StoryWorldState, StoryEntityState } from './story-world.ts';
 
 /** 正常演出和调试预演共用角色落位、转场及事件完成的提交规则。 */
 export function storyCommitCommands(commit: StoryNodeCommit, world: StoryWorldState, changes: readonly StoryEntityState[]): StoryCommand[] {
-  const commands = [...commit.commands];
+  let commands = [...commit.commands];
   const run = commit.checkpoint.runs.find(candidate => candidate.id === commit.runId);
   const explicitTravel = commands.some(command => command.type === 'travel' || command.type === 'world' && command.command.kind === 'travel');
   const stage = commit.stage ?? run?.stage;
+  commands=commands.flatMap((command,index):StoryCommand[]=>{
+    if(command.type!=='world'||command.command.kind!=='place'||!stage)return [command];
+    const place=command.command;
+    const map=place.mapFromStage?stage.map:place.entity.map;
+    if(map!==stage.map)return [command];
+    const actor=stage.scene.actors.find(actor=>actor.worldEntityId===place.entity.id);
+    const dirty=changes.some(entity=>entity.id===place.entity.id&&entity.map===map);
+    const laterPlacement=commands.slice(index+1).some(candidate=>candidate.type==='world'&&candidate.command.kind==='place'
+      &&candidate.command.entity.id===place.entity.id&&(candidate.command.mapFromStage?stage.map:candidate.command.entity.map)===map);
+    // 同图最后一次落位承接演出的最终姿态，生命周期与后续删除、迁移仍由节点命令决定。
+    const projected:StoryCommand=dirty&&actor&&!actor.unpositioned&&!actor.removed&&!laterPlacement
+      ?{...command,command:{...place,entity:{...place.entity,x:actor.x,y:actor.y,facing:actor.facing,visible:actor.visible}}}:command;
+    if(!actor?.id.startsWith('entity:'))return [projected];
+    const previousId=actor.id.slice('entity:'.length);
+    if(previousId===place.entity.id)return [projected];
+    const existing=world.entity(previousId);
+    if(existing?.map&&existing.map!==map)return [projected];
+    return [{type:'world',command:{kind:'remove',id:previousId}},projected];
+  });
   const bindings: StoryCommand[] = [];
   for (const entity of changes) {
     if (!entity.map || !entity.actor || entity.x === undefined || entity.y === undefined) throw new Error('绑定剧情角色缺少地图与位置');
     const existing=world.entity(entity.id);
-    // 隐式绑定只是把当前舞台的角色名单写回世界，不能复活脚本已经明确移除的实体
-    // （event-57 的 done 节点会重发上一幕的 cast，把 scene-1 刚移除的路障写回来）。
-    // 内容要求复活时用显式 place / show，它们不受这条限制。
+    // 隐式走位只更新仍在本图的实例；复活或迁移由显式命令决定。
     if(existing?.removed)continue;
     if(existing?.map&&existing.map!==entity.map)continue;
     const persistent=existing?.map&&existing.actor&&existing.mapVisit===undefined;

@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { stageSnapshot } from './helpers/story-stage.ts';
 import assert from 'node:assert/strict';
 import { StoryRuntime, type StoryRuntimePort, type StoryRuntimeSnapshot, type StoryNodeCommit } from '../src/domain/story-runtime.ts';
 import type { StoryGraph, StoryNode } from '../src/domain/story-graph.ts';
@@ -170,12 +171,14 @@ test('repeated events keep one finished run and one occurrence record per event'
 });
 test('a committed semantic stage is supplied when restoring the following node', async () => {
   const h = harness(graph([node('setup', { type: 'next', target: { script: 'main', node: 'continue' } }), node('continue')]));
-  const stage = { type: 'stage' as const, map: 'camp', x: 3, y: 4, facing: 'east' as const, playerVisible: true,
-    cast: [{ id: 'guard', actor: 'soldier', x: 5, y: 6, facing: 'west' as const, visible: true }] };
+  const stage = stageSnapshot({ type: 'stage' as const, map: 'camp', x: 3, y: 4, facing: 'east' as const, playerVisible: true,
+    cast: [{ id: 'guard', actor: 'soldier', x: 5, y: 6, facing: 'west' as const, visible: true }] },
+    [{ id: 'entity:portal', actor: 'portal', worldEntityId: 'portal', x: 90, y: 20, facing: 'south', visible: true }]);
   h.port.present = async action => { if (action.id === 'continue') throw new Error('continue failed'); return { stage }; };
   await assert.rejects(h.runtime.start('main'), /continue failed/);
   h.port.present = async (_action, context) => { assert.deepEqual(context.stage, stage); return {}; };
-  await h.runtime.resume(); assert.deepEqual(h.runtime.snapshot().runs[0].stage, stage);
+  await h.runtime.resume(); assert.deepEqual(h.commits.at(-1)!.stage, stage);
+  assert.equal(h.runtime.snapshot().runs[0].stage, undefined);
 });
 test('repeat events reject late older producer sequences without storing all occurrence IDs', async () => {
   const data = graph([node('award', { type: 'end' }, 4)]); data.events[0].repeat = true;
@@ -228,4 +231,76 @@ test('a cancelled playback clears the port once and the next drain notifies agai
   h.port.present = async () => ({});
   assert.equal(await h.runtime.dispatch({ id: 'visit:1', sequence: 1, source: 'map-entry', map: 'camp' }), true);
   assert.deepEqual(h.locks, [true, false, true, false]);
+});
+
+test('authored stage declarations are never persisted as runtime scene checkpoints', async () => {
+  const first = node('declaration', { type: 'next', target: { script: 'main', node: 'after' } });
+  first.stage = { type: 'stage', map: 'camp', x: 0, y: 0, facing: 'south', playerVisible: true, cast: [] };
+  const h = harness(graph([first, node('after')]));
+  h.port.prepare = async (action, context) => {
+    if (action.id === 'declaration') assert.deepEqual(context.stage, first.stage);
+    else assert.equal(context.stage, undefined);
+  };
+  await h.runtime.start('main');
+  assert.equal(h.commits[0].checkpoint.runs[0].stage, undefined);
+  assert.equal(h.runtime.snapshot().version, 2);
+});
+
+test('invalid complete scene snapshots cannot be committed or restored', async () => {
+  const h = harness(graph([node('one', { type: 'end' }, 3)]));
+  const valid = stageSnapshot({ type: 'stage', map: 'camp', x: 0, y: 0, facing: 'south', playerVisible: true,
+    cast: [{ id: 'guard', actor: 'soldier', x: 8, y: 8, facing: 'south', visible: true }] });
+  const invalid = structuredClone(valid); invalid.scene.actors.push(structuredClone(invalid.scene.actors[0]));
+  h.port.present = async () => ({ stage: invalid });
+  await assert.rejects(h.runtime.start('main'));
+  assert.equal(h.balance(), 0); assert.equal(h.rolledBack(), 1);
+  for (const corrupt of [
+    (stage: typeof valid) => { stage.scene.map = 'elsewhere'; },
+    (stage: typeof valid) => { stage.bindings[1][1] = 'absent'; },
+    (stage: typeof valid) => { stage.bindings.push(['guard', 'player']); },
+    (stage: typeof valid) => { stage.scene.actors[1].x = Number.NaN; },
+    (stage: typeof valid) => { stage.x += 8; },
+    (stage: typeof valid) => { stage.cast[0].visible = false; },
+    (stage: typeof valid) => { delete (stage as Partial<typeof valid>).scene; },
+    (stage: typeof valid) => { stage.scenes=[structuredClone(stage.scene)]; },
+    (stage: typeof valid) => { const scene={...structuredClone(stage.scene),map:'elsewhere'};stage.scenes=[scene,scene]; },
+  ]) {
+    const saved = h.runtime.snapshot(); saved.runs[0].stage = structuredClone(valid); corrupt(saved.runs[0].stage);
+    assert.throws(() => h.runtime.restore(saved));
+    assert.equal(h.runtime.snapshot().runs[0].stage, undefined);
+  }
+});
+
+test('cancel preserves every background object at the last stable node and ignores late scene results', async () => {
+  const h = harness(graph([node('first', { type: 'next', target: { script: 'main', node: 'second' } }), node('second')]));
+  const stage = stageSnapshot({ type: 'stage', map: 'camp', x: 3, y: 4, facing: 'east', playerVisible: true, cast: [] }, [
+    { id: 'entity:open-chest', actor: 'chest', x: 12, y: 16, facing: 'south', visible: true },
+    { id: 'enemy:a', actor: 'enemy', enemyKey: 'a', enemyId: 'wolf', x: 32, y: 48, facing: 'west', visible: true },
+    { id: 'enemy:b', actor: 'enemy', enemyKey: 'b', enemyId: 'wolf', x: 64, y: 48, facing: 'east', visible: false },
+  ]);
+  let release!: (value: { stage: typeof stage }) => void;
+  h.port.present = async action => action.id === 'first' ? { stage } : new Promise(done => { release = done; });
+  const pending = h.runtime.start('main'); await tick();
+  h.runtime.cancel(); assert.equal(await pending, false);
+  const checkpoint = h.runtime.snapshot(); assert.deepEqual(checkpoint.runs[0].stage, stage);
+  h.port.present = async (_action, context) => { assert.deepEqual(context.stage, stage); return {}; };
+  await h.runtime.resume();
+  const late = structuredClone(stage); late.scene.actors.splice(1);
+  release({ stage: late }); await tick();
+  assert.deepEqual(h.commits.at(-1)!.stage, stage);
+  assert.equal(h.runtime.snapshot().runs[0].stage, undefined);
+});
+
+test('completed and deferred runs release full scene payloads after handing the final frame to commit',async()=>{
+  const stage=stageSnapshot({type:'stage',map:'camp',x:3,y:4,facing:'south',playerVisible:true,cast:[]},[
+    {id:'entity:gate',actor:'gate',x:80,y:120,facing:'south',visible:true}]);
+  for(const type of ['end','defer'] as const){
+    const h=harness(graph([node('one',{type})]));
+    h.port.present=async()=>({stage});
+    for(let count=0;count<10;count++)await h.runtime.start('main');
+    assert.equal(h.runtime.snapshot().runs.length,1);
+    assert.ok(h.runtime.snapshot().runs.every(run=>run.stage===undefined));
+    assert.equal(JSON.stringify(h.runtime.snapshot()).includes('entity:gate'),false);
+    assert.ok(h.commits.every(commit=>JSON.stringify(commit.stage)===JSON.stringify(stage)));
+  }
 });

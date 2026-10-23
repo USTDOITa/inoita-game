@@ -1,4 +1,6 @@
 import {prepareCombatRestore} from '../domain/combat-snapshot.ts';
+import type {SceneActorState,SceneSnapshot} from '../domain/scene-snapshot.ts';
+import {generateMapEntities} from '../domain/scene-visit.ts';
 import { SCENE_KEYS } from '../application/scene-keys.ts';
 import { StatusHud } from '../ui/phaser/status-hud.ts';
 import { worldZoom } from '../ui/viewport.ts';
@@ -14,15 +16,15 @@ import type { AssetLease } from '../application/assets.ts';
 import { Wardrobe } from '../rendering/wardrobe.ts';
 import type { EquipmentSlot } from '../domain/items.ts';
 import type { ActorDefinition } from '../domain/content.ts';
-import type { StoryStage } from '../domain/story-performance.ts';
+import type { StoryStageSnapshot } from '../domain/story-performance.ts';
 import { createEffect } from '../rendering/effects.ts';
 import type { StoryContext } from '../application/ports.ts';
 import { WorldEnemyRoster } from '../domain/world-enemies.ts';
 import { WorldCombat, type WorldCombatState } from './world-combat.ts';
 import { QuestEnemyWatch } from '../domain/quest-enemies.ts';
 import { parseDrops, rollChestLoot, type DropCatalog, type DropReward } from '../domain/drops.ts';
-import { canReachChest, CHEST_OPEN_MS, facesTarget, nearInteractable, nearInteractive, rollPlacement } from '../domain/chests.ts';
-import { parseSprings, rollSpring, rollSpringEffect, type SpringCatalog } from '../domain/springs.ts';
+import { canReachChest, CHEST_OPEN_MS, facesTarget, nearInteractable, nearInteractive } from '../domain/chests.ts';
+import { parseSprings, rollSpringEffect, type SpringCatalog } from '../domain/springs.ts';
 import { groundLootFor } from '../domain/ground-loot.ts';
 import { GroundLootView } from '../rendering/ground-loot.ts';
 import { PickupMessages } from '../rendering/pickup-messages.ts';
@@ -30,13 +32,13 @@ import { BasicAttackRepeat } from '../domain/basic-attack-repeat.ts';
 import { chainedStoryScripts, directStoryMaps, storyReachableScripts } from '../domain/story-entry.ts';
 import { buildEntryPlan } from '../application/entry-plan.ts';
 import { continueProgress, loadEntryPlan } from '../application/entry-loading.ts';
-import { planMapCombat, planMapVisuals, sharedEntryAssets, storyPresentationAssets, type WorldAssetInputs } from '../rendering/map-assets.ts';
+import { planMapCombat, planMapVisuals, potentialMapEnemyIds, sharedEntryAssets, storyPresentationAssets, type WorldAssetInputs } from '../rendering/map-assets.ts';
 import { uiTexture } from '../ui/phaser/widgets.ts';
 import { storyExitId } from '../domain/story-world.ts';
 import type { TravelDestination } from '../domain/content.ts';
 import type {StoryAudioState} from '../application/game-audio.ts';
 
-import { PLAYER_MOVE_SPEED, characterAssets, createCharacter, setCharacterClip } from '../rendering/characters.ts';
+import { PLAYER_MOVE_SPEED, characterAnimationState, characterAssets, createCharacter, setCharacterClip } from '../rendering/characters.ts';
 import { drawMapLayers, type MapLayerHandles } from '../rendering/map-layers.ts';
 import type { CharacterVisual } from '../rendering/characters.ts';
 import { loadSceneAssets, missingSceneAssets, retainLoadedSceneAssets } from '../rendering/scene-assets.ts';
@@ -65,12 +67,13 @@ export interface SceneOptions {
   onError?: (error: unknown) => void;
   signal?:AbortSignal;
   generatedEntities?:EntityPlacement[];
+  preparedScene?:SceneSnapshot;
   map: string;
   x: number;
   y: number;
   facing?: ExitFacing;
 }
-export interface StoryWorldViewSnapshot {location:TravelDestination;world?:WorldCombatState;generatedEntities:EntityPlacement[];audio?:StoryAudioState}
+export interface StoryWorldViewSnapshot {location:TravelDestination;world?:WorldCombatState;generatedEntities:EntityPlacement[];scene:SceneSnapshot;audio?:StoryAudioState}
 
 /** 任务图标，浮在人物头顶。 */
 interface QuestMarker {
@@ -228,21 +231,15 @@ export class WorldScene extends Phaser.Scene {
     const [map,rawDrops,rawSprings] = await Promise.all([this.app.content.map(reference.file, signal),this.app.content.drops(signal),this.app.content.springs(signal)]);
     signal.throwIfAborted();
     this.map = map;
-    this.app.session.enterMap(map.id,map.questItemSpawns??[],map);
+    this.app.session.enterMap(map.id,map.questItemSpawns??[],map,map.enemySpawns);
     this.dropCatalog=parseDrops(rawDrops,this.app.items,this.app.battleCatalog.enemies.map(enemy=>enemy.id));
     this.springCatalog=parseSprings(rawSprings);
-    // 剧情摆放按人物身份覆盖静态人物；宝箱按原版规则每次进图重掷。
-    const authored = campaign.placements.filter(p => p.map === map.id);
-    const placed = options.generatedEntities?[]:map.entities.filter(p => !authored.some(a => a.characterId&&p.characterId?a.characterId===p.characterId:a.actor===p.actor))
-      .map(p => rollPlacement(p, Math.random)).filter(p => p !== undefined);
-    // 泉水档位按角色等级重掷：摆放记录里那个只是最低档的外观，等级越高越可能喝到杂的。
-    const springs=this.springCatalog,level=this.app.session.hero?.level??1;
-    this.baseEntities = options.generatedEntities?structuredClone(options.generatedEntities):[...placed, ...authored].map(entity => entity.spring && springs
-      ? { ...entity, actor: rollSpring(springs, level, Math.random).id } : entity);
+    const generated=options.preparedScene?.visit?.generatedEntities??options.generatedEntities;
+    this.baseEntities=generated?structuredClone(generated):generateMapEntities(map,campaign,this.springCatalog,this.app.session.hero?.level??1,Math.random);
     this.entities=this.app.session.storyWorld.projectEntities(map.id,this.baseEntities,this.app.campaign.placements);
     // 入口只保证「落脚图」可玩；后续剧情地图交给 ensureStoryAssets 在开演前按需加载。
-    // 佣兵候选素材只在首次进入世界时并入主批次，之后由常驻租约保持。
-    const includeMercenaries=!this.app.mercenaryAssetsReady;
+    // 玩家侧战斗资源只在首次进入世界时并入主批次，之后由常驻租约保持。
+    const includeResidentCombat=!this.app.residentCombatReady;
     const plan = buildEntryPlan({
       currentMap: map,
       currentEntities: this.entities,
@@ -251,9 +248,9 @@ export class WorldScene extends Phaser.Scene {
       questStatus: id => this.app.session.status(id),
       activeScripts: this.activeStoryScripts(),
       checkpoint: options.checkpoint,
-      includeMercenaries
+      includeResidentCombat
     });
-    const planned=[...plan.shared,...plan.current.assets,...(plan.mercenaries??[])];
+    const planned=[...plan.shared,...plan.current.assets,...(plan.residentCombat??[])];
     // 有进图剧情时把加载页的最后一段留给剧情链预取：同一条进度条继续走完，
     // 不再先填满、再归零重来一次（那看起来就是第二个进度条）。
     const mapProgressEnd=plan.scripts.length?0.9:1;
@@ -273,11 +270,11 @@ export class WorldScene extends Phaser.Scene {
     }, { signal, start: options.initialEntry ? 0.5 : 0, end: mapProgressEnd });
     if(signal.aborted){loaded.currentLease.release();signal.throwIfAborted();}
     this.mapAssets = loaded.currentLease;
-    // 佣兵候选素材已经随主批次加载；再取一份只覆盖这些贴图的常驻租约，
-    // 地图租约被历史淘汰或场景关闭时不会把佣兵纹理一起删掉。
-    if(includeMercenaries){
-      this.app.mercenaryAssets=retainLoadedSceneAssets(this,(plan.mercenaries??[]).map(asset=>asset.key));
-      this.app.mercenaryAssetsReady=true;
+    // 玩家侧战斗资源已经随主批次加载；再取一份只覆盖这些贴图的常驻租约，
+    // 地图租约被历史淘汰或场景关闭时不会把战斗纹理一起删掉。
+    if(includeResidentCombat){
+      this.app.residentCombatAssets=retainLoadedSceneAssets(this,plan.residentCombat??[]);
+      this.app.residentCombatReady=true;
     }
     // 这张图已经由场景持有资源；运行时预取租约可以释放。
     this.app.releaseStoryPrefetch(map.id);
@@ -344,8 +341,17 @@ export class WorldScene extends Phaser.Scene {
     if(!drops)throw new Error('掉落目录尚未就绪');
     const roster=new WorldEnemyRoster(this.app.session,map,(campaign.enemyPlacements??[]).filter(enemy=>enemy.map===map.id),hero.level,
       new QuestEnemyWatch(this.app.session,drops.questItems),Math.random);
+    if(options.preparedScene?.visit){
+      const prepared=structuredClone(options.preparedScene.visit);
+      for(const enemy of prepared.roster.enemies){
+        const actor=options.preparedScene.actors.find(actor=>actor.enemyKey===enemy.key);
+        if(actor)Object.assign(enemy,{x:actor.x,y:actor.y});
+      }
+      roster.adoptPreparedState(prepared);
+    }
     this.combat=new WorldCombat(this,this.app,roster,hero,drops);
     await this.combat.start();
+    if(options.preparedScene){this.restoreScenePositions(options.preparedScene);this.combat.adoptStoryPositions(options.preparedScene.actors);}
     signal.throwIfAborted();
     if(options.checkpoint)await this.combat.restoreState(options.checkpoint,signal);
     this.minimap = new StoryMinimap(this, this.hud!, map);
@@ -442,6 +448,17 @@ export class WorldScene extends Phaser.Scene {
       storyWorld: session.storyWorld, companions: app.companions, party: session.party,
       hero: session.hero, playerBase: session.character.appearance
     };
+  }
+  /**
+   * 这张图战斗可能出现的全部敌人；进图预取和战斗开场共用同一份超集。
+   * 可破坏物掉落怪、剧情遭遇、泉水、宝箱怪与检查点敌人都包含在内。
+   */
+  combatEnemyIds(): string[] {
+    if (!this.map) return [];
+    return potentialMapEnemyIds(this.map, this.assetInputs(), {
+      scripts: this.activeStoryScripts(),
+      entities: this.entities
+    });
   }
   /** 读档/失败恢复时运行中的剧情游标，入口计划要一起预热。 */
   private activeStoryScripts(): string[] {
@@ -1143,9 +1160,30 @@ export class WorldScene extends Phaser.Scene {
     // 演出期间玩家不能操作；先把本图地面掉落收进背包，BOSS 战后演出切图不会丢奖励。
     this.collectMapGroundLoot();
   }
+captureStoryScene():SceneSnapshot {
+    if(!this.map||!this.player||!this.movement)throw new Error('正式地图尚未就绪');
+    const {session}=this.app;
+    const actors:SceneActorState[]=[this.player,...this.characters.filter(character=>character!==this.player)].map(character=>{
+      const player=character===this.player;
+      const visible=session.storyWorld.actorVisible(this.map!.id,character.entity.actor,character.entity.characterId)
+        &&session.visible(character.entity)&&!this.chestOpened(character);
+      const facing=player?this.facing:character.clipName?.match(/-(north|south|east|west)$/)?.[1] as Facing|undefined;
+      const animation=characterAnimationState(character);
+      return {id:player?'player':`entity:${character.entity.id}`,actor:character.entity.actor,
+        characterId:character.entity.characterId,worldEntityId:player?undefined:character.entity.id,
+        memberId:player?'player':undefined,...this.movement!.position(character),facing:facing??'south',visible,
+        flip:character.entity.flip,appearance:structuredClone(character.actor),clip:character.clipName??undefined,
+        alpha:character.container.alpha,animationProgress:animation.progress,
+        animationPlaying:animation.playing};
+    });
+    const visit=this.combat?.captureStoryVisit();
+    return {map:this.map.id,actors:[...actors,...this.combat?.captureStoryActors()??[]],
+      ...(visit?{visit:{generatedEntities:structuredClone(this.baseEntities),...visit}}:{})};
+  }
+
   captureStoryWorld():StoryWorldViewSnapshot {
     if(!this.map||!this.player||!this.movement)throw new Error('正式地图尚未就绪');
-    return {location:{map:this.map.id,...this.movement.position(this.player),facing:this.facing},world:this.combat?.captureState(),generatedEntities:structuredClone(this.baseEntities),audio:this.app.audio?.captureStoryAudio()};
+    return {location:{map:this.map.id,...this.movement.position(this.player),facing:this.facing},world:this.combat?.captureState(),generatedEntities:structuredClone(this.baseEntities),scene:this.captureStoryScene(),audio:this.app.audio?.captureStoryAudio()};
   }
   /**
    * 存档要连世界一起带走。换图途中（`loadingWorld`）与还没进图时没有完整的落点，
@@ -1158,7 +1196,7 @@ export class WorldScene extends Phaser.Scene {
     this.combat?.settleForSave();
     return {map:{id:this.map.id,name:this.map.name},world:this.captureStoryWorld()};
   }
-  private restartStoryWorld(location:TravelDestination,signal:AbortSignal,world?:WorldCombatState,generatedEntities?:EntityPlacement[],silent=false):Promise<void>{
+  private restartStoryWorld(location:TravelDestination,signal:AbortSignal,world?:WorldCombatState,generatedEntities?:EntityPlacement[],silent=false,preparedScene?:SceneSnapshot):Promise<void>{
     signal.throwIfAborted();
     return new Promise((resolve,reject)=>{
       let finished=false,timer:ReturnType<typeof setTimeout>|undefined;
@@ -1168,9 +1206,25 @@ export class WorldScene extends Phaser.Scene {
       // 场景重建既没报错也没就绪时（例如加载卡住），不能让调用方永远等下去。
       timer=setTimeout(()=>done(new Error('剧情世界切换超时')),30000);
       this.loadingWorld=true;
-      this.scene.restart({...location,checkpoint:world,generatedEntities,suppressEntry:true,silentEntry:silent,signal,onReady:()=>done(),onError:(error:unknown)=>done(error)} satisfies SceneOptions);
+      this.scene.restart({...location,checkpoint:world,generatedEntities,preparedScene,suppressEntry:true,silentEntry:silent,signal,onReady:()=>done(),onError:(error:unknown)=>done(error)} satisfies SceneOptions);
     });
   }
+private restoreScenePositions(snapshot:SceneSnapshot):void {
+    if(snapshot.map!==this.map?.id||!this.movement)return;
+    const placements:{visual:CharacterVisual;position:{x:number;y:number};enabled:boolean}[]=[];
+    for(const actor of snapshot.actors){
+      if(!actor.worldEntityId||actor.removed||actor.unpositioned)continue;
+      const character=this.characters.find(character=>character.entity.id===actor.worldEntityId);
+      if(!character)continue;
+      // 人物装备由正式世界的 Wardrobe 重建；地图实体外观是可重新加载的静态资源。
+      if(actor.appearance){character.actor=structuredClone(actor.appearance);this.movement.refreshShape(character);}
+      this.setClip(character,`idle-${actor.facing}`);
+      character.container.setAlpha(actor.alpha??1).setVisible(actor.visible&&!this.performing);
+      placements.push({visual:character,position:{x:actor.x,y:actor.y},enabled:actor.visible&&!this.performing});
+    }
+    this.movement.placeAll(placements,{evictOccupied:true,displaceable:this.player?[this.player]:[]});
+  }
+
   async restoreStoryWorld(snapshot:unknown,signal:AbortSignal):Promise<void>{
     const state=snapshot as StoryWorldViewSnapshot;
     if(!state?.location?.map)throw new Error('正式剧情世界快照无效');
@@ -1179,18 +1233,20 @@ export class WorldScene extends Phaser.Scene {
       this.baseEntities=structuredClone(state.generatedEntities);
       await this.projectStoryWorld(undefined,signal,state.location);
       if(state.world)await this.combat?.restoreState(state.world,signal);
+      if(state.scene)this.restoreScenePositions(state.scene);
       signal.throwIfAborted();if(state.audio)this.app.audio?.restoreStoryAudio(state.audio);this.syncControlledCharacter(true);return;
     }
-    await this.restartStoryWorld(state.location,signal,state.world,state.generatedEntities);
+    await this.restartStoryWorld(state.location,signal,state.world,state.generatedEntities,false,state.scene);
     signal.throwIfAborted();if(state.audio)this.app.audio?.restoreStoryAudio(state.audio);
   }
-  async projectStoryWorld(_stage:StoryStage|undefined,signal:AbortSignal,restoredLocation?:TravelDestination):Promise<void>{
+  async projectStoryWorld(stage:StoryStageSnapshot|undefined,signal:AbortSignal,restoredLocation?:TravelDestination):Promise<void>{
     signal.throwIfAborted();
     const location=this.app.session.storyWorld.currentLocation;
     const signature=JSON.stringify(location);
     if(location&&location.map!==this.map?.id){
       // 只有演出舞台真的在画面上时才静默重建；纯对白换图没有舞台铺底，仍显示加载界面。
-      await this.restartStoryWorld(location,signal,undefined,undefined,this.scene.isActive(SCENE_KEYS.storyStage));
+      const prepared=stage?.scene.map===location.map?stage.scene:undefined;
+      await this.restartStoryWorld(location,signal,undefined,undefined,this.scene.isActive(SCENE_KEYS.storyStage),prepared);
       return;
     }
     if(!this.map||!this.player||!this.movement)throw new Error('正式地图尚未就绪');
@@ -1231,6 +1287,7 @@ export class WorldScene extends Phaser.Scene {
     signal.throwIfAborted();
     // 新队员生成与换装（碰撞盒可能刷新）之后再收拢队伍；回滚路径由 restoreState 逐名恢复。
     if(playerLocation){if(!restoredLocation)this.combat?.regroupPartyAroundHero();this.syncControlledCharacter(true);}
+    if(stage?.scene.map===this.map.id)this.combat?.adoptStoryPositions(stage.scene.actors);
     this.refreshState();this.syncHud();
   }
   private async projectEquipment(signal:AbortSignal):Promise<void>{

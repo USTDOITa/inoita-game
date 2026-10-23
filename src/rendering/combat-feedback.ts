@@ -1,12 +1,10 @@
 import Phaser from 'phaser';
 import type { BattleCatalog } from '../domain/battle.ts';
-import { damageDigits, digitSequence, feedbackEffects, feedbackPlan, reusableDigit, type CombatHitFeedback, type CombatFeedbackSelection } from '../domain/combat-feedback.ts';
+import { damageDigits, digitSequence, feedbackPlan, reusableDigit, type CombatHitFeedback, type CombatFeedbackSelection } from '../domain/combat-feedback.ts';
 import type { CharacterVisual } from './characters.ts';
-import { createEffect, effectAssets } from './effects.ts';
+import { createEffect } from './effects.ts';
 
-export function combatFeedbackAssets(catalog:BattleCatalog) {
-  return effectAssets(Object.fromEntries(feedbackEffects(catalog.feedback).map(name=>[name,catalog.attackEffects[name]])));
-}
+export { combatFeedbackAssets } from './combat-asset-descriptors.ts';
 interface Digit {effect:Phaser.GameObjects.Container;sequence:number[]}
 
 /** 命中反馈由地图持有，攻击动作结束或中断不提前销毁已生成的数字。 */

@@ -18,6 +18,8 @@ import { organizedInventory } from '../src/domain/inventory.ts';
 // 而无浏览器那条 agent 通道靠的就是「不引入」。这条约束由本文件的 import 本身守着。
 const read = <T>(file: string): T => JSON.parse(readFileSync(new URL(`../public/content/${file}.json`, import.meta.url), 'utf8')) as T;
 const campaign = read<Campaign>('campaign'), world = read<{ actors: Record<string, never> }>('world');
+// 调试目录是独立产物，GM 测试与运行时一样显式挂载。
+campaign.debugStory = read<Campaign['debugStory']>('debug/start');
 const classes = read<StoryClassCatalog>('story-classes'), items = read<ItemCatalog>('items');
 const stats = read<CharacterStatsCatalog>('character-stats'), battle = read<BattleCatalog>('battle');
 const companions = read<CompanionCatalog>('companions');

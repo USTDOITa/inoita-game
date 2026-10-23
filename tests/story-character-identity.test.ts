@@ -4,7 +4,9 @@ import test from 'node:test';
 import type {Campaign} from '../src/domain/campaign.ts';
 import {Session} from '../src/domain/session.ts';
 import {StoryDirector,type StoryUI} from '../src/domain/story-director.ts';
-import {resolveStoryStage,type StoryStage} from '../src/domain/story-performance.ts';
+import type {StoryStage} from '../src/domain/story-performance.ts';
+import {resolveStoryScene} from '../src/domain/story-scene.ts';
+import {stageSnapshot} from './helpers/story-stage.ts';
 
 const campaign=JSON.parse(readFileSync(new URL('../public/content/campaign.json',import.meta.url),'utf8')) as Campaign;
 
@@ -65,5 +67,5 @@ test('a stage inherits the position of the named character rather than the first
     {id:'south',characterId:'south',actor:'guard',x:40,y:72,facing:'north',visible:true},
   ]};
   const declaration:StoryStage={...current,mapFromWorld:true,cast:[{...current.cast[1],x:8,y:8,inheritPosition:true}]};
-  assert.equal(resolveStoryStage(declaration,current).cast[0].y,72);
+  assert.equal(resolveStoryScene(declaration,stageSnapshot(current).scene).cast[0].y,72);
 });

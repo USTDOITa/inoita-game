@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {registerHooks} from 'node:module';
 import test from 'node:test';
-import type {StoryStage} from '../src/domain/story-performance.ts';
+import {stageSnapshot} from './helpers/story-stage.ts';
 import type {SceneOptions} from '../src/scenes/world-scene.ts';
 
 const hook=registerHooks({resolve(specifier,context,next){return specifier==='phaser'?{url:'data:text/javascript,export default {Scene:class{},Physics:{Arcade:{Body:class{}}},BlendModes:{NORMAL:0,ADD:1,MULTIPLY:2,SCREEN:3}}',shortCircuit:true}:next(specifier,context);}});
@@ -14,22 +14,29 @@ function fixture(){
   let stageActive=true;let projected:unknown[]=[];let lastRestart:SceneOptions|undefined;
   const assetLoads:unknown[][]=[];
   const player={container:{active:true,x:10,y:20},entity:{id:'player'}};
-  const positions:unknown[]=[];let restarts=0,stops=0,regroups=0;
+  const positions:unknown[]=[],adopted:unknown[][]=[];let restarts=0,stops=0,regroups=0;
   const state={map:{id:'home',name:'Home'},player,baseEntities:[],characters:[] as unknown[],entities:[],storyEntityAssets:[],projectedActorIds:new Set(),destroyed:false,
     app:{campaign:{placements:[]},session:{storyWorld:{get currentLocation(){return location;},projectEntities:()=>projected,actorAppearance:(actor:string)=>actor,entity:()=>undefined},visible:()=>true},world:{actors:{} as Record<string,unknown>}},
     movement:{placeAll:(values:{position:{x:number;y:number}}[])=>{positions.push(values);for(const value of values){player.container.x=value.position.x;player.container.y=value.position.y;}}},
-    combat:{regroupPartyAroundHero(){regroups++;},async projectStoryEnemies(){},async restoreState(){}},
+    combat:{regroupPartyAroundHero(){regroups++;},async projectStoryEnemies(){},async restoreState(){},adoptStoryPositions(actors:unknown[]){adopted.push(actors);}},
     loadAssets:async(...args:unknown[])=>{assetLoads.push(args);return {release(){}};},refreshState(){},syncHud(){},setClip(){},syncControlledCharacter(){},
     scene:{isActive(){return stageActive;},restart(options:SceneOptions){restarts++;lastRestart=options;options.onReady?.();},stop(){stops++;}}
   };
   const scene=Object.setPrototypeOf(state,WorldScene.prototype) as unknown as InstanceType<typeof WorldScene>;
-  return {scene,state,positions,location:(value:typeof location)=>{location=value;},stageActive:(value:boolean)=>{stageActive=value;},projected:(value:unknown[])=>{projected=value;},restarts:()=>restarts,stops:()=>stops,regroups:()=>regroups,lastRestart:()=>lastRestart,assetLoads};
+  return {scene,state,positions,adopted,location:(value:typeof location)=>{location=value;},stageActive:(value:boolean)=>{stageActive=value;},projected:(value:unknown[])=>{projected=value;},restarts:()=>restarts,stops:()=>stops,regroups:()=>regroups,lastRestart:()=>lastRestart,assetLoads};
 }
 
 test('a cinematic stage cannot travel the formal map or adopt uncommitted player positions',async()=>{
   const f=fixture();
-  await f.scene.projectStoryWorld({map:'movie-map',x:200,y:300} as StoryStage,new AbortController().signal);
+  await f.scene.projectStoryWorld(stageSnapshot({type:'stage',map:'movie-map',x:200,y:300,facing:'south',playerVisible:true,cast:[]}),new AbortController().signal);
   assert.equal(f.restarts(),0);assert.deepEqual([f.state.player.container.x,f.state.player.container.y],[10,20]);
+});
+
+test('same-map projection adopts surviving combat actors after ordinary world projection',async()=>{
+  const f=fixture(),performed=stageSnapshot({type:'stage',map:'home',x:10,y:20,facing:'south',playerVisible:true,cast:[]});
+  performed.scene.actors.push({id:'member:ally',actor:'ally',memberId:'ally',x:50,y:60,facing:'east',visible:true});
+  await f.scene.projectStoryWorld(performed,new AbortController().signal);
+  assert.deepEqual(f.adopted,[performed.scene.actors]);
 });
 
 test('a committed travel position projects once and subsequent nodes retain ordinary movement',async()=>{

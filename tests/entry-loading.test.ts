@@ -53,11 +53,11 @@ test('entry loading covers only the current map and finishes monotonically', asy
   assert.ok(log.indexOf('sounds:sound-1') > log.indexOf('portraits:portrait.png'));
 });
 
-test('first-entry mercenary assets join the current-map load without restarting progress', async () => {
+test('first-entry resident combat assets join the current-map load without restarting progress', async () => {
   const log: string[] = [];
-  const mercenaries = [{ kind: 'image' as const, key: 'merc-0', file: 'merc-0.png' }];
-  await loadEntryPlan(plan({ mercenaries }), ports(log), { signal: new AbortController().signal });
-  assert.deepEqual(log.filter(entry => entry.startsWith('load:')), ['load:shared,current-0,current-1,merc-0']);
+  const residentCombat = [{ kind: 'image' as const, key: 'resident-0', file: 'resident-0.png' }];
+  await loadEntryPlan(plan({ residentCombat }), ports(log), { signal: new AbortController().signal });
+  assert.deepEqual(log.filter(entry => entry.startsWith('load:')), ['load:shared,current-0,current-1,resident-0']);
   const values = reports(log);
   assert.deepEqual(values, [...values].sort((a, b) => a - b));
   assert.ok(values.includes(0.88));
@@ -66,8 +66,8 @@ test('first-entry mercenary assets join the current-map load without restarting 
 
 test('a failure after the current map lease is acquired releases it', async () => {
   const log: string[] = [];
-  const mercenaries = [{ kind: 'image' as const, key: 'merc-0', file: 'merc-0.png' }];
-  await assert.rejects(loadEntryPlan(plan({ mercenaries }), ports(log, { failPortraits: true }), {
+  const residentCombat = [{ kind: 'image' as const, key: 'resident-0', file: 'resident-0.png' }];
+  await assert.rejects(loadEntryPlan(plan({ residentCombat }), ports(log, { failPortraits: true }), {
     signal: new AbortController().signal
   }));
   assert.ok(log.some(entry => entry.startsWith('release:shared')));

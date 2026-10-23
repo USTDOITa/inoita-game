@@ -229,6 +229,72 @@ test('a breaking spawn that becomes a quest target restores the original enemy',
   assert.equal(roster.source('slot')?.enemyId,'enemy-base');
 });
 
+test('re-entering a different map respawns ordinary enemies but not permanent ones',()=>{
+  const mapA={id:'map-a',enemySpawns:[
+    {id:'map-a-spawn-1',enemyId:'enemy-normal',x:0,y:0},
+    {id:'map-a-spawn-2',enemyId:'enemy-permanent',x:16,y:0,respawn:false as const}
+  ]} as unknown as WorldMap;
+  const mapB={id:'map-b',enemySpawns:[]} as unknown as WorldMap;
+  const session=new Session(campaign);
+  const first=new WorldEnemyRoster(session,mapA,[],1);
+  const normal=first.source('map-a-spawn-1')!,permanent=first.source('map-a-spawn-2')!;
+  session.enemyDefeated(normal);session.enemyDefeated(permanent);
+  assert.equal(session.canSpawnEnemy(normal),false);
+  assert.equal(session.canSpawnEnemy(permanent),false);
+
+  new WorldEnemyRoster(session,mapB,[],1);
+  const back=new WorldEnemyRoster(session,mapA,[],1);
+  assert.ok(back.source('map-a-spawn-1'),'重新进图后普通怪恢复');
+  assert.equal(back.enemies.some(enemy=>enemy.key==='map-a-spawn-2'),false,'一次性敌人不恢复');
+
+  // 同一张图的场景重建（读档、检查点、同图演出）不是新访问，不能把刚杀的怪刷回来。
+  session.enemyDefeated(back.source('map-a-spawn-1')!);
+  const rebuilt=new WorldEnemyRoster(session,mapA,[],1);
+  assert.equal(rebuilt.enemies.some(enemy=>enemy.key==='map-a-spawn-1'),false);
+});
+
+test('restored breakable identities stay pinned to the saved roster',()=>{
+  const map={id:'breakable-map',breakableSpawn:'jar' as const,enemySpawns:[
+    {id:'slot-a',enemyId:'enemy-base-a',x:0,y:0,breakableEligible:true},
+    {id:'slot-b',enemyId:'enemy-base-b',x:16,y:0,breakableEligible:true}
+  ]} as unknown as WorldMap;
+  const saved=new WorldEnemyRoster(new Session(campaign),map,[],1,undefined,()=>0).captureState();
+  // 新名册构造时本来会把两个槽都解析成原怪；恢复后必须沿用存档里的罐子身份。
+  const restored=new WorldEnemyRoster(new Session(campaign),map,[],1,undefined,()=>0.9);
+  assert.deepEqual(restored.enemies.map(enemy=>enemy.enemyId),['enemy-base-a','enemy-base-b']);
+  restored.restoreState(saved);
+  assert.deepEqual(restored.spawns.map(spawn=>spawn.enemyId),['enemy-jar-1','enemy-jar-1']);
+  assert.deepEqual(restored.refresh(),{added:[],removed:[]},'恢复后不能把同 key 当成换怪');
+  assert.equal(restored.source('slot-a')?.enemyId,'enemy-jar-1','死亡结算读到的也是恢复后的身份');
+});
+
+test('restored original identities are pinned even when a fresh roll would replace them',()=>{
+  const map={id:'breakable-map',breakableSpawn:'jar' as const,enemySpawns:[
+    {id:'slot',enemyId:'enemy-base',x:0,y:0,breakableEligible:true}
+  ]} as unknown as WorldMap;
+  const saved=new WorldEnemyRoster(new Session(campaign),map,[],1,undefined,()=>0.9).captureState();
+  const restored=new WorldEnemyRoster(new Session(campaign),map,[],1,undefined,()=>0);
+  assert.equal(restored.source('slot')?.enemyId,'enemy-jar-1','构造时本来会掷成罐子');
+  restored.restoreState(saved);
+  assert.equal(restored.spawns[0]?.enemyId,'enemy-base');
+  assert.deepEqual(restored.refresh(),{added:[],removed:[]});
+});
+
+test('a same-key identity change does not reroll the breakable cache',()=>{
+  const map={id:'breakable-map',breakableSpawn:'jar' as const,enemySpawns:[
+    {id:'slot',enemyId:'enemy-base',x:0,y:0,breakableEligible:true}
+  ]} as unknown as WorldMap;
+  let rolls=0;
+  const roster=new WorldEnemyRoster(new Session(campaign),map,[],1,undefined,()=>rolls++===0?0:0.9);
+  assert.equal(roster.source('slot')?.enemyId,'enemy-jar-1');
+  roster.enemies[0]!.enemyId='enemy-base';
+  const first=roster.refresh();
+  assert.deepEqual(first.removed,['slot']);
+  assert.deepEqual(first.added.map(enemy=>enemy.enemyId),['enemy-jar-1']);
+  assert.deepEqual(roster.refresh(),{added:[],removed:[]},'同 key 换身份后不能重掷成另一种身份');
+  assert.equal(roster.source('slot')?.enemyId,'enemy-jar-1');
+});
+
 test('a second encounter occurrence with the same cast owns fresh enemy resources',()=>{
   const session=new Session(campaign),map=content('maps/shadow-forest-west.json') as WorldMap;
   const roster=new WorldEnemyRoster(session,map,[],1),enemyId=roster.spawns[0].enemyId;

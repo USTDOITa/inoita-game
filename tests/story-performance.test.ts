@@ -1,4 +1,5 @@
-import {resolveStoryStage} from '../src/domain/story-performance.ts';
+import {resolveStoryScene} from '../src/domain/story-scene.ts';
+import {stageSnapshot} from './helpers/story-stage.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -178,7 +179,7 @@ test('a current-scene declaration resolves to the live map and actor positions b
       {id:'absent',actor:'absent',x:8,y:8,facing:'south' as const,visible:true,inheritPosition:true},
       {id:'arrival',actor:'guard',x:200,y:72,facing:'north' as const,visible:true},
     ]};
-  const stage=resolveStoryStage(declaration,current);
+  const stage=resolveStoryScene(declaration,stageSnapshot(current).scene);
   assert.equal(stage.map,'actual-battlefield');assert.equal(stage.mapFromWorld,undefined);
   assert.deepEqual([stage.x,stage.y,stage.facing],[120,88,'east']);
   assert.deepEqual([stage.cast[0].x,stage.cast[0].y,stage.cast[0].facing],[60,40,'west']);

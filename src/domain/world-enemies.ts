@@ -82,8 +82,10 @@ export class WorldEnemyRoster extends EnemyRoster {
   private readonly breakableSpawn?:'bush'|'jar';
   /** 生产场景传 Math.random；测试和离线验证默认不替换，结果稳定可复现。 */
   private readonly random:()=>number;
-  /** 本次进图每个静态生成槽的替换结果；死亡/刷新后清掉，重新掷。 */
+  /** 本次进图每个静态生成槽的替换结果；槽位真正离场时清掉，重新掷。 */
   private readonly breakableRolls=new Map<string,string>();
+  /** 可能被可破坏物替换的静态槽，按生成点 id 索引；恢复名册时据此对齐替换结果。 */
+  private readonly breakableSlots:ReadonlyMap<string,WorldSpawn>;
   /** 本次进图累计的任务关键敌人；只增不减，避免任务完成时撤掉正在交战的怪。 */
   private readonly questSpawnIds=new Set<string>();
   private emptyReported=false;
@@ -112,7 +114,11 @@ export class WorldEnemyRoster extends EnemyRoster {
     this.breakableSpawn=map.breakableSpawn;
     this.random=random;
     this.rawMapSpawns=map.enemySpawns??[];
-    session.enterMap(map.id,map.questItemSpawns??[],map);
+    // 只索引原始地图槽和战役追加槽；读档恢复时要靠它把名册里的身份写回替换缓存。
+    this.breakableSlots=new Map([...this.rawMapSpawns,...questSpawns]
+      .filter(spawn=>'breakableEligible' in spawn&&spawn.breakableEligible)
+      .map(spawn=>[spawn.id,spawn]));
+    session.enterMap(map.id,map.questItemSpawns??[],map,map.enemySpawns);
     this.setPartySize(session.party?.activeSize??1,[]);
     this.collectQuestSpawns();
     this.bandSpawns=selectMapSpawns(map,questSpawns,heroLevel,{
@@ -121,6 +127,35 @@ export class WorldEnemyRoster extends EnemyRoster {
     for(const spawn of this.spawns)this.sources.set(spawn.id,spawn);
     this.refresh();
   }
+capturePreparedState():{roster:ReturnType<EnemyRoster['captureState']>;breakableRolls:[string,string][]}{
+    return {roster:this.captureState(),breakableRolls:[...this.breakableRolls]};
+  }
+  adoptPreparedState(state:{roster:ReturnType<EnemyRoster['captureState']>;breakableRolls:[string,string][]}):void{
+    this.breakableRolls.clear();for(const [id,enemy] of state.breakableRolls)this.breakableRolls.set(id,enemy);
+    this.restoreState(state.roster);
+    this.refresh();
+  }
+  /**
+   * 恢复名册时，可破坏物槽的替换结果必须跟着名册里的身份走。
+   *
+   * `breakableRolls` 只在本次访问内有效，不写进存档；读档/检查点恢复会新建一个已经
+   * 预掷过随机数的名册。若不把恢复条目的 `enemyId` 写回缓存，下一次 `refresh`
+   * 会把同 key 当成“换了只怪”，先删名册再按新随机身份加回，与场上实例错开。
+   */
+  override restoreState(state:ReturnType<EnemyRoster['captureState']>):void{
+    super.restoreState(state);
+    for(const placed of this.enemies){
+      const slot=this.breakableSlots.get(placed.key);
+      if(!slot)continue;
+      // 任务关键敌人由 breakableSpawnFor 强制恢复原怪并自行删缓存，这里保持一致。
+      if(this.questSpawnIds.has(slot.enemyId))this.breakableRolls.delete(placed.key);
+      else this.breakableRolls.set(placed.key,placed.enemyId);
+    }
+    // source() 要给死亡结算提供恢复后的真实敌人身份，不能停留在构造时的随机结果。
+    this.sources.clear();
+    for(const spawn of this.spawns)this.sources.set(spawn.id,spawn);
+  }
+
   source(id:string):WorldSpawn|undefined{return this.sources.get(id);}
   completedEncounters():readonly StoryEncounter[]{
     return this.session.storyWorld.activeEncounters.filter(encounter=>encounter.map===this.mapId&&encounter.spawns.length>0&&
@@ -142,9 +177,13 @@ export class WorldEnemyRoster extends EnemyRoster {
     const current=new Map(spawns.map(spawn=>[spawn.id,spawn]));
     for(const placed of [...this.enemies]){
       const spawn=current.get(placed.key)??this.sources.get(placed.key);
-      if(spawn&&(!active.has(spawn.id)||!this.session.canSpawnEnemy(spawn)||placed.enemyId!==spawn.enemyId)){
-        super.removeEnemy(placed.key);removed.push(placed.key);this.breakableRolls.delete(placed.key);
-      }
+      if(!spawn)continue;
+      // 槽位离场（死亡、隐藏、从本次生成集合消失）才丢弃替换结果，下次出现重掷。
+      const leaving=!active.has(spawn.id)||!this.session.canSpawnEnemy(spawn);
+      // 同 key 换身份只是这一槽改了外观，缓存仍是本次访问的结果，下一帧不能再掷一次。
+      if(!leaving&&placed.enemyId===spawn.enemyId)continue;
+      super.removeEnemy(placed.key);removed.push(placed.key);
+      if(leaving)this.breakableRolls.delete(placed.key);
     }
     for(const spawn of spawns){
       this.sources.set(spawn.id,spawn);
