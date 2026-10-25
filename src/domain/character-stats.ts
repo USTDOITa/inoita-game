@@ -214,7 +214,7 @@ export class BattleCharacter {
           if(!use.requiresEnhanced){target.numbers.enhancementScroll??=source.item;target.numbers.enhancementUses--;}
         }
         if(use.kind==='socket'&&target?.numbers)target.numbers.gemModifiers.push(...source.numbers!.modifiers.map(m=>({...m})));
-        if(use.kind==='reset-attributes')this.allocation=emptyAttributes();
+        if(use.kind==='reset-attributes'){this.allocation=emptyAttributes();this.allocationRevision++;}
         return this.skillUseHandler?.(source.item,skill);
       }
     };
@@ -225,11 +225,12 @@ export class BattleCharacter {
     return structuredClone({level:this.currentLevel,allocation:this.allocation,health:this.health,mana:this.mana,
       resourceLimits:this.combatResourceLimits,experience:this.experience,bonusSkillPoints:this.bonusSkillPoints,spentSkillPoints:this.spentSkillPoints});
   }
+  private allocationRevision = 0;
   restoreState(state:BattleCharacterState):void {
     const restored=structuredClone(state);
     this.currentLevel=restored.level;this.allocation=restored.allocation;this.health=restored.health;this.mana=restored.mana;
     this.combatResourceLimits=restored.resourceLimits;this.experience=restored.experience;
-    this.bonusSkillPoints=restored.bonusSkillPoints;this.spentSkillPoints=restored.spentSkillPoints;
+    this.bonusSkillPoints=restored.bonusSkillPoints;this.spentSkillPoints=restored.spentSkillPoints;this.allocationRevision++;
   }
   get level(){return this.currentLevel;}
   get allocated():PrimaryAttributes{return {...this.allocation};}
@@ -242,9 +243,14 @@ export class BattleCharacter {
   }
   grantSkillPoint():void {this.bonusSkillPoints++;this.changed();}
   resetSkillPoints():void {this.bonusSkillPoints=0;this.spentSkillPoints=0;this.changed();}
+  private panelCache?:{bagRevision:number;level:number;allocationRevision:number;panel:CharacterPanel};
   get panel():CharacterPanel {
-    return calculateCharacter(this.catalog,this.bag.catalog,this.classId,this.level,this.allocation,
+    const cached=this.panelCache;
+    if(cached&&cached.bagRevision===this.bag.revision&&cached.level===this.currentLevel&&cached.allocationRevision===this.allocationRevision)return cached.panel;
+    const panel=calculateCharacter(this.catalog,this.bag.catalog,this.classId,this.level,this.allocation,
       Object.fromEntries(Object.entries(this.bag.equipment).map(([slot,id])=>[slot,this.bag.get(id!)])));
+    this.panelCache={bagRevision:this.bag.revision,level:this.currentLevel,allocationRevision:this.allocationRevision,panel};
+    return panel;
   }
   get player(){const p=this.panel,limits=this.combatResourceLimits??p;return {level:this.level,health:this.health,maxHealth:limits.maxHealth,mana:this.mana,maxMana:limits.maxMana,experience:this.experience,nextLevelExperience:this.catalog.experience[this.level-1]??0};}
   subscribe(listener:()=>void):()=>void {this.listeners.add(listener);return ()=>{this.listeners.delete(listener);};}
@@ -293,16 +299,16 @@ export class BattleCharacter {
     const total=PRIMARY_STATS.reduce((sum,stat)=>sum+delta[stat],0);
     if(!Number.isSafeInteger(total)||total>this.statPoints)throw new Error('没有足够的能力点');
     if(total===0)return;
-    for(const stat of PRIMARY_STATS)this.allocation[stat]+=delta[stat];
+    for(const stat of PRIMARY_STATS)this.allocation[stat]+=delta[stat];this.allocationRevision++;
     this.changed();
   }
   allocate(stat:PrimaryStat,delta:1|-1):void {
     if(!PRIMARY_STATS.includes(stat)||(delta!==1&&delta!==-1))throw new Error('属性操作无效');
     if(delta===1&&this.statPoints<1)throw new Error('没有可分配的属性点');
     if(delta===-1&&this.allocation[stat]<1)throw new Error('该属性没有已分配的点数');
-    this.allocation[stat]+=delta;this.changed();
+    this.allocation[stat]+=delta;this.allocationRevision++;this.changed();
   }
-  resetAttributes():void {this.allocation=emptyAttributes();this.changed();}
+  resetAttributes():void {this.allocation=emptyAttributes();this.allocationRevision++;this.changed();}
   private initializeItem(entry:ItemInstance,drop?:{grade?:EquipmentGradeSeed;sockets?:boolean}):void {
     const random=itemRandom(`battle:${this.classId}:${entry.item}:${entry.id}`);
     const roll=(range:ModifierRange):Modifier=>({stat:range.stat,value:random(range.min,range.max)});

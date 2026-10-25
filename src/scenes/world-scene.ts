@@ -153,6 +153,18 @@ export class WorldScene extends Phaser.Scene {
   private readonly pickupRecipients=new Map<string,CharacterVisual>();
   /** 普攻连打门控：发起过一次普攻后，站定就自动接下一击，摇杆一动即停。 */
   private readonly autoAttack=new BasicAttackRepeat();
+  private mapRegionEvents: import('../domain/story-graph.ts').StoryEvent[] = [];
+  private mapNearEvents: import('../domain/story-graph.ts').StoryEvent[] = [];
+  private updateMapEvents(): void {
+    const mapId = this.map?.id;
+    if (!mapId) {
+      this.mapRegionEvents = [];
+      this.mapNearEvents = [];
+      return;
+    }
+    this.mapRegionEvents = this.app.campaign.events.filter(event => event.source === 'region' && event.map === mapId && !!event.region);
+    this.mapNearEvents = this.app.campaign.events.filter(event => event.source === 'near' && !!event.near && (!event.map || event.map === mapId));
+  }
   private checkpointPending=false;
 
   constructor(app: StoryContext) { super({ key: SCENE_KEYS.world, physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 0 }, debug: false } } }); this.app = app; }
@@ -162,7 +174,7 @@ export class WorldScene extends Phaser.Scene {
     this.wardrobe=undefined;this.equippedActor=undefined;this.equipmentPreview=undefined;this.outfitRequest++;
     this.request.abort(); this.request = new AbortController();
     this.mapLayers?.destroy(); this.mapLayers = undefined;
-    this.performing = false; this.player = undefined; this.noclipVisual = undefined; this.map = undefined;
+    this.performing = false; this.player = undefined; this.noclipVisual = undefined; this.map = undefined; this.updateMapEvents();
     this.options = options; this.characters = []; this.near = null; this.loadingWorld = true; this.destroyed = false;
     this.movement = undefined; this.lastPlayerPosition = undefined;this.combat=undefined;this.checkpointPending=!options.checkpoint;
     this.shortcutPageCache=undefined;
@@ -232,7 +244,7 @@ export class WorldScene extends Phaser.Scene {
     if (!reference) throw new Error('这片区域的资源尚未准备好');
     const [map,rawDrops,rawSprings] = await Promise.all([this.app.content.map(reference.file, signal),this.app.content.drops(signal),this.app.content.springs(signal)]);
     signal.throwIfAborted();
-    this.map = map;
+    this.map = map; this.updateMapEvents();
     this.app.session.enterMap(map.id,map.questItemSpawns??[],map,map.enemySpawns);
     this.dropCatalog=parseDrops(rawDrops,this.app.items,this.app.battleCatalog.enemies.map(enemy=>enemy.id));
     this.springCatalog=parseSprings(rawSprings);
@@ -1504,7 +1516,7 @@ private restoreScenePositions(snapshot:SceneSnapshot):void {
     this.combat?.afterMovement();
     this.collectGroundLoot(pos);
     this.updateInteractionTarget(); this.syncHud();
-    for (const event of this.app.campaign.events)if(event.source==='region'&&event.map===this.map?.id&&event.region){
+    for (const event of this.mapRegionEvents)if(event.region){
       const inside=overlapsFootRect(pos,event.region);
       if(!inside){this.occupiedRegions.delete(event.id);continue;}
       if(this.occupiedRegions.has(event.id)||(event.condition&&!this.app.session.evaluateCondition(event.condition)))continue;
@@ -1520,7 +1532,7 @@ private restoreScenePositions(snapshot:SceneSnapshot):void {
     // `PLAYER_DoCheckNearNPC` 同口径（曼哈顿 24 px，见 findings 94），占用表与区域触发共用，
     // 避免同一段戏每帧重复上报。
     const near = claimNearTrigger(
-      this.app.campaign.events.filter(event => event.source === 'near' && event.near && (!event.map || event.map === this.map?.id)),
+      this.mapNearEvents,
       this.occupiedRegions,
       event => {
         const beside = this.characters.find(character => character.entity.actor === event.near && (!event.nearCharacterId || character.entity.characterId === event.nearCharacterId) && character.container.visible);

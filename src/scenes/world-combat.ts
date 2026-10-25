@@ -599,7 +599,7 @@ captureStoryActors():SceneActorState[] {
   }
   private clearEnemies(preserveCooldown=false): void {
     for (const enemy of this.arena) this.destroyEnemy(enemy,preserveCooldown);
-    this.arena = [];this.threat?.clear();
+    this.arena = [];this.threat?.clear();this.invalidateCombatantsCache();
   }
   /**
    * 技能强制位移的整盒落点。位移是瞬时的，不能像走路那样只检查脚点：
@@ -682,9 +682,17 @@ captureStoryActors():SceneActorState[] {
     }
     return false;
   }
+  private combatantsCache?: { tick: number; combatants: Combatant[] };
+  private invalidateCombatantsCache(): void { this.combatantsCache = undefined; }
   private combatants(): Combatant[] {
-    return [...this.activeParty.map(id=>this.combatant(id)),...this.arena.map(enemy=>this.combatant(enemy.key))]
+    const tick = this.app.session?.combatTick ?? -1;
+    if (this.combatantsCache && this.combatantsCache.tick === tick) {
+      return this.combatantsCache.combatants;
+    }
+    const result = [...this.activeParty.map(id=>this.combatant(id)),...this.arena.map(enemy=>this.combatant(enemy.key))]
       .filter((actor):actor is Combatant=>!!actor);
+    if (tick >= 0) this.combatantsCache = { tick, combatants: result };
+    return result;
   }
   private createThreatSystem():CombatThreatSystem {
     return new CombatThreatSystem({
@@ -1528,15 +1536,26 @@ captureStoryActors():SceneActorState[] {
       primaryAttributes:member?.panel.attributes??{strength:0,dexterity:0,vitality:0,intelligence:0,mentality:0},
     };
   }
+  private passivesCache = new Map<string, { tick: number; bagRevision: number; stealthed: boolean; lowHealth: boolean; passives: PassiveModifier[] }>();
   private partyPassives(id:string):PassiveModifier[] {
     const member=this.memberOf(id);if(!member)return [];
+    const tick=this.app.session?.combatTick??-1;
+    const stealthed=this.conditions.hasState(id,'stealthed');
+    const maxHealth=member.player.maxHealth;
+    const lowHealth=member.player.health<=Math.floor(maxHealth*30/100);
+    const bagRevision=member.bag.revision;
+    const cached=this.passivesCache.get(id);
+    if(cached&&cached.tick===tick&&cached.bagRevision===bagRevision&&cached.stealthed===stealthed&&cached.lowHealth===lowHealth)
+      return cached.passives;
     const equipped=member.bag.equipmentItems(member.bag.equipmentFor(id));
     const main=equipped['main-hand'];
     const weapon=main?this.app.items.items[main]?.kind??'unarmed':'unarmed';
     const configuration=id==='player'?this.app.session.skills:(member as CompanionMember).skills;
     const armor=equipped.body?this.app.items.items[equipped.body].kind:'';
-    return [...passiveModifiers(this.app.battleCatalog,member.classId,configuration.draft(this.app.battleCatalog,member.classId),weapon,this.conditions.hasState(id,'stealthed'),memberSkillGrowth(id)),
+    const passives=[...passiveModifiers(this.app.battleCatalog,member.classId,configuration.draft(this.app.battleCatalog,member.classId),weapon,stealthed,memberSkillGrowth(id)),
       ...partyCombatModifiers(this.app.session.party?.groupModifiers()??{},weapon,armor,member.player.health,member.player.maxHealth)];
+    if(tick>=0)this.passivesCache.set(id,{tick,bagRevision,stealthed,lowHealth,passives});
+    return passives;
   }
   private enemyFighter(key:string,definition:EnemyDefinition,playerLevel:number):PhysicalFighter|undefined {
     if(this.pendingDefeats.has(key))return;
@@ -1566,19 +1585,18 @@ captureStoryActors():SceneActorState[] {
     if(state&&(state.health>0||this.hitResolution?.isAwaitingDefeat(id)))this.roster.setEnemyMana(id,state.mana+amount,enemy.definition);
   }
   private recoverResources():void {
-    const actors=[...this.activeParty,...this.arena.map(enemy=>enemy.key)].flatMap(id=>{
-      const member=this.memberOf(id),enemy=combatActor(this.arena,id,actor=>actor.key);
-      const state=member?.player??(enemy&&this.roster.enemySnapshot(id,enemy.definition,this.hero.level));
-      if(!state)return [];
-      // 再生药水这类持续回复按「每脉冲额外恢复」生效，加在各人自己的恢复属性上。
-      const regeneration=this.app.session.recovery.activeRegeneration;
-      const bonus=(key:'healthRecoveryPerPulse'|'manaRecoveryPerPulse'):number=>member&&regeneration?regeneration[key]:0;
-      return [{actorId:id,alive:state.health>0&&!this.pendingDefeats.has(id),level:state.level,
-        healthRecoveryPerPulse:this.actorAttribute(id,'healthRecoveryPerPulse')+bonus('healthRecoveryPerPulse'),
-        manaRecoveryPerPulse:this.actorAttribute(id,'manaRecoveryPerPulse')+bonus('manaRecoveryPerPulse'),
-        emergencyRecovery:this.conditions.hasBuff(id,'monster-emergency-recovery')}];
-    });
-    for(const pulse of this.app.session.recoverCombatResources(actors)){
+    for(const pulse of this.app.session.recoverCombatResources(()=>[
+      ...this.activeParty,...this.arena.map(enemy=>enemy.key)].flatMap(id=>{
+        const member=this.memberOf(id),enemy=combatActor(this.arena,id,actor=>actor.key);
+        const state=member?.player??(enemy&&this.roster.enemySnapshot(id,enemy.definition,this.hero.level));
+        if(!state)return [];
+        const regeneration=this.app.session.recovery.activeRegeneration;
+        const bonus=(key:'healthRecoveryPerPulse'|'manaRecoveryPerPulse'):number=>member&&regeneration?regeneration[key]:0;
+        return [{actorId:id,alive:state.health>0&&!this.pendingDefeats.has(id),level:state.level,
+          healthRecoveryPerPulse:this.actorAttribute(id,'healthRecoveryPerPulse')+bonus('healthRecoveryPerPulse'),
+          manaRecoveryPerPulse:this.actorAttribute(id,'manaRecoveryPerPulse')+bonus('manaRecoveryPerPulse'),
+          emergencyRecovery:this.conditions.hasBuff(id,'monster-emergency-recovery')}];
+      }))){
       for(const amount of pulse.amounts){
         this.restoreHealth(amount.actorId,amount.healthAmount);this.restoreMana(amount.actorId,amount.manaAmount);
       }
@@ -1771,7 +1789,7 @@ captureStoryActors():SceneActorState[] {
     if(this.pendingDefeats.has(key)){this.pendingDefeats.complete(key,false);return false;}
     const index = this.arena.findIndex(enemy => enemy.key === key);
     if (index < 0) return false;
-    const [enemy] = this.arena.splice(index, 1);refreshCombatActors(this.arena);
+    const [enemy] = this.arena.splice(index, 1);refreshCombatActors(this.arena);this.invalidateCombatantsCache();
     this.destroyEnemy(enemy);
     this.conditions.remove(key);
     for(const group of this.summonGroups.values())group.delete(key);
@@ -1891,10 +1909,21 @@ captureStoryActors():SceneActorState[] {
     this.partyControllers.set(id,controller);this.runtime.registerActor(id,controller);
     return {controller,port};
   }
+  private partySkillsCache = new Map<string, { bagRevision: number; level: number; skills: EnemyPlayableSkill[] }>();
   private syncAiSkills(id:string):void{
     const party=this.app.session.party,frequencies=party?.aiFrequency(id);
-    const latest=this.partySkillsFor(id);this.partySkills.set(id,latest);
-    const mana=this.memberOf(id)?.player.mana??0;
+    const member=this.memberOf(id);
+    const bagRevision=member?.bag.revision??0,level=member?.level??0;
+    const cached=this.partySkillsCache.get(id);
+    let latest: EnemyPlayableSkill[];
+    if(cached&&cached.bagRevision===bagRevision&&cached.level===level){
+      latest=cached.skills;
+    }else{
+      latest=this.partySkillsFor(id);
+      this.partySkills.set(id,latest);
+      this.partySkillsCache.set(id,{bagRevision,level,skills:latest});
+    }
+    const mana=member?.player.mana??0;
     for(const skill of latest)skill.frequency=mana>=(skill.manaCost??0)?frequencies?.get(skill.id)??1:0;
   }
   private async syncAllies():Promise<void>{
@@ -2059,6 +2088,7 @@ captureStoryActors():SceneActorState[] {
     setCharacterClip(this.scene,ally.visual,`idle-${ally.facing}`,true);
   }
   updateEquipment(id='player'):void{
+    this.partySkillsCache.delete(id);
     const member=this.memberOf(id);
     if(member){
       const recipe=costumeRecipe(this.app.wardrobe,this.app.items,member.bag.equipmentItems(member.bag.equipmentFor(id)));
@@ -2075,7 +2105,7 @@ captureStoryActors():SceneActorState[] {
     if(this.closed||this.arena.some(enemy=>enemy.key===placed.key))return;
     const definition=this.app.battleCatalog.enemies.find(enemy=>enemy.id===placed.enemyId);
     if(!definition?.actor.collision)throw new Error(`敌人外观缺少碰撞范围：${placed.enemyId}`);
-    this.arena.push(this.buildEnemy(placed,definition));refreshCombatActors(this.arena);
+    this.arena.push(this.buildEnemy(placed,definition));refreshCombatActors(this.arena);this.invalidateCombatantsCache();
   }
   syncChestEnemies():void {
     this.consumeRosterChanges(this.roster.refresh());
@@ -2249,7 +2279,7 @@ captureStoryActors():SceneActorState[] {
   playerCannotAct():boolean{return this.conditions.cannotAct(this.controlledId)||this.defeated||!this.controlledMember.player.health;}
   private markAlreadyFallen(id:string):void {
     const visual=this.visualOf(id);if(!visual)return;
-    this.fallen.add(id);this.movement.setEnabled(visual,false);visual.container.setVisible(false);
+    this.fallen.add(id);this.invalidateCombatantsCache();this.movement.setEnabled(visual,false);visual.container.setVisible(false);
   }
   private onPartyChanged():void {
     if(this.closed)return;
@@ -2273,7 +2303,7 @@ captureStoryActors():SceneActorState[] {
   private memberDefeated(id:string):void{
     if(this.closed||this.fallen.has(id))return;
     const visual=this.visualOf(id);if(!visual)return;
-    this.fallen.add(id);
+    this.fallen.add(id);this.invalidateCombatantsCache();
     if(!this.activeParty.some(member=>this.memberOf(member)?.player.health))this.wipeoutPosition=this.movement.position(visual);
     this.partyControllers.get(id)?.cancel(true);
     this.conditions.remove(id);this.memberOf(id)?.clearCombatResourceLimits();
@@ -2314,7 +2344,7 @@ captureStoryActors():SceneActorState[] {
     this.app.session.reviveCombatActor(id);
     this.runtime.cancel(`party-defeat:${id}`);this.partyDefeatWork?.delete(id);
     if(!visual)return;
-    this.deathTweens.get(id)?.stop();this.deathTweens.delete(id);this.fallen.delete(id);this.dealtDamage?.delete(id);
+    this.deathTweens.get(id)?.stop();this.deathTweens.delete(id);this.fallen.delete(id);this.dealtDamage?.delete(id);this.invalidateCombatantsCache();
     this.conditions.remove(id);member.clearCombatResourceLimits();this.partyControllers.get(id)?.reset();
     if(id==='player')this.heroAi?.reset();else combatActor(this.allies,id,actor=>actor.id)?.ai.reset();
     const actor=this.movement.actor(visual);

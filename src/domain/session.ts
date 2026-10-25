@@ -438,7 +438,7 @@ export class Session {
       return step(frame);
     });
   }
-  recoverCombatResources(actors:readonly ResourceRecoveryActor[]):ResourceRecoveryPulse[] {
+  recoverCombatResources(actors:readonly ResourceRecoveryActor[]|(()=>readonly ResourceRecoveryActor[])):ResourceRecoveryPulse[] {
     return this.resourceRecovery.advanceToFrame(this.combatTick,actors);
   }
   reviveCombatActor(id:string):void {

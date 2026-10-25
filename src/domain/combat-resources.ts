@@ -74,7 +74,7 @@ export class CombatResourceRecovery {
   }
 
   /** 共有战斗时钟完成角色处理后，在当前帧结算恢复。 */
-  advanceToFrame(frame:number,actors:readonly ResourceRecoveryActor[]):ResourceRecoveryPulse[] {
+  advanceToFrame(frame:number,actors:readonly ResourceRecoveryActor[]|(()=>readonly ResourceRecoveryActor[])):ResourceRecoveryPulse[] {
     if(!Number.isSafeInteger(frame)||frame<this.currentTick)throw new Error('资源恢复帧无效');
     return this.advance(frame*LOGIC_FRAME_MS-this.elapsedMs,actors);
   }
@@ -84,13 +84,15 @@ export class CombatResourceRecovery {
     this.deadlineTick=frame+30;
   }
 
-  advance(deltaMs:number,actors:readonly ResourceRecoveryActor[]):ResourceRecoveryPulse[] {
+  advance(deltaMs:number,actors:readonly ResourceRecoveryActor[]|(()=>readonly ResourceRecoveryActor[])):ResourceRecoveryPulse[] {
     if(!Number.isFinite(deltaMs)||deltaMs<=0)return [];
     this.elapsedMs+=deltaMs;
     const currentTick=Math.floor(this.elapsedMs/LOGIC_FRAME_MS);
     const pulses:ResourceRecoveryPulse[]=[];
+    let resolvedActors:readonly ResourceRecoveryActor[]|undefined=Array.isArray(actors)?actors:undefined;
     while(this.deadlineTick<currentTick){
-      pulses.push({atMs:(this.deadlineTick+1)*LOGIC_FRAME_MS,amounts:actors.filter(actor=>actor.alive).map(actor=>({
+      if(!resolvedActors)resolvedActors=typeof actors==='function'?actors():actors;
+      pulses.push({atMs:(this.deadlineTick+1)*LOGIC_FRAME_MS,amounts:resolvedActors.filter(actor=>actor.alive).map(actor=>({
         actorId:actor.actorId,
         healthAmount:actor.healthRecoveryPerPulse+(actor.emergencyRecovery?3*actor.level:0),
         manaAmount:actor.manaRecoveryPerPulse,
