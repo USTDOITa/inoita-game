@@ -20,11 +20,11 @@
     e.stopPropagation();
     if(!document.fullscreenElement&&!document.webkitFullscreenElement){
       var el=document.documentElement,req=el.requestFullscreen||el.webkitRequestFullscreen;
-      if(req)req.call(el).catch(function(){});
+      if(req){var p=req.call(el);if(p&&p.catch)p.catch(function(){});}
       try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});}catch(_){}
     }else{
       var ex=document.exitFullscreen||document.webkitExitFullscreen;
-      if(ex)ex.call(document).catch(function(){});
+      if(ex){var q=ex.call(document);if(q&&q.catch)q.catch(function(){});}
     }
   });
   document.addEventListener('fullscreenchange',u);
