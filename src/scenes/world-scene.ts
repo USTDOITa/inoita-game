@@ -137,6 +137,8 @@ export class WorldScene extends Phaser.Scene {
   entities: EntityPlacement[] = [];
   exitTrigger?: ExitTrigger<MapExit>;
   player?: Character;
+  /** 当前被 GM 穿墙接管的人物；切换操控者时用它关掉旧角色。 */
+  private noclipVisual?: CharacterVisual;
   facing: Facing = 'south';
   movement?: MovementWorld;
   private lastPlayerPosition?: { x: number; y: number };
@@ -160,7 +162,7 @@ export class WorldScene extends Phaser.Scene {
     this.wardrobe=undefined;this.equippedActor=undefined;this.equipmentPreview=undefined;this.outfitRequest++;
     this.request.abort(); this.request = new AbortController();
     this.mapLayers?.destroy(); this.mapLayers = undefined;
-    this.performing = false; this.player = undefined; this.map = undefined;
+    this.performing = false; this.player = undefined; this.noclipVisual = undefined; this.map = undefined;
     this.options = options; this.characters = []; this.near = null; this.loadingWorld = true; this.destroyed = false;
     this.movement = undefined; this.lastPlayerPosition = undefined;this.combat=undefined;this.checkpointPending=!options.checkpoint;
     this.shortcutPageCache=undefined;
@@ -331,7 +333,7 @@ export class WorldScene extends Phaser.Scene {
       ?? this.movement.navigation.nearest(appearance, requested);
     this.exitTrigger = new ExitTrigger(map.exits, spawn);
     this.player = this.createActor({ id: 'player', actor: campaign.start.actor, ...spawn });
-    if (this.app.gmNoclip) this.movement.setNoclip(this.player, true);
+    this.applyNoclip(this.player);
     this.lastPlayerPosition = { ...spawn };
     this.facing = options.facing === 'any' ? 'south' : options.facing || 'south';
     this.setClip(this.player, `idle-${this.facing}`);
@@ -1120,7 +1122,7 @@ export class WorldScene extends Phaser.Scene {
   }
   syncControlledCharacter(resetExitTrigger=false):void{
     const actor=this.combat?.controlledVisual??this.player;
-    if(this.app?.gmNoclip&&actor&&this.movement)this.movement.setNoclip(actor,true);
+    this.applyNoclip(actor);
     if(actor?.container.active)this.cameras.main.startFollow(actor.container,true,1,1);
     this.lastPlayerPosition=actor?this.movement?.position(actor):undefined;
     if(resetExitTrigger&&this.map&&this.lastPlayerPosition)this.exitTrigger=new ExitTrigger(this.map.exits,this.lastPlayerPosition);
@@ -1142,10 +1144,20 @@ export class WorldScene extends Phaser.Scene {
     this.combat?.stopMoving();this.syncControlledCharacter(true);
     return {ok:true,moved:true,from,to:landing};
   }
+  /**
+   * 穿墙始终只作用于当前操控者：换人时先关掉旧角色，关闭时也清掉记录。
+   * 只按当前受控角色开关会留下旧角色仍能穿墙的残留。
+   */
+  private applyNoclip(actor: CharacterVisual | undefined): void {
+    if (!this.movement) return;
+    const previous = this.noclipVisual;
+    if (previous && (previous !== actor || !this.app.gmNoclip)) this.movement.setNoclip(previous, false);
+    this.noclipVisual = this.app.gmNoclip && actor ? actor : undefined;
+    if (this.noclipVisual) this.movement.setNoclip(this.noclipVisual, true);
+  }
   setNoclip(enabled: boolean): { ok: boolean } {
     this.app.gmNoclip = enabled;
-    const controlled = this.combat?.controlledVisual ?? this.player;
-    if (controlled && this.movement) this.movement.setNoclip(controlled, enabled);
+    this.applyNoclip(this.combat?.controlledVisual ?? this.player);
     return { ok: true };
   }
   isNoclip(): boolean { return this.app.gmNoclip ?? false; }
